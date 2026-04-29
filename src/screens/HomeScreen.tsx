@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useState, useEffect } from 'react';
 import {
   View,
   Text,
@@ -12,7 +12,7 @@ import { useNavigation } from '@react-navigation/native';
 import { NativeStackNavigationProp } from '@react-navigation/native-stack';
 import uuid from 'react-native-uuid';
 import { useRemindersContext } from '../context/RemindersContext';
-import { scheduleReminder, cancelReminder } from '../services/notifications';
+import { scheduleReminder, cancelReminder, getNextFireTime, getAlertsSent } from '../services/notifications';
 import { COLORS, APP_NAME, PRESET_REMINDERS, DEFAULT_SCHEDULE } from '../constants';
 import { Reminder } from '../types';
 import { HomeStackParamList } from '../navigation/RootNavigator';
@@ -42,6 +42,59 @@ export default function HomeScreen() {
 
   const activeReminders = reminders.filter((r) => r.isActive);
   const totalReminders = reminders.length;
+
+  const [countdown, setCountdown] = useState('--');
+  const [alertsSent, setAlertsSent] = useState(0);
+
+  useEffect(() => {
+    getAlertsSent().then(setAlertsSent);
+    const poll = setInterval(() => {
+      getAlertsSent().then(setAlertsSent);
+    }, 10000);
+    return () => clearInterval(poll);
+  }, []);
+
+  useEffect(() => {
+    function updateCountdown() {
+      if (activeReminders.length === 0) {
+        setCountdown('--');
+        return;
+      }
+
+      const now = Date.now();
+      let soonest = Infinity;
+
+      for (const r of activeReminders) {
+        const next = getNextFireTime(r);
+        if (next) {
+          const diff = next.getTime() - now;
+          if (diff > 0 && diff < soonest) soonest = diff;
+        }
+      }
+
+      if (soonest === Infinity) {
+        setCountdown('--');
+        return;
+      }
+
+      const totalSec = Math.floor(soonest / 1000);
+      if (totalSec >= 3600) {
+        const h = Math.floor(totalSec / 3600);
+        const m = Math.floor((totalSec % 3600) / 60);
+        setCountdown(`${h}h ${m}m`);
+      } else if (totalSec >= 60) {
+        const m = Math.floor(totalSec / 60);
+        const s = totalSec % 60;
+        setCountdown(`${m}:${s.toString().padStart(2, '0')}`);
+      } else {
+        setCountdown(`${totalSec}s`);
+      }
+    }
+
+    updateCountdown();
+    const interval = setInterval(updateCountdown, 1000);
+    return () => clearInterval(interval);
+  }, [activeReminders]);
 
   const handleQuickAdd = async (preset: typeof PRESET_REMINDERS[0]) => {
     const existing = reminders.find((r) => r.title === preset.title);
@@ -181,16 +234,12 @@ export default function HomeScreen() {
           </View>
           <View style={styles.statDivider} />
           <View style={styles.statItem}>
-            <Text style={styles.statNumber}>{totalReminders}</Text>
-            <Text style={styles.statLabel}>Total</Text>
+            <Text style={styles.statNumber}>{alertsSent}</Text>
+            <Text style={styles.statLabel}>Alerts Sent</Text>
           </View>
           <View style={styles.statDivider} />
           <View style={styles.statItem}>
-            <Text style={styles.statNumber}>
-              {activeReminders.length > 0
-                ? formatInterval(Math.min(...activeReminders.map((r) => r.intervalMinutes)))
-                : '--'}
-            </Text>
+            <Text style={styles.statNumber}>{countdown}</Text>
             <Text style={styles.statLabel}>Next In</Text>
           </View>
         </View>
