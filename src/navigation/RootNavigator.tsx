@@ -5,17 +5,19 @@ import { createNativeStackNavigator } from '@react-navigation/native-stack';
 import { Ionicons } from '@expo/vector-icons';
 import HomeScreen from '../screens/HomeScreen';
 import AddEditReminderScreen from '../screens/AddEditReminderScreen';
+import ProgressScreen from '../screens/ProgressScreen';
 import SettingsScreen from '../screens/SettingsScreen';
 import { COLORS } from '../constants';
 
 export type HomeStackParamList = {
   HomeList: undefined;
+  AddReminder: undefined;
   EditReminder: { reminderId: string };
 };
 
 export type RootTabParamList = {
   HomeTab: undefined;
-  AddReminder: undefined;
+  Progress: undefined;
   Settings: undefined;
 };
 
@@ -34,7 +36,12 @@ function HomeStackNavigator() {
       <HomeStack.Screen
         name="HomeList"
         component={HomeScreen}
-        options={{ title: 'My Reminders' }}
+        options={{ headerShown: false }}
+      />
+      <HomeStack.Screen
+        name="AddReminder"
+        component={AddEditReminderScreen}
+        options={{ title: 'Add Reminder' }}
       />
       <HomeStack.Screen
         name="EditReminder"
@@ -73,12 +80,13 @@ export default function RootNavigator() {
           }}
         />
         <Tab.Screen
-          name="AddReminder"
-          component={AddEditReminderScreen}
+          name="Progress"
+          component={ProgressScreen}
           options={{
-            title: 'Add',
+            title: 'Progress',
+            headerTitle: 'Progress & Stats',
             tabBarIcon: ({ color, size }) => (
-              <Ionicons name="add-circle-outline" size={size} color={color} />
+              <Ionicons name="stats-chart-outline" size={size} color={color} />
             ),
           }}
         />

@@ -25,6 +25,21 @@ export interface AppSettings {
   defaultSchedule: Schedule;
 }
 
+export interface ProgressEntry {
+  date: string;
+  completedCount: number;
+  totalMinutes: number;
+  sessions: number;
+}
+
+export interface ProgressData {
+  entries: ProgressEntry[];
+  currentStreak: number;
+  longestStreak: number;
+  totalSessions: number;
+  totalMinutes: number;
+}
+
 export type ReminderAction =
   | { type: 'LOAD'; payload: Reminder[] }
   | { type: 'ADD'; payload: Reminder }

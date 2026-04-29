@@ -251,10 +251,19 @@ export default function SettingsScreen() {
 
       <View style={styles.section}>
         <Text style={styles.sectionTitle}>About</Text>
-        <Text style={styles.aboutText}>Stretch Reminder v1.0.0</Text>
-        <Text style={styles.aboutDescription}>
-          Take regular breaks to stretch, hydrate, and move your body during long work sessions.
-        </Text>
+        <View style={styles.aboutCard}>
+          <Text style={styles.aboutAppName}>Breakly</Text>
+          <Text style={styles.aboutVersion}>Version 1.0.0</Text>
+          <View style={styles.aboutDivider} />
+          <Text style={styles.aboutDescription}>
+            Breakly helps you build healthier work habits by reminding you to stretch, hydrate, move, and rest your eyes throughout the day.
+          </Text>
+          <Text style={styles.aboutDescription}>
+            Designed for professionals who spend long hours at their desk. Small breaks, big impact.
+          </Text>
+          <View style={styles.aboutDivider} />
+          <Text style={styles.aboutFooter}>Made with care for your wellbeing.</Text>
+        </View>
       </View>
     </ScrollView>
   );
@@ -428,16 +437,44 @@ const styles = StyleSheet.create({
     fontSize: 15,
     fontWeight: '600',
   },
-  aboutText: {
-    fontSize: 16,
-    color: COLORS.text,
-    fontWeight: '500',
-    marginTop: 8,
+  aboutCard: {
+    backgroundColor: COLORS.surface,
+    borderRadius: 14,
+    padding: 20,
+    marginTop: 10,
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.05,
+    shadowRadius: 8,
+    elevation: 2,
   },
-  aboutDescription: {
+  aboutAppName: {
+    fontSize: 22,
+    fontWeight: '700',
+    color: COLORS.primary,
+    textAlign: 'center',
+  },
+  aboutVersion: {
     fontSize: 13,
     color: COLORS.textSecondary,
+    textAlign: 'center',
     marginTop: 4,
-    lineHeight: 18,
+  },
+  aboutDivider: {
+    height: 1,
+    backgroundColor: COLORS.border,
+    marginVertical: 14,
+  },
+  aboutDescription: {
+    fontSize: 14,
+    color: COLORS.text,
+    lineHeight: 20,
+    marginBottom: 8,
+  },
+  aboutFooter: {
+    fontSize: 12,
+    color: COLORS.textSecondary,
+    textAlign: 'center',
+    fontStyle: 'italic',
   },
 });
