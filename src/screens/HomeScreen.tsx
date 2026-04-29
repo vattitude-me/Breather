@@ -10,9 +10,10 @@ import {
 } from 'react-native';
 import { useNavigation } from '@react-navigation/native';
 import { NativeStackNavigationProp } from '@react-navigation/native-stack';
+import uuid from 'react-native-uuid';
 import { useRemindersContext } from '../context/RemindersContext';
 import { scheduleReminder, cancelReminder } from '../services/notifications';
-import { COLORS, APP_NAME, CATEGORIES } from '../constants';
+import { COLORS, APP_NAME, PRESET_REMINDERS, DEFAULT_SCHEDULE } from '../constants';
 import { Reminder } from '../types';
 import { HomeStackParamList } from '../navigation/RootNavigator';
 
@@ -36,11 +37,34 @@ function getFormattedDate(): string {
 }
 
 export default function HomeScreen() {
-  const { reminders, dispatch } = useRemindersContext();
+  const { reminders, settings, dispatch } = useRemindersContext();
   const navigation = useNavigation<NavigationProp>();
 
   const activeReminders = reminders.filter((r) => r.isActive);
   const totalReminders = reminders.length;
+
+  const handleQuickAdd = async (preset: typeof PRESET_REMINDERS[0]) => {
+    const existing = reminders.find((r) => r.title === preset.title);
+    if (existing) return;
+
+    const reminder: Reminder = {
+      id: uuid.v4() as string,
+      title: preset.title,
+      intervalMinutes: preset.defaultInterval,
+      isActive: true,
+      snoozeDurationMinutes: settings.defaultSnoozeDurationMinutes,
+      icon: preset.icon,
+      createdAt: new Date().toISOString(),
+      schedule: settings.defaultSchedule || DEFAULT_SCHEDULE as any,
+    };
+
+    try {
+      const notificationId = await scheduleReminder(reminder);
+      reminder.notificationId = notificationId;
+    } catch {}
+
+    dispatch({ type: 'ADD', payload: reminder });
+  };
 
   const handleToggle = async (reminder: Reminder) => {
     try {
@@ -172,18 +196,29 @@ export default function HomeScreen() {
         </View>
       )}
 
-      {/* Categories */}
+      {/* Quick Add */}
       <View style={styles.sectionContainer}>
-        <Text style={styles.sectionTitle}>Categories</Text>
-        <View style={styles.categoriesRow}>
-          {CATEGORIES.map((cat) => (
-            <TouchableOpacity key={cat.title} style={styles.categoryCard} activeOpacity={0.7}>
-              <View style={[styles.categoryIconWrap, { backgroundColor: cat.color }]}>
-                <Text style={styles.categoryIcon}>{cat.icon}</Text>
-              </View>
-              <Text style={styles.categoryLabel}>{cat.title}</Text>
-            </TouchableOpacity>
-          ))}
+        <Text style={styles.sectionTitle}>Quick Add</Text>
+        <View style={styles.quickAddRow}>
+          {PRESET_REMINDERS.map((preset) => {
+            const alreadyExists = reminders.some((r) => r.title === preset.title);
+            return (
+              <TouchableOpacity
+                key={preset.title}
+                style={[styles.quickAddCard, alreadyExists && styles.quickAddCardDisabled]}
+                activeOpacity={alreadyExists ? 1 : 0.7}
+                onPress={() => handleQuickAdd(preset)}
+              >
+                <View style={[styles.quickAddIconWrap, { backgroundColor: alreadyExists ? COLORS.border : COLORS.primaryLight }]}>
+                  <Text style={styles.quickAddIcon}>{preset.icon}</Text>
+                </View>
+                <Text style={[styles.quickAddLabel, alreadyExists && styles.quickAddLabelDisabled]}>
+                  {preset.title}
+                </Text>
+                {alreadyExists && <Text style={styles.quickAddCheck}>✓</Text>}
+              </TouchableOpacity>
+            );
+          })}
         </View>
       </View>
 
@@ -343,30 +378,52 @@ const styles = StyleSheet.create({
     fontWeight: '600',
     color: COLORS.primary,
   },
-  categoriesRow: {
+  quickAddRow: {
     flexDirection: 'row',
-    justifyContent: 'space-between',
+    flexWrap: 'wrap',
+    gap: 10,
   },
-  categoryCard: {
+  quickAddCard: {
     alignItems: 'center',
-    width: '22%',
+    width: '30%',
+    backgroundColor: COLORS.surface,
+    borderRadius: 14,
+    paddingVertical: 14,
+    paddingHorizontal: 8,
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 1 },
+    shadowOpacity: 0.04,
+    shadowRadius: 4,
+    elevation: 1,
   },
-  categoryIconWrap: {
-    width: 56,
-    height: 56,
-    borderRadius: 18,
+  quickAddCardDisabled: {
+    opacity: 0.5,
+  },
+  quickAddIconWrap: {
+    width: 44,
+    height: 44,
+    borderRadius: 14,
     justifyContent: 'center',
     alignItems: 'center',
-    marginBottom: 8,
+    marginBottom: 6,
   },
-  categoryIcon: {
-    fontSize: 24,
+  quickAddIcon: {
+    fontSize: 22,
   },
-  categoryLabel: {
+  quickAddLabel: {
     fontSize: 11,
     fontWeight: '600',
     color: COLORS.text,
     textAlign: 'center',
+  },
+  quickAddLabelDisabled: {
+    color: COLORS.textSecondary,
+  },
+  quickAddCheck: {
+    fontSize: 10,
+    color: COLORS.accent,
+    fontWeight: '700',
+    marginTop: 2,
   },
   emptyCard: {
     backgroundColor: COLORS.primaryLight,
