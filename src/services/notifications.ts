@@ -6,6 +6,7 @@ import { Reminder } from '../types';
 
 const ALERTS_SENT_KEY = '@breakly_alerts_sent';
 const webTimers: Map<string, ReturnType<typeof setInterval>> = new Map();
+const webScheduledAt: Map<string, number> = new Map();
 
 export async function getAlertsSent(): Promise<number> {
   const val = await AsyncStorage.getItem(ALERTS_SENT_KEY);
@@ -15,6 +16,59 @@ export async function getAlertsSent(): Promise<number> {
 async function incrementAlertsSent(): Promise<void> {
   const current = await getAlertsSent();
   await AsyncStorage.setItem(ALERTS_SENT_KEY, String(current + 1));
+  await updateProgressOnAlert();
+}
+
+async function updateProgressOnAlert(): Promise<void> {
+  const PROGRESS_KEY = '@breakly_progress';
+  const today = new Date().toISOString().split('T')[0];
+
+  const data = await AsyncStorage.getItem(PROGRESS_KEY);
+  const progress = data ? JSON.parse(data) : {
+    entries: [],
+    currentStreak: 0,
+    longestStreak: 0,
+    totalSessions: 0,
+    totalMinutes: 0,
+  };
+
+  let todayEntry = progress.entries.find((e: any) => e.date === today);
+  if (!todayEntry) {
+    todayEntry = { date: today, completedCount: 0, totalMinutes: 0, sessions: 0 };
+    progress.entries.push(todayEntry);
+  }
+
+  todayEntry.completedCount += 1;
+  todayEntry.totalMinutes += 5;
+  todayEntry.sessions = Math.max(todayEntry.sessions, 1);
+
+  progress.totalSessions = progress.entries.reduce((sum: number, e: any) => sum + e.sessions, 0);
+  progress.totalMinutes = progress.entries.reduce((sum: number, e: any) => sum + e.totalMinutes, 0);
+
+  // Calculate streak
+  const sorted = [...progress.entries]
+    .filter((e: any) => e.completedCount > 0)
+    .sort((a: any, b: any) => b.date.localeCompare(a.date));
+
+  let streak = 0;
+  if (sorted.length > 0) {
+    const yesterday = new Date(Date.now() - 86400000).toISOString().split('T')[0];
+    if (sorted[0].date === today || sorted[0].date === yesterday) {
+      streak = 1;
+      for (let i = 1; i < sorted.length; i++) {
+        const prev = new Date(sorted[i - 1].date);
+        const curr = new Date(sorted[i].date);
+        const diff = (prev.getTime() - curr.getTime()) / 86400000;
+        if (diff === 1) streak++;
+        else break;
+      }
+    }
+  }
+
+  progress.currentStreak = streak;
+  progress.longestStreak = Math.max(progress.longestStreak, streak);
+
+  await AsyncStorage.setItem(PROGRESS_KEY, JSON.stringify(progress));
 }
 
 function isWeb(): boolean {
@@ -107,24 +161,29 @@ export async function scheduleReminder(reminder: Reminder): Promise<string> {
   return notificationId;
 }
 
-function scheduleWebReminder(reminder: Reminder): string {
+async function scheduleWebReminder(reminder: Reminder): Promise<string> {
   const id = `web_${reminder.id}`;
 
   cancelWebTimer(id);
 
+  await requestWebPermission();
+
   const intervalMs = reminder.intervalMinutes * 60 * 1000;
-  const timer = setInterval(() => {
-    if (Notification.permission === 'granted') {
+
+  function fireNotification() {
+    if (typeof window !== 'undefined' && 'Notification' in window && Notification.permission === 'granted') {
       new Notification(`${reminder.icon} ${reminder.title}`, {
         body: `Time for your ${reminder.title.toLowerCase()} break!`,
-        tag: reminder.id,
-        requireInteraction: true,
+        tag: `${reminder.id}_${Date.now()}`,
       });
       incrementAlertsSent();
     }
-  }, intervalMs);
+  }
+
+  const timer = setInterval(fireNotification, intervalMs);
 
   webTimers.set(id, timer);
+  webScheduledAt.set(id, Date.now());
   return id;
 }
 
@@ -194,12 +253,15 @@ export async function cancelAllReminders(): Promise<void> {
 }
 
 export function getNextFireTime(reminder: Reminder): Date | null {
-  if (!reminder.isActive) return null;
-  const createdAt = new Date(reminder.createdAt).getTime();
+  if (!reminder.isActive || !reminder.notificationId) return null;
+
+  const id = reminder.notificationId;
+  const scheduledTime = webScheduledAt.get(id);
+  const baseTime = scheduledTime || new Date(reminder.createdAt).getTime();
   const now = Date.now();
   const intervalMs = reminder.intervalMinutes * 60 * 1000;
-  const elapsed = now - createdAt;
+  const elapsed = now - baseTime;
   const cyclesCompleted = Math.floor(elapsed / intervalMs);
-  const nextFire = new Date(createdAt + (cyclesCompleted + 1) * intervalMs);
+  const nextFire = new Date(baseTime + (cyclesCompleted + 1) * intervalMs);
   return nextFire;
 }

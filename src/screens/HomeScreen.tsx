@@ -44,6 +44,7 @@ export default function HomeScreen() {
   const totalReminders = reminders.length;
 
   const [countdown, setCountdown] = useState('--');
+  const [currentTime, setCurrentTime] = useState(new Date());
   const [alertsSent, setAlertsSent] = useState(0);
 
   useEffect(() => {
@@ -92,7 +93,10 @@ export default function HomeScreen() {
     }
 
     updateCountdown();
-    const interval = setInterval(updateCountdown, 1000);
+    const interval = setInterval(() => {
+      updateCountdown();
+      setCurrentTime(new Date());
+    }, 1000);
     return () => clearInterval(interval);
   }, [activeReminders]);
 
@@ -225,6 +229,9 @@ export default function HomeScreen() {
         <View style={styles.dateRow}>
           <Text style={styles.dateIcon}>📅</Text>
           <Text style={styles.dateText}>{getFormattedDate()}</Text>
+          <Text style={styles.timeText}>
+            {currentTime.toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit' })}
+          </Text>
         </View>
       </View>
 
@@ -370,6 +377,12 @@ const styles = StyleSheet.create({
     fontSize: 13,
     color: 'rgba(255,255,255,0.9)',
     fontWeight: '400',
+    flex: 1,
+  },
+  timeText: {
+    fontSize: 13,
+    color: 'rgba(255,255,255,0.9)',
+    fontWeight: '600',
   },
   statsBanner: {
     flexDirection: 'row',
