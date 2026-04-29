@@ -6,14 +6,13 @@ import {
   TouchableOpacity,
   StyleSheet,
   ScrollView,
-  Alert,
 } from 'react-native';
 import { useNavigation, useRoute } from '@react-navigation/native';
 import uuid from 'react-native-uuid';
 import { useRemindersContext } from '../context/RemindersContext';
 import { scheduleReminder, cancelReminder } from '../services/notifications';
-import { COLORS, PRESET_REMINDERS, INTERVAL_PRESETS } from '../constants';
-import { Reminder } from '../types';
+import { COLORS, PRESET_REMINDERS, INTERVAL_PRESETS, DAYS_OF_WEEK, DEFAULT_SCHEDULE } from '../constants';
+import { Reminder, DayOfWeek } from '../types';
 
 export default function AddEditReminderScreen() {
   const navigation = useNavigation();
@@ -40,11 +39,33 @@ export default function AddEditReminderScreen() {
   );
   const [icon, setIcon] = useState(existingReminder?.icon || '🧘');
   const [showCustom, setShowCustom] = useState(isEditing);
+  const [activeDays, setActiveDays] = useState<DayOfWeek[]>(
+    existingReminder?.schedule?.activeDays || settings.defaultSchedule?.activeDays || DEFAULT_SCHEDULE.activeDays as unknown as DayOfWeek[]
+  );
+  const [startHour, setStartHour] = useState(
+    existingReminder?.schedule?.startHour ?? settings.defaultSchedule?.startHour ?? DEFAULT_SCHEDULE.startHour
+  );
+  const [endHour, setEndHour] = useState(
+    existingReminder?.schedule?.endHour ?? settings.defaultSchedule?.endHour ?? DEFAULT_SCHEDULE.endHour
+  );
 
   useEffect(() => {
     const numValue = parseInt(intervalValue) || 0;
     setIntervalMinutes(intervalUnit === 'hours' ? numValue * 60 : numValue);
   }, [intervalValue, intervalUnit]);
+
+  const toggleDay = (day: DayOfWeek) => {
+    setActiveDays((prev) =>
+      prev.includes(day) ? prev.filter((d) => d !== day) : [...prev, day]
+    );
+  };
+
+  const formatHour = (hour: number): string => {
+    if (hour === 0) return '12 AM';
+    if (hour === 12) return '12 PM';
+    if (hour < 12) return `${hour} AM`;
+    return `${hour - 12} PM`;
+  };
 
   const handleQuickStart = async (preset: typeof PRESET_REMINDERS[0]) => {
     const reminder: Reminder = {
@@ -55,6 +76,7 @@ export default function AddEditReminderScreen() {
       snoozeDurationMinutes: settings.defaultSnoozeDurationMinutes,
       icon: preset.icon,
       createdAt: new Date().toISOString(),
+      schedule: settings.defaultSchedule || DEFAULT_SCHEDULE as any,
     };
 
     try {
@@ -81,11 +103,15 @@ export default function AddEditReminderScreen() {
 
   const handleSave = async () => {
     if (!title.trim()) {
-      Alert.alert('Required', 'Please enter a reminder title.');
+      if (window.alert) window.alert('Please enter a reminder title.');
       return;
     }
     if (intervalMinutes < 1) {
-      Alert.alert('Invalid Interval', 'Interval must be at least 1 minute.');
+      if (window.alert) window.alert('Interval must be at least 1 minute.');
+      return;
+    }
+    if (activeDays.length === 0) {
+      if (window.alert) window.alert('Please select at least one active day.');
       return;
     }
 
@@ -97,6 +123,11 @@ export default function AddEditReminderScreen() {
       snoozeDurationMinutes: settings.defaultSnoozeDurationMinutes,
       icon,
       createdAt: existingReminder?.createdAt || new Date().toISOString(),
+      schedule: {
+        activeDays,
+        startHour,
+        endHour,
+      },
     };
 
     try {
@@ -117,6 +148,9 @@ export default function AddEditReminderScreen() {
     setIntervalUnit('minutes');
     setIcon('🧘');
     setShowCustom(false);
+    setActiveDays(settings.defaultSchedule?.activeDays || DEFAULT_SCHEDULE.activeDays as unknown as DayOfWeek[]);
+    setStartHour(settings.defaultSchedule?.startHour ?? DEFAULT_SCHEDULE.startHour);
+    setEndHour(settings.defaultSchedule?.endHour ?? DEFAULT_SCHEDULE.endHour);
 
     if (navigation.canGoBack()) {
       navigation.goBack();
@@ -284,6 +318,101 @@ export default function AddEditReminderScreen() {
                 </TouchableOpacity>
               ))}
             </View>
+          </View>
+
+          {/* Schedule - Days of Week */}
+          <View style={styles.fieldGroup}>
+            <Text style={styles.fieldLabel}>Active Days</Text>
+            <View style={styles.daysRow}>
+              {DAYS_OF_WEEK.map((day) => (
+                <TouchableOpacity
+                  key={day}
+                  style={[
+                    styles.dayChip,
+                    activeDays.includes(day as DayOfWeek) && styles.dayChipActive,
+                  ]}
+                  onPress={() => toggleDay(day as DayOfWeek)}
+                >
+                  <Text
+                    style={[
+                      styles.dayChipText,
+                      activeDays.includes(day as DayOfWeek) && styles.dayChipTextActive,
+                    ]}
+                  >
+                    {day}
+                  </Text>
+                </TouchableOpacity>
+              ))}
+            </View>
+            <View style={styles.dayShortcuts}>
+              <TouchableOpacity
+                style={styles.shortcutBtn}
+                onPress={() => setActiveDays(['Mon', 'Tue', 'Wed', 'Thu', 'Fri'])}
+              >
+                <Text style={styles.shortcutText}>Weekdays</Text>
+              </TouchableOpacity>
+              <TouchableOpacity
+                style={styles.shortcutBtn}
+                onPress={() => setActiveDays(['Sat', 'Sun'])}
+              >
+                <Text style={styles.shortcutText}>Weekends</Text>
+              </TouchableOpacity>
+              <TouchableOpacity
+                style={styles.shortcutBtn}
+                onPress={() => setActiveDays(['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'])}
+              >
+                <Text style={styles.shortcutText}>Every Day</Text>
+              </TouchableOpacity>
+            </View>
+          </View>
+
+          {/* Schedule - Time Range */}
+          <View style={styles.fieldGroup}>
+            <Text style={styles.fieldLabel}>Active Hours</Text>
+            <View style={styles.timeRangeContainer}>
+              <View style={styles.timePickerGroup}>
+                <Text style={styles.timeLabel}>From</Text>
+                <View style={styles.timeControl}>
+                  <TouchableOpacity
+                    style={styles.timeArrow}
+                    onPress={() => setStartHour((h) => Math.max(0, h - 1))}
+                  >
+                    <Text style={styles.timeArrowText}>−</Text>
+                  </TouchableOpacity>
+                  <Text style={styles.timeValue}>{formatHour(startHour)}</Text>
+                  <TouchableOpacity
+                    style={styles.timeArrow}
+                    onPress={() => setStartHour((h) => Math.min(endHour - 1, h + 1))}
+                  >
+                    <Text style={styles.timeArrowText}>+</Text>
+                  </TouchableOpacity>
+                </View>
+              </View>
+
+              <Text style={styles.timeSeparator}>→</Text>
+
+              <View style={styles.timePickerGroup}>
+                <Text style={styles.timeLabel}>To</Text>
+                <View style={styles.timeControl}>
+                  <TouchableOpacity
+                    style={styles.timeArrow}
+                    onPress={() => setEndHour((h) => Math.max(startHour + 1, h - 1))}
+                  >
+                    <Text style={styles.timeArrowText}>−</Text>
+                  </TouchableOpacity>
+                  <Text style={styles.timeValue}>{formatHour(endHour)}</Text>
+                  <TouchableOpacity
+                    style={styles.timeArrow}
+                    onPress={() => setEndHour((h) => Math.min(23, h + 1))}
+                  >
+                    <Text style={styles.timeArrowText}>+</Text>
+                  </TouchableOpacity>
+                </View>
+              </View>
+            </View>
+            <Text style={styles.timeHint}>
+              Reminders will only fire between {formatHour(startHour)} and {formatHour(endHour)}
+            </Text>
           </View>
 
           {/* Save Button */}
@@ -513,6 +642,107 @@ const styles = StyleSheet.create({
   intervalChipTextActive: {
     color: COLORS.primary,
     fontWeight: '700',
+  },
+  daysRow: {
+    flexDirection: 'row',
+    gap: 6,
+    marginBottom: 12,
+  },
+  dayChip: {
+    flex: 1,
+    paddingVertical: 12,
+    borderRadius: 10,
+    backgroundColor: COLORS.surface,
+    borderWidth: 1.5,
+    borderColor: COLORS.border,
+    alignItems: 'center',
+  },
+  dayChipActive: {
+    backgroundColor: COLORS.primary,
+    borderColor: COLORS.primary,
+  },
+  dayChipText: {
+    fontSize: 12,
+    fontWeight: '600',
+    color: COLORS.textSecondary,
+  },
+  dayChipTextActive: {
+    color: '#FFFFFF',
+  },
+  dayShortcuts: {
+    flexDirection: 'row',
+    gap: 8,
+  },
+  shortcutBtn: {
+    paddingHorizontal: 14,
+    paddingVertical: 8,
+    borderRadius: 16,
+    backgroundColor: COLORS.surface,
+    borderWidth: 1,
+    borderColor: COLORS.border,
+  },
+  shortcutText: {
+    fontSize: 12,
+    color: COLORS.primary,
+    fontWeight: '500',
+  },
+  timeRangeContainer: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    backgroundColor: COLORS.surface,
+    borderRadius: 14,
+    padding: 16,
+    borderWidth: 1,
+    borderColor: COLORS.border,
+  },
+  timePickerGroup: {
+    alignItems: 'center',
+    flex: 1,
+  },
+  timeLabel: {
+    fontSize: 11,
+    fontWeight: '600',
+    color: COLORS.textSecondary,
+    textTransform: 'uppercase',
+    marginBottom: 8,
+  },
+  timeControl: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 12,
+  },
+  timeArrow: {
+    width: 32,
+    height: 32,
+    borderRadius: 16,
+    backgroundColor: COLORS.primaryLight,
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+  timeArrowText: {
+    fontSize: 18,
+    color: COLORS.primary,
+    fontWeight: '600',
+  },
+  timeValue: {
+    fontSize: 16,
+    fontWeight: '700',
+    color: COLORS.text,
+    minWidth: 60,
+    textAlign: 'center',
+  },
+  timeSeparator: {
+    fontSize: 18,
+    color: COLORS.textSecondary,
+    marginHorizontal: 8,
+  },
+  timeHint: {
+    fontSize: 12,
+    color: COLORS.textSecondary,
+    marginTop: 10,
+    textAlign: 'center',
+    fontStyle: 'italic',
   },
   saveButton: {
     backgroundColor: COLORS.primary,

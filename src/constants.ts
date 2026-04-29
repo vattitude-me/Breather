@@ -24,6 +24,14 @@ export const INTERVAL_PRESETS = [15, 30, 45, 60, 90, 120];
 
 export const SNOOZE_OPTIONS = [5, 10, 15, 30];
 
+export const DAYS_OF_WEEK = ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'] as const;
+
+export const DEFAULT_SCHEDULE = {
+  activeDays: ['Mon', 'Tue', 'Wed', 'Thu', 'Fri'] as ('Mon' | 'Tue' | 'Wed' | 'Thu' | 'Fri' | 'Sat' | 'Sun')[],
+  startHour: 8,
+  endHour: 17,
+};
+
 export const STORAGE_KEYS = {
   REMINDERS: '@stretch_reminders',
   SETTINGS: '@stretch_settings',
@@ -33,4 +41,5 @@ export const DEFAULT_SETTINGS = {
   defaultSnoozeDurationMinutes: 10,
   defaultIntervalMinutes: 30,
   notificationsEnabled: true,
+  defaultSchedule: DEFAULT_SCHEDULE,
 };
