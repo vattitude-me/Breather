@@ -176,41 +176,43 @@ export default function HomeScreen() {
   };
 
   const renderReminderItem = ({ item, index }: { item: Reminder; index: number }) => (
-    <TouchableOpacity
-      style={[styles.reminderCard, { backgroundColor: getCategoryColor(index) }]}
-      onPress={() => navigation.navigate('EditReminder', { reminderId: item.id })}
-      activeOpacity={0.7}
-    >
+    <View style={[styles.reminderCard, { backgroundColor: getCategoryColor(index) }]}>
       <View style={styles.reminderTopRow}>
-        <View style={styles.reminderIconCircle}>
+        <TouchableOpacity
+          style={styles.reminderIconCircle}
+          onPress={() => navigation.navigate('EditReminder', { reminderId: item.id })}
+          activeOpacity={0.7}
+        >
           <Text style={styles.reminderIcon}>{item.icon}</Text>
-        </View>
-        <View style={styles.reminderActions}>
-          <Switch
-            value={item.isActive}
-            onValueChange={() => handleToggle(item)}
-            trackColor={{ false: COLORS.disabled, true: COLORS.primary }}
-            thumbColor={item.isActive ? '#FFFFFF' : '#f4f3f4'}
-          />
-        </View>
+        </TouchableOpacity>
+        <Switch
+          value={item.isActive}
+          onValueChange={() => handleToggle(item)}
+          trackColor={{ false: COLORS.disabled, true: COLORS.primary }}
+          thumbColor={item.isActive ? '#FFFFFF' : '#f4f3f4'}
+        />
       </View>
-      <View style={styles.reminderBottom}>
+      <TouchableOpacity
+        style={styles.reminderBottom}
+        onPress={() => navigation.navigate('EditReminder', { reminderId: item.id })}
+        activeOpacity={0.7}
+      >
         <Text style={styles.reminderTitle}>{item.title}</Text>
         <Text style={styles.reminderInterval}>
           Every {formatInterval(item.intervalMinutes)}
         </Text>
-        <View style={styles.reminderStatusRow}>
-          <View style={[styles.statusDot, { backgroundColor: item.isActive ? '#4CAF50' : COLORS.disabled }]} />
-          <Text style={styles.statusText}>{item.isActive ? 'Active' : 'Paused'}</Text>
-          <TouchableOpacity
-            style={styles.deleteIcon}
-            onPress={() => handleDelete(item)}
-          >
-            <Text style={styles.deleteIconText}>✕</Text>
-          </TouchableOpacity>
-        </View>
+      </TouchableOpacity>
+      <View style={styles.reminderStatusRow}>
+        <View style={[styles.statusDot, { backgroundColor: item.isActive ? '#4CAF50' : COLORS.disabled }]} />
+        <Text style={styles.statusText}>{item.isActive ? 'Active' : 'Paused'}</Text>
+        <TouchableOpacity
+          style={styles.deleteIcon}
+          onPress={() => handleDelete(item)}
+        >
+          <Text style={styles.deleteIconText}>✕</Text>
+        </TouchableOpacity>
       </View>
-    </TouchableOpacity>
+    </View>
   );
 
   return (
