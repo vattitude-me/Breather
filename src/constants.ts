@@ -14,11 +14,10 @@ export const COLORS = {
 };
 
 export const PRESET_REMINDERS = [
-  { title: 'Stretch', icon: '🧘', defaultInterval: 30 },
-  { title: 'Drink Water', icon: '💧', defaultInterval: 45 },
+  { title: 'Stretch', icon: '🧘', defaultInterval: 60 },
+  { title: 'Drink Water', icon: '💧', defaultInterval: 60 },
   { title: 'Walk', icon: '🚶', defaultInterval: 60 },
-  { title: 'Eye Break', icon: '👁️', defaultInterval: 20 },
-  { title: 'Deep Breath', icon: '🌬️', defaultInterval: 15 },
+  { title: 'Eye Break', icon: '👁️', defaultInterval: 60 },
 ];
 
 export const INTERVAL_PRESETS = [15, 30, 45, 60, 90, 120];

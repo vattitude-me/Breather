@@ -8,27 +8,23 @@ import {
   ScrollView,
   Alert,
 } from 'react-native';
-import { useNavigation, useRoute, RouteProp } from '@react-navigation/native';
+import { useNavigation, useRoute } from '@react-navigation/native';
 import uuid from 'react-native-uuid';
 import { useRemindersContext } from '../context/RemindersContext';
 import { scheduleReminder, cancelReminder } from '../services/notifications';
-import { COLORS, PRESET_REMINDERS, INTERVAL_PRESETS, SNOOZE_OPTIONS } from '../constants';
+import { COLORS, PRESET_REMINDERS, INTERVAL_PRESETS } from '../constants';
 import { Reminder } from '../types';
-import { HomeStackParamList } from '../navigation/RootNavigator';
-
-type EditRouteProps = RouteProp<HomeStackParamList, 'EditReminder'>;
 
 export default function AddEditReminderScreen() {
   const navigation = useNavigation();
-  const route = useRoute<EditRouteProps>();
+  const route = useRoute();
   const { reminders, settings, dispatch } = useRemindersContext();
 
-  const editId = route.params?.reminderId;
+  const editId = (route.params as { reminderId?: string } | undefined)?.reminderId;
   const existingReminder = editId ? reminders.find((r) => r.id === editId) : undefined;
   const isEditing = !!existingReminder;
 
   const [title, setTitle] = useState(existingReminder?.title || '');
-  const [description, setDescription] = useState(existingReminder?.description || '');
   const [intervalMinutes, setIntervalMinutes] = useState(
     existingReminder?.intervalMinutes || settings.defaultIntervalMinutes
   );
@@ -42,25 +38,34 @@ export default function AddEditReminderScreen() {
       ? String(Math.floor((existingReminder?.intervalMinutes || settings.defaultIntervalMinutes) / 60))
       : String(existingReminder?.intervalMinutes || settings.defaultIntervalMinutes)
   );
-  const [snoozeDuration, setSnoozeDuration] = useState(
-    existingReminder?.snoozeDurationMinutes || settings.defaultSnoozeDurationMinutes
-  );
   const [icon, setIcon] = useState(existingReminder?.icon || '🧘');
+  const [showCustom, setShowCustom] = useState(isEditing);
 
   useEffect(() => {
     const numValue = parseInt(intervalValue) || 0;
     setIntervalMinutes(intervalUnit === 'hours' ? numValue * 60 : numValue);
   }, [intervalValue, intervalUnit]);
 
-  const handlePresetSelect = (preset: typeof PRESET_REMINDERS[0]) => {
-    setTitle(preset.title);
-    setIcon(preset.icon);
-    if (preset.defaultInterval >= 60) {
-      setIntervalUnit('hours');
-      setIntervalValue(String(preset.defaultInterval / 60));
-    } else {
-      setIntervalUnit('minutes');
-      setIntervalValue(String(preset.defaultInterval));
+  const handleQuickStart = async (preset: typeof PRESET_REMINDERS[0]) => {
+    const reminder: Reminder = {
+      id: uuid.v4() as string,
+      title: preset.title,
+      intervalMinutes: preset.defaultInterval,
+      isActive: true,
+      snoozeDurationMinutes: settings.defaultSnoozeDurationMinutes,
+      icon: preset.icon,
+      createdAt: new Date().toISOString(),
+    };
+
+    try {
+      const notificationId = await scheduleReminder(reminder);
+      reminder.notificationId = notificationId;
+    } catch {}
+
+    dispatch({ type: 'ADD', payload: reminder });
+
+    if (navigation.canGoBack()) {
+      navigation.goBack();
     }
   };
 
@@ -87,191 +92,213 @@ export default function AddEditReminderScreen() {
     const reminder: Reminder = {
       id: existingReminder?.id || (uuid.v4() as string),
       title: title.trim(),
-      description: description.trim() || undefined,
       intervalMinutes,
       isActive: true,
-      snoozeDurationMinutes: snoozeDuration,
+      snoozeDurationMinutes: settings.defaultSnoozeDurationMinutes,
       icon,
       createdAt: existingReminder?.createdAt || new Date().toISOString(),
     };
 
-    if (existingReminder?.notificationId) {
-      await cancelReminder(existingReminder.notificationId);
-    }
-
-    const notificationId = await scheduleReminder(reminder);
-    reminder.notificationId = notificationId;
+    try {
+      if (existingReminder?.notificationId) {
+        await cancelReminder(existingReminder.notificationId);
+      }
+      const notificationId = await scheduleReminder(reminder);
+      reminder.notificationId = notificationId;
+    } catch {}
 
     dispatch({
       type: isEditing ? 'UPDATE' : 'ADD',
       payload: reminder,
     });
 
-    navigation.goBack();
+    setTitle('');
+    setIntervalValue(String(settings.defaultIntervalMinutes));
+    setIntervalUnit('minutes');
+    setIcon('🧘');
+    setShowCustom(false);
+
+    if (navigation.canGoBack()) {
+      navigation.goBack();
+    }
   };
 
-  const handleDelete = () => {
+  const handleDelete = async () => {
     if (!existingReminder) return;
-    Alert.alert('Delete Reminder', `Delete "${existingReminder.title}"?`, [
-      { text: 'Cancel', style: 'cancel' },
-      {
-        text: 'Delete',
-        style: 'destructive',
-        onPress: async () => {
-          if (existingReminder.notificationId) {
-            await cancelReminder(existingReminder.notificationId);
-          }
-          dispatch({ type: 'DELETE', payload: existingReminder.id });
-          navigation.goBack();
-        },
-      },
-    ]);
+
+    const confirmed = window.confirm
+      ? window.confirm(`Delete "${existingReminder.title}"?`)
+      : true;
+
+    if (!confirmed) return;
+
+    try {
+      if (existingReminder.notificationId) {
+        await cancelReminder(existingReminder.notificationId);
+      }
+    } catch {}
+    dispatch({ type: 'DELETE', payload: existingReminder.id });
+    if (navigation.canGoBack()) {
+      navigation.goBack();
+    }
   };
 
   return (
     <ScrollView style={styles.container} contentContainerStyle={styles.content}>
-      <Text style={styles.sectionTitle}>Quick Start</Text>
-      <View style={styles.presetsRow}>
-        {PRESET_REMINDERS.map((preset) => (
-          <TouchableOpacity
-            key={preset.title}
-            style={[
-              styles.presetChip,
-              title === preset.title && styles.presetChipActive,
-            ]}
-            onPress={() => handlePresetSelect(preset)}
-          >
-            <Text style={styles.presetIcon}>{preset.icon}</Text>
-            <Text
-              style={[
-                styles.presetLabel,
-                title === preset.title && styles.presetLabelActive,
-              ]}
-            >
-              {preset.title}
-            </Text>
-          </TouchableOpacity>
-        ))}
-      </View>
-
-      <Text style={styles.sectionTitle}>Title</Text>
-      <TextInput
-        style={styles.input}
-        value={title}
-        onChangeText={setTitle}
-        placeholder="e.g. Stretch, Drink Water"
-        placeholderTextColor={COLORS.disabled}
-      />
-
-      <Text style={styles.sectionTitle}>Description (optional)</Text>
-      <TextInput
-        style={[styles.input, styles.inputMultiline]}
-        value={description}
-        onChangeText={setDescription}
-        placeholder="A short note about this reminder"
-        placeholderTextColor={COLORS.disabled}
-        multiline
-        numberOfLines={2}
-      />
-
-      <Text style={styles.sectionTitle}>Interval</Text>
-      <View style={styles.intervalRow}>
-        <TextInput
-          style={[styles.input, styles.intervalInput]}
-          value={intervalValue}
-          onChangeText={setIntervalValue}
-          keyboardType="numeric"
-          placeholder="30"
-          placeholderTextColor={COLORS.disabled}
-        />
-        <View style={styles.unitToggle}>
-          <TouchableOpacity
-            style={[styles.unitBtn, intervalUnit === 'minutes' && styles.unitBtnActive]}
-            onPress={() => setIntervalUnit('minutes')}
-          >
-            <Text style={[styles.unitText, intervalUnit === 'minutes' && styles.unitTextActive]}>
-              Min
-            </Text>
-          </TouchableOpacity>
-          <TouchableOpacity
-            style={[styles.unitBtn, intervalUnit === 'hours' && styles.unitBtnActive]}
-            onPress={() => setIntervalUnit('hours')}
-          >
-            <Text style={[styles.unitText, intervalUnit === 'hours' && styles.unitTextActive]}>
-              Hours
-            </Text>
-          </TouchableOpacity>
+      {/* Quick Start - only show when creating new */}
+      {!isEditing && (
+        <View style={styles.section}>
+          <Text style={styles.heroTitle}>Quick Start</Text>
+          <Text style={styles.heroSubtitle}>
+            Tap a preset to instantly create a reminder
+          </Text>
+          <View style={styles.presetsGrid}>
+            {PRESET_REMINDERS.map((preset) => (
+              <TouchableOpacity
+                key={preset.title}
+                style={styles.presetCard}
+                onPress={() => handleQuickStart(preset)}
+                activeOpacity={0.7}
+              >
+                <Text style={styles.presetCardIcon}>{preset.icon}</Text>
+                <Text style={styles.presetCardTitle}>{preset.title}</Text>
+                <Text style={styles.presetCardInterval}>
+                  Every {preset.defaultInterval >= 60
+                    ? `${preset.defaultInterval / 60}h`
+                    : `${preset.defaultInterval}m`}
+                </Text>
+              </TouchableOpacity>
+            ))}
+          </View>
         </View>
-      </View>
+      )}
 
-      <View style={styles.presetsRow}>
-        {INTERVAL_PRESETS.map((minutes) => (
-          <TouchableOpacity
-            key={minutes}
-            style={[
-              styles.intervalChip,
-              intervalMinutes === minutes && styles.intervalChipActive,
-            ]}
-            onPress={() => handleIntervalPreset(minutes)}
-          >
-            <Text
-              style={[
-                styles.intervalChipText,
-                intervalMinutes === minutes && styles.intervalChipTextActive,
-              ]}
-            >
-              {minutes >= 60 ? `${minutes / 60}h` : `${minutes}m`}
-            </Text>
-          </TouchableOpacity>
-        ))}
-      </View>
+      {/* Custom / Edit Section */}
+      {!isEditing && !showCustom && (
+        <View style={styles.dividerSection}>
+          <View style={styles.dividerLine} />
+          <Text style={styles.dividerText}>or</Text>
+          <View style={styles.dividerLine} />
+        </View>
+      )}
 
-      <Text style={styles.sectionTitle}>Snooze Duration</Text>
-      <View style={styles.presetsRow}>
-        {SNOOZE_OPTIONS.map((mins) => (
-          <TouchableOpacity
-            key={mins}
-            style={[
-              styles.intervalChip,
-              snoozeDuration === mins && styles.intervalChipActive,
-            ]}
-            onPress={() => setSnoozeDuration(mins)}
-          >
-            <Text
-              style={[
-                styles.intervalChipText,
-                snoozeDuration === mins && styles.intervalChipTextActive,
-              ]}
-            >
-              {mins}m
-            </Text>
-          </TouchableOpacity>
-        ))}
-      </View>
-
-      <Text style={styles.sectionTitle}>Icon</Text>
-      <View style={styles.presetsRow}>
-        {PRESET_REMINDERS.map((p) => (
-          <TouchableOpacity
-            key={p.icon}
-            style={[styles.iconBtn, icon === p.icon && styles.iconBtnActive]}
-            onPress={() => setIcon(p.icon)}
-          >
-            <Text style={styles.iconText}>{p.icon}</Text>
-          </TouchableOpacity>
-        ))}
-      </View>
-
-      <TouchableOpacity style={styles.saveButton} onPress={handleSave}>
-        <Text style={styles.saveButtonText}>
-          {isEditing ? 'Update Reminder' : 'Create Reminder'}
-        </Text>
-      </TouchableOpacity>
-
-      {isEditing && (
-        <TouchableOpacity style={styles.deleteButton} onPress={handleDelete}>
-          <Text style={styles.deleteButtonText}>Delete Reminder</Text>
+      {!isEditing && !showCustom && (
+        <TouchableOpacity
+          style={styles.customToggle}
+          onPress={() => setShowCustom(true)}
+        >
+          <Text style={styles.customToggleText}>Create Custom Reminder</Text>
+          <Text style={styles.customToggleArrow}>›</Text>
         </TouchableOpacity>
+      )}
+
+      {(showCustom || isEditing) && (
+        <View style={styles.section}>
+          {!isEditing && (
+            <View style={styles.sectionHeader}>
+              <Text style={styles.sectionHeaderTitle}>Custom Reminder</Text>
+              <TouchableOpacity onPress={() => setShowCustom(false)}>
+                <Text style={styles.collapseText}>Hide</Text>
+              </TouchableOpacity>
+            </View>
+          )}
+
+          {/* Title */}
+          <View style={styles.fieldGroup}>
+            <Text style={styles.fieldLabel}>Title</Text>
+            <TextInput
+              style={styles.input}
+              value={title}
+              onChangeText={setTitle}
+              placeholder="What do you want to be reminded about?"
+              placeholderTextColor={COLORS.disabled}
+            />
+          </View>
+
+          {/* Icon */}
+          <View style={styles.fieldGroup}>
+            <Text style={styles.fieldLabel}>Icon</Text>
+            <View style={styles.iconRow}>
+              {PRESET_REMINDERS.map((p) => (
+                <TouchableOpacity
+                  key={p.icon}
+                  style={[styles.iconBtn, icon === p.icon && styles.iconBtnActive]}
+                  onPress={() => setIcon(p.icon)}
+                >
+                  <Text style={styles.iconText}>{p.icon}</Text>
+                </TouchableOpacity>
+              ))}
+            </View>
+          </View>
+
+          {/* Interval */}
+          <View style={styles.fieldGroup}>
+            <Text style={styles.fieldLabel}>Remind me every</Text>
+            <View style={styles.intervalRow}>
+              <TextInput
+                style={[styles.input, styles.intervalInput]}
+                value={intervalValue}
+                onChangeText={setIntervalValue}
+                keyboardType="numeric"
+                placeholder="30"
+                placeholderTextColor={COLORS.disabled}
+              />
+              <View style={styles.unitToggle}>
+                <TouchableOpacity
+                  style={[styles.unitBtn, intervalUnit === 'minutes' && styles.unitBtnActive]}
+                  onPress={() => setIntervalUnit('minutes')}
+                >
+                  <Text style={[styles.unitText, intervalUnit === 'minutes' && styles.unitTextActive]}>
+                    Min
+                  </Text>
+                </TouchableOpacity>
+                <TouchableOpacity
+                  style={[styles.unitBtn, intervalUnit === 'hours' && styles.unitBtnActive]}
+                  onPress={() => setIntervalUnit('hours')}
+                >
+                  <Text style={[styles.unitText, intervalUnit === 'hours' && styles.unitTextActive]}>
+                    Hours
+                  </Text>
+                </TouchableOpacity>
+              </View>
+            </View>
+
+            <View style={styles.intervalPresets}>
+              {INTERVAL_PRESETS.map((minutes) => (
+                <TouchableOpacity
+                  key={minutes}
+                  style={[
+                    styles.intervalChip,
+                    intervalMinutes === minutes && styles.intervalChipActive,
+                  ]}
+                  onPress={() => handleIntervalPreset(minutes)}
+                >
+                  <Text
+                    style={[
+                      styles.intervalChipText,
+                      intervalMinutes === minutes && styles.intervalChipTextActive,
+                    ]}
+                  >
+                    {minutes >= 60 ? `${minutes / 60}h` : `${minutes}m`}
+                  </Text>
+                </TouchableOpacity>
+              ))}
+            </View>
+          </View>
+
+          {/* Save Button */}
+          <TouchableOpacity style={styles.saveButton} onPress={handleSave}>
+            <Text style={styles.saveButtonText}>
+              {isEditing ? 'Update Reminder' : 'Create Reminder'}
+            </Text>
+          </TouchableOpacity>
+
+          {isEditing && (
+            <TouchableOpacity style={styles.deleteButton} onPress={handleDelete}>
+              <Text style={styles.deleteButtonText}>Delete Reminder</Text>
+            </TouchableOpacity>
+          )}
+        </View>
       )}
     </ScrollView>
   );
@@ -283,82 +310,170 @@ const styles = StyleSheet.create({
     backgroundColor: COLORS.background,
   },
   content: {
-    padding: 20,
-    paddingBottom: 40,
+    padding: 24,
+    paddingBottom: 60,
   },
-  sectionTitle: {
+  section: {
+    marginBottom: 32,
+  },
+  heroTitle: {
+    fontSize: 22,
+    fontWeight: '700',
+    color: COLORS.text,
+    marginBottom: 4,
+  },
+  heroSubtitle: {
     fontSize: 14,
-    fontWeight: '600',
     color: COLORS.textSecondary,
-    marginBottom: 8,
-    marginTop: 16,
-    textTransform: 'uppercase',
-    letterSpacing: 0.5,
+    marginBottom: 20,
   },
-  presetsRow: {
+  presetsGrid: {
     flexDirection: 'row',
     flexWrap: 'wrap',
-    gap: 8,
+    gap: 12,
   },
-  presetChip: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    paddingHorizontal: 12,
-    paddingVertical: 8,
-    borderRadius: 20,
+  presetCard: {
+    width: '47%',
     backgroundColor: COLORS.surface,
+    borderRadius: 16,
+    padding: 20,
+    alignItems: 'center',
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.06,
+    shadowRadius: 8,
+    elevation: 3,
     borderWidth: 1,
     borderColor: COLORS.border,
   },
-  presetChipActive: {
-    backgroundColor: COLORS.primaryLight,
-    borderColor: COLORS.primary,
+  presetCardIcon: {
+    fontSize: 36,
+    marginBottom: 10,
   },
-  presetIcon: {
-    fontSize: 16,
-    marginRight: 6,
+  presetCardTitle: {
+    fontSize: 15,
+    fontWeight: '600',
+    color: COLORS.text,
+    marginBottom: 4,
   },
-  presetLabel: {
+  presetCardInterval: {
+    fontSize: 12,
+    color: COLORS.textSecondary,
+  },
+  dividerSection: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    marginVertical: 24,
+  },
+  dividerLine: {
+    flex: 1,
+    height: 1,
+    backgroundColor: COLORS.border,
+  },
+  dividerText: {
+    paddingHorizontal: 16,
     fontSize: 13,
+    color: COLORS.textSecondary,
+  },
+  customToggle: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    backgroundColor: COLORS.surface,
+    padding: 18,
+    borderRadius: 14,
+    borderWidth: 1,
+    borderColor: COLORS.border,
+    borderStyle: 'dashed',
+  },
+  customToggleText: {
+    fontSize: 15,
+    fontWeight: '500',
+    color: COLORS.primary,
+  },
+  customToggleArrow: {
+    fontSize: 22,
+    color: COLORS.primary,
+    fontWeight: '300',
+  },
+  sectionHeader: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    marginBottom: 24,
+  },
+  sectionHeaderTitle: {
+    fontSize: 18,
+    fontWeight: '700',
     color: COLORS.text,
   },
-  presetLabelActive: {
+  collapseText: {
+    fontSize: 14,
     color: COLORS.primary,
+    fontWeight: '500',
+  },
+  fieldGroup: {
+    marginBottom: 28,
+  },
+  fieldLabel: {
+    fontSize: 13,
     fontWeight: '600',
+    color: COLORS.textSecondary,
+    marginBottom: 10,
+    textTransform: 'uppercase',
+    letterSpacing: 0.5,
   },
   input: {
     backgroundColor: COLORS.surface,
     borderWidth: 1,
     borderColor: COLORS.border,
-    borderRadius: 10,
-    paddingHorizontal: 14,
-    paddingVertical: 12,
+    borderRadius: 12,
+    paddingHorizontal: 16,
+    paddingVertical: 14,
     fontSize: 16,
     color: COLORS.text,
   },
-  inputMultiline: {
-    minHeight: 60,
-    textAlignVertical: 'top',
+  iconRow: {
+    flexDirection: 'row',
+    gap: 10,
+  },
+  iconBtn: {
+    width: 48,
+    height: 48,
+    borderRadius: 24,
+    justifyContent: 'center',
+    alignItems: 'center',
+    backgroundColor: COLORS.surface,
+    borderWidth: 1.5,
+    borderColor: COLORS.border,
+  },
+  iconBtnActive: {
+    borderColor: COLORS.primary,
+    backgroundColor: COLORS.primaryLight,
+    borderWidth: 2,
+  },
+  iconText: {
+    fontSize: 24,
   },
   intervalRow: {
     flexDirection: 'row',
     alignItems: 'center',
     gap: 12,
-    marginBottom: 12,
+    marginBottom: 14,
   },
   intervalInput: {
     flex: 1,
   },
   unitToggle: {
     flexDirection: 'row',
-    borderRadius: 10,
+    borderRadius: 12,
     overflow: 'hidden',
     borderWidth: 1,
     borderColor: COLORS.border,
   },
   unitBtn: {
-    paddingHorizontal: 16,
-    paddingVertical: 12,
+    paddingHorizontal: 18,
+    paddingVertical: 14,
     backgroundColor: COLORS.surface,
   },
   unitBtnActive: {
@@ -367,15 +482,21 @@ const styles = StyleSheet.create({
   unitText: {
     fontSize: 14,
     color: COLORS.text,
+    fontWeight: '500',
   },
   unitTextActive: {
     color: '#FFFFFF',
-    fontWeight: '600',
+    fontWeight: '700',
+  },
+  intervalPresets: {
+    flexDirection: 'row',
+    flexWrap: 'wrap',
+    gap: 8,
   },
   intervalChip: {
-    paddingHorizontal: 14,
-    paddingVertical: 8,
-    borderRadius: 16,
+    paddingHorizontal: 16,
+    paddingVertical: 10,
+    borderRadius: 20,
     backgroundColor: COLORS.surface,
     borderWidth: 1,
     borderColor: COLORS.border,
@@ -387,34 +508,22 @@ const styles = StyleSheet.create({
   intervalChipText: {
     fontSize: 13,
     color: COLORS.text,
+    fontWeight: '500',
   },
   intervalChipTextActive: {
     color: COLORS.primary,
-    fontWeight: '600',
-  },
-  iconBtn: {
-    width: 44,
-    height: 44,
-    borderRadius: 22,
-    justifyContent: 'center',
-    alignItems: 'center',
-    backgroundColor: COLORS.surface,
-    borderWidth: 1,
-    borderColor: COLORS.border,
-  },
-  iconBtnActive: {
-    borderColor: COLORS.primary,
-    backgroundColor: COLORS.primaryLight,
-  },
-  iconText: {
-    fontSize: 22,
+    fontWeight: '700',
   },
   saveButton: {
     backgroundColor: COLORS.primary,
-    borderRadius: 12,
-    paddingVertical: 16,
+    borderRadius: 14,
+    paddingVertical: 18,
     alignItems: 'center',
-    marginTop: 28,
+    shadowColor: COLORS.primary,
+    shadowOffset: { width: 0, height: 4 },
+    shadowOpacity: 0.2,
+    shadowRadius: 8,
+    elevation: 4,
   },
   saveButtonText: {
     color: '#FFFFFF',
@@ -423,14 +532,14 @@ const styles = StyleSheet.create({
   },
   deleteButton: {
     backgroundColor: COLORS.dangerLight,
-    borderRadius: 12,
+    borderRadius: 14,
     paddingVertical: 16,
     alignItems: 'center',
-    marginTop: 12,
+    marginTop: 14,
   },
   deleteButtonText: {
     color: COLORS.danger,
-    fontSize: 16,
+    fontSize: 15,
     fontWeight: '600',
   },
 });

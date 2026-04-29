@@ -56,7 +56,7 @@ export async function scheduleReminder(reminder: Reminder): Promise<string> {
   const notificationId = await Notifications.scheduleNotificationAsync({
     content: {
       title: `${reminder.icon} ${reminder.title}`,
-      body: reminder.description || `Time for your ${reminder.title.toLowerCase()} break!`,
+      body: `Time for your ${reminder.title.toLowerCase()} break!`,
       categoryIdentifier: 'reminder',
       data: { reminderId: reminder.id },
       sound: 'default',

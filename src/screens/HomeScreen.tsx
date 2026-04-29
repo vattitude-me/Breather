@@ -6,56 +6,61 @@ import {
   Switch,
   TouchableOpacity,
   StyleSheet,
-  Alert,
 } from 'react-native';
-import { useNavigation } from '@react-navigation/native';
+import { useNavigation, CompositeNavigationProp } from '@react-navigation/native';
 import { NativeStackNavigationProp } from '@react-navigation/native-stack';
+import { BottomTabNavigationProp } from '@react-navigation/bottom-tabs';
 import { useRemindersContext } from '../context/RemindersContext';
 import { scheduleReminder, cancelReminder } from '../services/notifications';
 import { COLORS } from '../constants';
 import { Reminder } from '../types';
-import { HomeStackParamList } from '../navigation/RootNavigator';
+import { HomeStackParamList, RootTabParamList } from '../navigation/RootNavigator';
 
-type NavigationProp = NativeStackNavigationProp<HomeStackParamList, 'HomeList'>;
+type NavigationProp = CompositeNavigationProp<
+  NativeStackNavigationProp<HomeStackParamList, 'HomeList'>,
+  BottomTabNavigationProp<RootTabParamList>
+>;
 
 export default function HomeScreen() {
   const { reminders, dispatch } = useRemindersContext();
   const navigation = useNavigation<NavigationProp>();
 
   const handleToggle = async (reminder: Reminder) => {
-    if (reminder.isActive && reminder.notificationId) {
-      await cancelReminder(reminder.notificationId);
+    try {
+      if (reminder.isActive && reminder.notificationId) {
+        await cancelReminder(reminder.notificationId);
+        dispatch({
+          type: 'UPDATE',
+          payload: { ...reminder, isActive: false, notificationId: undefined },
+        });
+      } else {
+        const notificationId = await scheduleReminder(reminder);
+        dispatch({
+          type: 'UPDATE',
+          payload: { ...reminder, isActive: true, notificationId },
+        });
+      }
+    } catch {
       dispatch({
         type: 'UPDATE',
-        payload: { ...reminder, isActive: false, notificationId: undefined },
-      });
-    } else {
-      const notificationId = await scheduleReminder(reminder);
-      dispatch({
-        type: 'UPDATE',
-        payload: { ...reminder, isActive: true, notificationId },
+        payload: { ...reminder, isActive: !reminder.isActive },
       });
     }
   };
 
-  const handleDelete = (reminder: Reminder) => {
-    Alert.alert(
-      'Delete Reminder',
-      `Are you sure you want to delete "${reminder.title}"?`,
-      [
-        { text: 'Cancel', style: 'cancel' },
-        {
-          text: 'Delete',
-          style: 'destructive',
-          onPress: async () => {
-            if (reminder.notificationId) {
-              await cancelReminder(reminder.notificationId);
-            }
-            dispatch({ type: 'DELETE', payload: reminder.id });
-          },
-        },
-      ]
-    );
+  const handleDelete = async (reminder: Reminder) => {
+    const confirmed = window.confirm
+      ? window.confirm(`Delete "${reminder.title}"?`)
+      : true;
+
+    if (!confirmed) return;
+
+    try {
+      if (reminder.notificationId) {
+        await cancelReminder(reminder.notificationId);
+      }
+    } catch {}
+    dispatch({ type: 'DELETE', payload: reminder.id });
   };
 
   const formatInterval = (minutes: number): string => {
@@ -71,7 +76,6 @@ export default function HomeScreen() {
     <TouchableOpacity
       style={styles.reminderCard}
       onPress={() => navigation.navigate('EditReminder', { reminderId: item.id })}
-      onLongPress={() => handleDelete(item)}
     >
       <View style={styles.reminderLeft}>
         <Text style={styles.reminderIcon}>{item.icon}</Text>
@@ -82,12 +86,20 @@ export default function HomeScreen() {
           </Text>
         </View>
       </View>
-      <Switch
-        value={item.isActive}
-        onValueChange={() => handleToggle(item)}
-        trackColor={{ false: COLORS.disabled, true: COLORS.primaryLight }}
-        thumbColor={item.isActive ? COLORS.primary : '#f4f3f4'}
-      />
+      <View style={styles.reminderRight}>
+        <Switch
+          value={item.isActive}
+          onValueChange={() => handleToggle(item)}
+          trackColor={{ false: COLORS.disabled, true: COLORS.primaryLight }}
+          thumbColor={item.isActive ? COLORS.primary : '#f4f3f4'}
+        />
+        <TouchableOpacity
+          style={styles.deleteIcon}
+          onPress={() => handleDelete(item)}
+        >
+          <Text style={styles.deleteIconText}>✕</Text>
+        </TouchableOpacity>
+      </View>
     </TouchableOpacity>
   );
 
@@ -97,8 +109,14 @@ export default function HomeScreen() {
         <Text style={styles.emptyIcon}>🧘</Text>
         <Text style={styles.emptyTitle}>No Reminders Yet</Text>
         <Text style={styles.emptySubtitle}>
-          Tap the + tab to create your first stretch reminder
+          Start taking regular breaks to stretch, hydrate, and move
         </Text>
+        <TouchableOpacity
+          style={styles.addButton}
+          onPress={() => navigation.navigate('AddReminder')}
+        >
+          <Text style={styles.addButtonText}>+ Add Reminder</Text>
+        </TouchableOpacity>
       </View>
     );
   }
@@ -142,6 +160,24 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     flex: 1,
   },
+  reminderRight: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 10,
+  },
+  deleteIcon: {
+    width: 28,
+    height: 28,
+    borderRadius: 14,
+    backgroundColor: COLORS.dangerLight,
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+  deleteIconText: {
+    color: COLORS.danger,
+    fontSize: 13,
+    fontWeight: '700',
+  },
   reminderIcon: {
     fontSize: 28,
     marginRight: 12,
@@ -184,5 +220,17 @@ const styles = StyleSheet.create({
     color: COLORS.textSecondary,
     textAlign: 'center',
     lineHeight: 20,
+  },
+  addButton: {
+    backgroundColor: COLORS.primary,
+    paddingHorizontal: 28,
+    paddingVertical: 14,
+    borderRadius: 25,
+    marginTop: 24,
+  },
+  addButtonText: {
+    color: '#FFFFFF',
+    fontSize: 16,
+    fontWeight: '700',
   },
 });
