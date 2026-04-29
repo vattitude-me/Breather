@@ -173,28 +173,31 @@ export default function HomeScreen() {
 
   const renderReminderItem = ({ item, index }: { item: Reminder; index: number }) => (
     <TouchableOpacity
-      style={styles.reminderCard}
+      style={[styles.reminderCard, { backgroundColor: getCategoryColor(index) }]}
       onPress={() => navigation.navigate('EditReminder', { reminderId: item.id })}
       activeOpacity={0.7}
     >
-      <View style={[styles.reminderAccent, { backgroundColor: getCategoryColor(index) }]} />
-      <View style={styles.reminderContent}>
-        <View style={styles.reminderLeft}>
+      <View style={styles.reminderTopRow}>
+        <View style={styles.reminderIconCircle}>
           <Text style={styles.reminderIcon}>{item.icon}</Text>
-          <View style={styles.reminderInfo}>
-            <Text style={styles.reminderTitle}>{item.title}</Text>
-            <Text style={styles.reminderInterval}>
-              Every {formatInterval(item.intervalMinutes)}
-            </Text>
-          </View>
         </View>
-        <View style={styles.reminderRight}>
+        <View style={styles.reminderActions}>
           <Switch
             value={item.isActive}
             onValueChange={() => handleToggle(item)}
-            trackColor={{ false: COLORS.disabled, true: COLORS.primaryLight }}
-            thumbColor={item.isActive ? COLORS.primary : '#f4f3f4'}
+            trackColor={{ false: COLORS.disabled, true: COLORS.primary }}
+            thumbColor={item.isActive ? '#FFFFFF' : '#f4f3f4'}
           />
+        </View>
+      </View>
+      <View style={styles.reminderBottom}>
+        <Text style={styles.reminderTitle}>{item.title}</Text>
+        <Text style={styles.reminderInterval}>
+          Every {formatInterval(item.intervalMinutes)}
+        </Text>
+        <View style={styles.reminderStatusRow}>
+          <View style={[styles.statusDot, { backgroundColor: item.isActive ? '#4CAF50' : COLORS.disabled }]} />
+          <Text style={styles.statusText}>{item.isActive ? 'Active' : 'Paused'}</Text>
           <TouchableOpacity
             style={styles.deleteIcon}
             onPress={() => handleDelete(item)}
@@ -245,32 +248,6 @@ export default function HomeScreen() {
         </View>
       )}
 
-      {/* Quick Add */}
-      <View style={styles.sectionContainer}>
-        <Text style={styles.sectionTitle}>Quick Add</Text>
-        <View style={styles.quickAddRow}>
-          {PRESET_REMINDERS.map((preset) => {
-            const alreadyExists = reminders.some((r) => r.title === preset.title);
-            return (
-              <TouchableOpacity
-                key={preset.title}
-                style={[styles.quickAddCard, alreadyExists && styles.quickAddCardDisabled]}
-                activeOpacity={alreadyExists ? 1 : 0.7}
-                onPress={() => handleQuickAdd(preset)}
-              >
-                <View style={[styles.quickAddIconWrap, { backgroundColor: alreadyExists ? COLORS.border : COLORS.primaryLight }]}>
-                  <Text style={styles.quickAddIcon}>{preset.icon}</Text>
-                </View>
-                <Text style={[styles.quickAddLabel, alreadyExists && styles.quickAddLabelDisabled]}>
-                  {preset.title}
-                </Text>
-                {alreadyExists && <Text style={styles.quickAddCheck}>✓</Text>}
-              </TouchableOpacity>
-            );
-          })}
-        </View>
-      </View>
-
       {/* My Routines */}
       <View style={styles.sectionContainer}>
         <View style={styles.sectionHeader}>
@@ -293,14 +270,38 @@ export default function HomeScreen() {
             <Text style={styles.emptySubtitle}>Tap to start</Text>
           </TouchableOpacity>
         ) : (
-          <FlatList
-            data={reminders}
-            keyExtractor={(item) => item.id}
-            renderItem={renderReminderItem}
-            scrollEnabled={false}
-            ItemSeparatorComponent={() => <View style={styles.separator} />}
-          />
+          <View style={styles.routinesGrid}>
+            {reminders.map((item, index) => (
+              <View key={item.id} style={styles.routineGridItem}>
+                {renderReminderItem({ item, index })}
+              </View>
+            ))}
+          </View>
         )}
+      </View>
+
+      {/* Quick Add */}
+      <View style={styles.sectionContainer}>
+        <Text style={styles.quickAddTitle}>Quick Add</Text>
+        <ScrollView horizontal showsHorizontalScrollIndicator={false} style={styles.quickAddScroll}>
+          {PRESET_REMINDERS.map((preset) => {
+            const alreadyExists = reminders.some((r) => r.title === preset.title);
+            return (
+              <TouchableOpacity
+                key={preset.title}
+                style={[styles.quickAddChip, alreadyExists && styles.quickAddChipDisabled]}
+                activeOpacity={alreadyExists ? 1 : 0.7}
+                onPress={() => handleQuickAdd(preset)}
+              >
+                <Text style={styles.quickAddChipIcon}>{preset.icon}</Text>
+                <Text style={[styles.quickAddChipLabel, alreadyExists && styles.quickAddChipLabelDisabled]}>
+                  {preset.title}
+                </Text>
+                {alreadyExists && <Text style={styles.quickAddChipCheck}>✓</Text>}
+              </TouchableOpacity>
+            );
+          })}
+        </ScrollView>
       </View>
 
       {/* Tip of the Day */}
@@ -427,52 +428,46 @@ const styles = StyleSheet.create({
     fontWeight: '600',
     color: COLORS.primary,
   },
-  quickAddRow: {
+  quickAddTitle: {
+    fontSize: 15,
+    fontWeight: '700',
+    color: COLORS.text,
+    marginBottom: 10,
+  },
+  quickAddScroll: {
+    marginHorizontal: -4,
+  },
+  quickAddChip: {
     flexDirection: 'row',
-    flexWrap: 'wrap',
-    gap: 10,
-  },
-  quickAddCard: {
     alignItems: 'center',
-    width: '30%',
     backgroundColor: COLORS.surface,
-    borderRadius: 14,
-    paddingVertical: 14,
-    paddingHorizontal: 8,
-    shadowColor: '#000',
-    shadowOffset: { width: 0, height: 1 },
-    shadowOpacity: 0.04,
-    shadowRadius: 4,
-    elevation: 1,
+    borderRadius: 20,
+    paddingVertical: 8,
+    paddingHorizontal: 14,
+    marginHorizontal: 4,
+    borderWidth: 1,
+    borderColor: COLORS.border,
+    gap: 6,
   },
-  quickAddCardDisabled: {
+  quickAddChipDisabled: {
     opacity: 0.5,
+    backgroundColor: COLORS.border,
   },
-  quickAddIconWrap: {
-    width: 44,
-    height: 44,
-    borderRadius: 14,
-    justifyContent: 'center',
-    alignItems: 'center',
-    marginBottom: 6,
+  quickAddChipIcon: {
+    fontSize: 16,
   },
-  quickAddIcon: {
-    fontSize: 22,
-  },
-  quickAddLabel: {
-    fontSize: 11,
+  quickAddChipLabel: {
+    fontSize: 12,
     fontWeight: '600',
     color: COLORS.text,
-    textAlign: 'center',
   },
-  quickAddLabelDisabled: {
+  quickAddChipLabelDisabled: {
     color: COLORS.textSecondary,
   },
-  quickAddCheck: {
+  quickAddChipCheck: {
     fontSize: 10,
     color: COLORS.accent,
     fontWeight: '700',
-    marginTop: 2,
   },
   emptyCard: {
     backgroundColor: COLORS.primaryLight,
@@ -507,62 +502,49 @@ const styles = StyleSheet.create({
     fontSize: 13,
     color: COLORS.textSecondary,
   },
+  routinesGrid: {
+    flexDirection: 'row',
+    flexWrap: 'wrap',
+    gap: 12,
+  },
+  routineGridItem: {
+    width: '47%',
+  },
   reminderCard: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    backgroundColor: COLORS.surface,
-    borderRadius: 14,
-    overflow: 'hidden',
+    borderRadius: 18,
+    padding: 16,
     shadowColor: '#000',
-    shadowOffset: { width: 0, height: 1 },
-    shadowOpacity: 0.04,
-    shadowRadius: 6,
-    elevation: 2,
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.06,
+    shadowRadius: 8,
+    elevation: 3,
   },
-  reminderAccent: {
-    width: 5,
-    alignSelf: 'stretch',
-  },
-  reminderContent: {
-    flex: 1,
+  reminderTopRow: {
     flexDirection: 'row',
-    alignItems: 'center',
     justifyContent: 'space-between',
-    padding: 14,
-  },
-  reminderLeft: {
-    flexDirection: 'row',
     alignItems: 'center',
-    flex: 1,
+    marginBottom: 14,
   },
-  reminderRight: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: 10,
-  },
-  deleteIcon: {
-    width: 26,
-    height: 26,
-    borderRadius: 13,
-    backgroundColor: COLORS.dangerLight,
+  reminderIconCircle: {
+    width: 44,
+    height: 44,
+    borderRadius: 22,
+    backgroundColor: 'rgba(255,255,255,0.7)',
     justifyContent: 'center',
     alignItems: 'center',
   },
-  deleteIconText: {
-    color: COLORS.danger,
-    fontSize: 12,
-    fontWeight: '700',
+  reminderActions: {
+    transform: [{ scale: 0.85 }],
+  },
+  reminderBottom: {
+    gap: 2,
   },
   reminderIcon: {
-    fontSize: 26,
-    marginRight: 12,
-  },
-  reminderInfo: {
-    flex: 1,
+    fontSize: 22,
   },
   reminderTitle: {
     fontSize: 15,
-    fontWeight: '600',
+    fontWeight: '700',
     color: COLORS.text,
   },
   reminderInterval: {
@@ -570,8 +552,35 @@ const styles = StyleSheet.create({
     color: COLORS.textSecondary,
     marginTop: 2,
   },
-  separator: {
-    height: 10,
+  reminderStatusRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    marginTop: 10,
+    gap: 6,
+  },
+  statusDot: {
+    width: 8,
+    height: 8,
+    borderRadius: 4,
+  },
+  statusText: {
+    fontSize: 11,
+    color: COLORS.textSecondary,
+    fontWeight: '500',
+    flex: 1,
+  },
+  deleteIcon: {
+    width: 24,
+    height: 24,
+    borderRadius: 12,
+    backgroundColor: 'rgba(239, 68, 68, 0.1)',
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+  deleteIconText: {
+    color: COLORS.danger,
+    fontSize: 11,
+    fontWeight: '700',
   },
   tipCard: {
     marginHorizontal: 20,
