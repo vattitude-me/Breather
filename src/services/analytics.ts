@@ -6,17 +6,17 @@ export function initAnalytics() {
   if (initialized) return;
   if (localStorage.getItem('@breakly_analytics_consent') !== 'accepted') return;
 
+  (window as any).dataLayer = (window as any).dataLayer || [];
+  (window as any).gtag = function() {
+    (window as any).dataLayer.push(arguments);
+  };
+  (window as any).gtag('js', new Date());
+  (window as any).gtag('config', GA_MEASUREMENT_ID);
+
   const script = document.createElement('script');
   script.src = `https://www.googletagmanager.com/gtag/js?id=${GA_MEASUREMENT_ID}`;
   script.async = true;
   document.head.appendChild(script);
-
-  (window as any).dataLayer = (window as any).dataLayer || [];
-  function gtag(...args: any[]) {
-    (window as any).dataLayer.push(args);
-  }
-  gtag('js', new Date());
-  gtag('config', GA_MEASUREMENT_ID);
 
   initialized = true;
 }
