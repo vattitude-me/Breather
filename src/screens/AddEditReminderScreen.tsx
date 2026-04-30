@@ -301,6 +301,32 @@ export default function AddEditReminderScreen() {
               <div className="settings-card-header">
                 <span className="settings-card-label">Remind me every</span>
               </div>
+              <div style={{ display: 'flex', alignItems: 'center', gap: '12px', marginBottom: '14px' }}>
+                <input
+                  type="text"
+                  className="form-input"
+                  value={intervalValue}
+                  onChange={(e) => setIntervalValue(e.target.value.replace(/\D/g, ''))}
+                  placeholder="30"
+                  style={{ flex: 1 }}
+                />
+                <div style={{ display: 'flex', borderRadius: '12px', overflow: 'hidden', border: '1px solid #F0E6E0' }}>
+                  <button
+                    className={`chip ${intervalUnit === 'minutes' ? 'active' : ''}`}
+                    onClick={() => setIntervalUnit('minutes')}
+                    style={{ borderRadius: 0, padding: '10px 18px' }}
+                  >
+                    Min
+                  </button>
+                  <button
+                    className={`chip ${intervalUnit === 'hours' ? 'active' : ''}`}
+                    onClick={() => setIntervalUnit('hours')}
+                    style={{ borderRadius: 0, padding: '10px 18px' }}
+                  >
+                    Hours
+                  </button>
+                </div>
+              </div>
               <div className="chips-row">
                 {[30, 45, 60, 90, 120].map((minutes) => (
                   <button

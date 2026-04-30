@@ -4,8 +4,7 @@ import { useRemindersContext } from '../context/RemindersContext';
 import { cancelAllReminders, scheduleReminder } from '../services/notifications';
 import { getInstallPrompt, onInstallPromptChange } from '../services/installPrompt';
 import { hasAnalyticsConsent, setAnalyticsConsent } from '../services/analytics';
-import { COLORS, SNOOZE_OPTIONS, INTERVAL_PRESETS, DAYS_OF_WEEK, DEFAULT_SCHEDULE } from '../constants';
-import { DayOfWeek } from '../types';
+import { COLORS } from '../constants';
 import '../screens.css';
 
 function InfoTooltip({ text }: { text: string }) {
@@ -62,8 +61,6 @@ export default function SettingsScreen() {
     setInstallPrompt(null);
   };
 
-  const schedule = settings.defaultSchedule || DEFAULT_SCHEDULE;
-
   const handleToggleNotifications = async (value: boolean) => {
     setNotificationsEnabled(value);
     updateSettings({ ...settings, notificationsEnabled: value });
@@ -90,45 +87,6 @@ export default function SettingsScreen() {
     }
   };
 
-  const handleDefaultInterval = (minutes: number) => {
-    updateSettings({ ...settings, defaultIntervalMinutes: minutes });
-  };
-
-  const handleDefaultSnooze = (minutes: number) => {
-    updateSettings({ ...settings, defaultSnoozeDurationMinutes: minutes });
-  };
-
-  const toggleDefaultDay = (day: DayOfWeek) => {
-    const currentDays = schedule.activeDays as DayOfWeek[];
-    const newDays = currentDays.includes(day)
-      ? currentDays.filter((d) => d !== day)
-      : [...currentDays, day];
-    updateSettings({
-      ...settings,
-      defaultSchedule: { ...schedule, activeDays: newDays },
-    });
-  };
-
-  const setDefaultStartHour = (hour: number) => {
-    updateSettings({
-      ...settings,
-      defaultSchedule: { ...schedule, startHour: hour },
-    });
-  };
-
-  const setDefaultEndHour = (hour: number) => {
-    updateSettings({
-      ...settings,
-      defaultSchedule: { ...schedule, endHour: hour },
-    });
-  };
-
-  const formatHour = (hour: number): string => {
-    if (hour === 0) return '12 AM';
-    if (hour === 12) return '12 PM';
-    if (hour < 12) return `${hour} AM`;
-    return `${hour - 12} PM`;
-  };
 
   const handleResetAll = async () => {
     if (!window.confirm('This will delete all your reminders. This action cannot be undone.')) return;
@@ -173,81 +131,6 @@ export default function SettingsScreen() {
           </div>
         </div>
 
-        {/* Reminder Interval */}
-        <div className="settings-card">
-          <div className="settings-card-header">
-            <span className="settings-card-label">Reminder Interval</span>
-            <InfoTooltip text="How often you'll be reminded" />
-          </div>
-          <div className="chips-row">
-            {INTERVAL_PRESETS.map((minutes) => (
-              <button
-                key={minutes}
-                className={`chip ${settings.defaultIntervalMinutes === minutes ? 'active' : ''}`}
-                onClick={() => handleDefaultInterval(minutes)}
-              >
-                {minutes >= 60 ? `${minutes / 60}h` : `${minutes}m`}
-              </button>
-            ))}
-          </div>
-        </div>
-
-        {/* Snooze */}
-        <div className="settings-card">
-          <div className="settings-card-header">
-            <span className="settings-card-label">Snooze Duration</span>
-            <InfoTooltip text="Delay before next reminder after snooze" />
-          </div>
-          <div className="chips-row">
-            {SNOOZE_OPTIONS.map((minutes) => (
-              <button
-                key={minutes}
-                className={`chip ${settings.defaultSnoozeDurationMinutes === minutes ? 'active' : ''}`}
-                onClick={() => handleDefaultSnooze(minutes)}
-              >
-                {minutes}m
-              </button>
-            ))}
-          </div>
-        </div>
-
-        {/* Schedule */}
-        <div className="settings-card">
-          <div className="settings-card-header">
-            <span className="settings-card-label">Schedule</span>
-            <InfoTooltip text="Reminders only fire on these days/hours" />
-          </div>
-          <div className="days-row" style={{ marginBottom: '14px' }}>
-            {DAYS_OF_WEEK.map((day) => (
-              <button
-                key={day}
-                className={`day-chip ${(schedule.activeDays as readonly string[]).includes(day) ? 'active' : ''}`}
-                onClick={() => toggleDefaultDay(day as DayOfWeek)}
-              >
-                {day}
-              </button>
-            ))}
-          </div>
-          <div className="time-range-container">
-            <div className="time-picker-group">
-              <span className="time-label">From</span>
-              <div className="time-control">
-                <button className="time-arrow" onClick={() => setDefaultStartHour(Math.max(0, schedule.startHour - 1))}>−</button>
-                <span className="time-value">{formatHour(schedule.startHour)}</span>
-                <button className="time-arrow" onClick={() => setDefaultStartHour(Math.min(schedule.endHour - 1, schedule.startHour + 1))}>+</button>
-              </div>
-            </div>
-            <span className="time-separator">→</span>
-            <div className="time-picker-group">
-              <span className="time-label">To</span>
-              <div className="time-control">
-                <button className="time-arrow" onClick={() => setDefaultEndHour(Math.max(schedule.startHour + 1, schedule.endHour - 1))}>−</button>
-                <span className="time-value">{formatHour(schedule.endHour)}</span>
-                <button className="time-arrow" onClick={() => setDefaultEndHour(Math.min(23, schedule.endHour + 1))}>+</button>
-              </div>
-            </div>
-          </div>
-        </div>
 
         {/* Install App */}
         {!isInstalled && (
