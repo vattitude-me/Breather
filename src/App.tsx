@@ -10,6 +10,7 @@ import SettingsScreen from './screens/SettingsScreen';
 import PrivacyScreen from './screens/PrivacyScreen';
 import WelcomeModal from './screens/WelcomeScreen';
 import CookieConsent from './components/CookieConsent';
+import NotificationPrompt from './components/NotificationPrompt';
 import './App.css';
 
 function App() {
@@ -36,6 +37,7 @@ function App() {
         <Route path="/privacy" element={<PrivacyScreen />} />
       </Routes>
       <CookieConsent />
+      {!showWelcome && <NotificationPrompt />}
     </div>
   );
 }
