@@ -161,18 +161,48 @@ export default function AddEditReminderScreen() {
 
   return (
     <div className="page">
-      <div className="page-header" style={{ padding: '16px 24px' }}>
-        <button
-          onClick={() => navigation(-1)}
-          className="page-header-back"
-        >
-          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#FFFFFF" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
-            <polyline points="15 18 9 12 15 6" />
-          </svg>
-        </button>
-        <h1 style={{ fontSize: '20px', fontWeight: 700, color: '#FFFFFF', margin: 0 }}>
-          {isEditing ? 'Edit Reminder' : 'Add Reminder'}
-        </h1>
+      <div className="page-header" style={{ padding: '14px 24px' }}>
+        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+          <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
+            <button
+              onClick={() => navigation(-1)}
+              className="page-header-back"
+              style={{ marginBottom: 0 }}
+            >
+              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#FFFFFF" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+                <polyline points="15 18 9 12 15 6" />
+              </svg>
+            </button>
+            <h1 style={{ fontSize: '18px', fontWeight: 700, color: '#FFFFFF', margin: 0 }}>
+              {isEditing ? 'Edit Reminder' : 'Add Reminder'}
+            </h1>
+          </div>
+          <div style={{ display: 'flex', gap: '8px' }}>
+            {isEditing && (
+              <button
+                onClick={handleDelete}
+                className="page-header-back"
+                style={{ marginBottom: 0 }}
+                title="Delete Reminder"
+              >
+                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#FFFFFF" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                  <polyline points="3 6 5 6 21 6" />
+                  <path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2" />
+                </svg>
+              </button>
+            )}
+            <button
+              onClick={handleSave}
+              className="page-header-back"
+              style={{ marginBottom: 0 }}
+              title={isEditing ? 'Update Reminder' : 'Create Reminder'}
+            >
+              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#FFFFFF" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+                <polyline points="20 6 9 17 4 12" />
+              </svg>
+            </button>
+          </div>
+        </div>
       </div>
 
       <div className="page-content">
@@ -373,18 +403,6 @@ export default function AddEditReminderScreen() {
               </p>
             </div>
 
-            {/* Actions */}
-            <div className="settings-card">
-              <button className="btn btn-primary" onClick={handleSave} style={{ width: '100%' }}>
-                {isEditing ? 'Update Reminder' : 'Create Reminder'}
-              </button>
-
-              {isEditing && (
-                <button className="btn btn-danger" onClick={handleDelete} style={{ width: '100%', marginTop: '12px' }}>
-                  Delete Reminder
-                </button>
-              )}
-            </div>
           </>
         )}
       </div>
