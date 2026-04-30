@@ -1,16 +1,23 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { Routes, Route, Navigate } from 'react-router-dom';
 import { useNotifications } from './hooks/useNotifications';
+import { initAnalytics } from './services/analytics';
 import './services/installPrompt';
 import HomeScreen from './screens/HomeScreen';
 import AddEditReminderScreen from './screens/AddEditReminderScreen';
 import ProgressScreen from './screens/ProgressScreen';
 import SettingsScreen from './screens/SettingsScreen';
+import PrivacyScreen from './screens/PrivacyScreen';
 import WelcomeModal from './screens/WelcomeScreen';
+import CookieConsent from './components/CookieConsent';
 import './App.css';
 
 function App() {
   useNotifications();
+
+  useEffect(() => {
+    initAnalytics();
+  }, []);
 
   const [showWelcome, setShowWelcome] = useState(
     () => localStorage.getItem('@breakly_onboarded') !== 'true'
@@ -26,7 +33,9 @@ function App() {
         <Route path="/edit-reminder/:reminderId" element={<AddEditReminderScreen />} />
         <Route path="/progress" element={<ProgressScreen />} />
         <Route path="/settings" element={<SettingsScreen />} />
+        <Route path="/privacy" element={<PrivacyScreen />} />
       </Routes>
+      <CookieConsent />
     </div>
   );
 }

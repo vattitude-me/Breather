@@ -3,6 +3,7 @@ import { useNavigate } from 'react-router-dom';
 import { useRemindersContext } from '../context/RemindersContext';
 import { cancelAllReminders, scheduleReminder } from '../services/notifications';
 import { getInstallPrompt, onInstallPromptChange } from '../services/installPrompt';
+import { hasAnalyticsConsent, setAnalyticsConsent } from '../services/analytics';
 import { COLORS, SNOOZE_OPTIONS, INTERVAL_PRESETS, DAYS_OF_WEEK, DEFAULT_SCHEDULE } from '../constants';
 import { DayOfWeek } from '../types';
 import '../screens.css';
@@ -37,6 +38,7 @@ export default function SettingsScreen() {
   const { settings, updateSettings, reminders, dispatch } = useRemindersContext();
   const navigation = useNavigate();
   const [notificationsEnabled, setNotificationsEnabled] = useState(settings.notificationsEnabled);
+  const [analyticsEnabled, setAnalyticsEnabled] = useState(hasAnalyticsConsent);
   const [installPrompt, setInstallPrompt] = useState<any>(getInstallPrompt);
   const [isInstalled, setIsInstalled] = useState(
     () => window.matchMedia('(display-mode: standalone)').matches
@@ -317,6 +319,53 @@ export default function SettingsScreen() {
             )}
           </div>
         )}
+
+        {/* Analytics */}
+        <div className="settings-card">
+          <div className="settings-card-row">
+            <div style={{ display: 'flex', alignItems: 'center' }}>
+              <span className="settings-card-label">Analytics</span>
+              <InfoTooltip text="Help improve Breakly with anonymous usage data" />
+            </div>
+            <label style={{ position: 'relative', display: 'inline-block', width: '44px', height: '26px' }}>
+              <input
+                type="checkbox"
+                checked={analyticsEnabled}
+                onChange={(e) => {
+                  setAnalyticsEnabled(e.target.checked);
+                  setAnalyticsConsent(e.target.checked);
+                }}
+                style={{ opacity: 0, width: 0, height: 0 }}
+              />
+              <span style={{
+                position: 'absolute', cursor: 'pointer', inset: 0,
+                backgroundColor: analyticsEnabled ? COLORS.primary : COLORS.disabled,
+                borderRadius: '26px', transition: '0.3s',
+              }}>
+                <span style={{
+                  position: 'absolute',
+                  left: analyticsEnabled ? '20px' : '3px', top: '3px',
+                  width: '20px', height: '20px',
+                  backgroundColor: '#FFFFFF', borderRadius: '50%', transition: '0.3s',
+                }} />
+              </span>
+            </label>
+          </div>
+        </div>
+
+        {/* Privacy & Legal */}
+        <div className="settings-card">
+          <button
+            onClick={() => navigation('/privacy')}
+            className="settings-card-row"
+            style={{ width: '100%', background: 'none', border: 'none', cursor: 'pointer', padding: 0 }}
+          >
+            <span className="settings-card-label">Privacy Policy</span>
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke={COLORS.textSecondary} strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+              <polyline points="9 18 15 12 9 6" />
+            </svg>
+          </button>
+        </div>
 
         {/* Reset */}
         <div className="settings-card">

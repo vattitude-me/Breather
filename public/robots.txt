@@ -1,0 +1,4 @@
+User-agent: *
+Allow: /
+
+Sitemap: https://breakly-eight.vercel.app/sitemap.xml
