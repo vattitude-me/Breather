@@ -1,0 +1,8 @@
+<svg width="1200" height="630" xmlns="http://www.w3.org/2000/svg">
+  <rect width="1200" height="630" fill="#FFF9F5"/>
+  <rect x="0" y="0" width="1200" height="8" fill="#E8614D"/>
+  <text x="600" y="250" font-family="system-ui, -apple-system, sans-serif" font-size="72" font-weight="800" fill="#E8614D" text-anchor="middle">Breakly</text>
+  <text x="600" y="330" font-family="system-ui, -apple-system, sans-serif" font-size="32" fill="#1A1A2E" text-anchor="middle">Your friendly nudge to take better breaks</text>
+  <text x="600" y="420" font-family="system-ui, -apple-system, sans-serif" font-size="24" fill="#6B7280" text-anchor="middle">🧘 Stretch  •  💧 Hydrate  •  👁️ Rest Eyes  •  🚶 Walk</text>
+  <text x="600" y="540" font-family="system-ui, -apple-system, sans-serif" font-size="20" fill="#2EC4B6" text-anchor="middle">Free • Private • No sign-up needed</text>
+</svg>
