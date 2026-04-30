@@ -1,20 +1,11 @@
-/* App-level styles */
-.app-container {
-  max-width: 480px;
-  margin: 0 auto;
-  min-height: 100vh;
-  background-color: #FFF9F5;
-  position: relative;
-}
+/* App-level styles — layout defined in index.css */
 
 /* Bottom navigation styles */
 .bottom-nav {
-  position: fixed;
+  position: sticky;
   bottom: 0;
-  left: 50%;
-  transform: translateX(-50%);
   width: 100%;
-  max-width: 480px;
+  max-width: 420px;
   background-color: #FFFFFF;
   border-top: 1px solid #F0E6E0;
   display: flex;
