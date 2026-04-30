@@ -1,19 +1,14 @@
-import React, { useState } from 'react';
-import {
-  View,
-  Text,
-  Switch,
-  TouchableOpacity,
-  StyleSheet,
-  ScrollView,
-} from 'react-native';
+import { useState } from 'react';
+import { useNavigate } from 'react-router-dom';
 import { useRemindersContext } from '../context/RemindersContext';
 import { cancelAllReminders, scheduleReminder } from '../services/notifications';
 import { COLORS, SNOOZE_OPTIONS, INTERVAL_PRESETS, DAYS_OF_WEEK, DEFAULT_SCHEDULE } from '../constants';
 import { DayOfWeek } from '../types';
+import '../screens.css';
 
 export default function SettingsScreen() {
   const { settings, updateSettings, reminders, dispatch } = useRemindersContext();
+  const navigation = useNavigate();
   const [notificationsEnabled, setNotificationsEnabled] = useState(settings.notificationsEnabled);
 
   const schedule = settings.defaultSchedule || DEFAULT_SCHEDULE;
@@ -36,7 +31,9 @@ export default function SettingsScreen() {
           try {
             const notificationId = await scheduleReminder(reminder);
             dispatch({ type: 'UPDATE', payload: { ...reminder, notificationId } });
-          } catch {}
+          } catch (e) {
+            console.error('Failed to schedule reminder:', e);
+          }
         }
       }
     }
@@ -83,398 +80,207 @@ export default function SettingsScreen() {
   };
 
   const handleResetAll = async () => {
-    const confirmed = window.confirm
-      ? window.confirm('This will delete all your reminders. This action cannot be undone.')
-      : true;
-
-    if (!confirmed) return;
+    if (!window.confirm('This will delete all your reminders. This action cannot be undone.')) return;
 
     await cancelAllReminders();
     reminders.forEach((r) => dispatch({ type: 'DELETE', payload: r.id }));
   };
 
   return (
-    <ScrollView style={styles.container} contentContainerStyle={styles.content}>
-      <View style={styles.section}>
-        <Text style={styles.sectionTitle}>Notifications</Text>
-        <View style={styles.row}>
-          <View style={styles.rowLeft}>
-            <Text style={styles.rowLabel}>Enable Notifications</Text>
-            <Text style={styles.rowDescription}>
-              Turn off to pause all reminders
-            </Text>
-          </View>
-          <Switch
-            value={notificationsEnabled}
-            onValueChange={handleToggleNotifications}
-            trackColor={{ false: COLORS.disabled, true: COLORS.primaryLight }}
-            thumbColor={notificationsEnabled ? COLORS.primary : '#f4f3f4'}
-          />
-        </View>
-      </View>
+    <div className="page">
+      <div className="page-header" style={{ padding: '16px 24px' }}>
+        <h1 style={{ fontSize: '20px', fontWeight: 700, color: '#FFFFFF', margin: 0 }}>
+          Settings
+        </h1>
+      </div>
 
-      <View style={styles.section}>
-        <Text style={styles.sectionTitle}>Default Interval</Text>
-        <Text style={styles.sectionDescription}>
-          Used when creating new reminders
-        </Text>
-        <View style={styles.chipsRow}>
-          {INTERVAL_PRESETS.map((minutes) => (
-            <TouchableOpacity
-              key={minutes}
-              style={[
-                styles.chip,
-                settings.defaultIntervalMinutes === minutes && styles.chipActive,
-              ]}
-              onPress={() => handleDefaultInterval(minutes)}
-            >
-              <Text
-                style={[
-                  styles.chipText,
-                  settings.defaultIntervalMinutes === minutes && styles.chipTextActive,
-                ]}
+      <div className="page-content">
+        {/* Notifications */}
+        <div className="settings-section">
+          <h2 className="settings-section-title">Notifications</h2>
+          <div className="settings-row">
+            <div style={{ flex: 1 }}>
+              <div className="settings-row-label">Enable Notifications</div>
+              <div className="settings-row-description">Turn off to pause all reminders</div>
+            </div>
+            <label style={{ position: 'relative', display: 'inline-block', width: '51px', height: '31px' }}>
+              <input
+                type="checkbox"
+                checked={notificationsEnabled}
+                onChange={(e) => handleToggleNotifications(e.target.checked)}
+                style={{ opacity: 0, width: 0, height: 0 }}
+              />
+              <span style={{
+                position: 'absolute',
+                cursor: 'pointer',
+                inset: 0,
+                backgroundColor: notificationsEnabled ? COLORS.primary : COLORS.disabled,
+                borderRadius: '31px',
+                transition: '0.3s',
+              }}>
+                <span style={{
+                  position: 'absolute',
+                  left: notificationsEnabled ? '23px' : '3px',
+                  top: '3px',
+                  width: '25px',
+                  height: '25px',
+                  backgroundColor: '#FFFFFF',
+                  borderRadius: '50%',
+                  transition: '0.3s',
+                }} />
+              </span>
+            </label>
+          </div>
+        </div>
+
+        {/* Default Interval */}
+        <div className="settings-section">
+          <h2 className="settings-section-title">Default Interval</h2>
+          <p className="settings-section-description">Used when creating new reminders</p>
+          <div className="chips-row">
+            {INTERVAL_PRESETS.map((minutes) => (
+              <button
+                key={minutes}
+                className={`chip ${settings.defaultIntervalMinutes === minutes ? 'active' : ''}`}
+                onClick={() => handleDefaultInterval(minutes)}
               >
                 {minutes >= 60 ? `${minutes / 60}h` : `${minutes}m`}
-              </Text>
-            </TouchableOpacity>
-          ))}
-        </View>
-      </View>
+              </button>
+            ))}
+          </div>
+        </div>
 
-      <View style={styles.section}>
-        <Text style={styles.sectionTitle}>Default Snooze Duration</Text>
-        <Text style={styles.sectionDescription}>
-          How long to snooze when you tap Snooze
-        </Text>
-        <View style={styles.chipsRow}>
-          {SNOOZE_OPTIONS.map((minutes) => (
-            <TouchableOpacity
-              key={minutes}
-              style={[
-                styles.chip,
-                settings.defaultSnoozeDurationMinutes === minutes && styles.chipActive,
-              ]}
-              onPress={() => handleDefaultSnooze(minutes)}
-            >
-              <Text
-                style={[
-                  styles.chipText,
-                  settings.defaultSnoozeDurationMinutes === minutes && styles.chipTextActive,
-                ]}
+        {/* Default Snooze Duration */}
+        <div className="settings-section">
+          <h2 className="settings-section-title">Default Snooze Duration</h2>
+          <p className="settings-section-description">How long to snooze when you tap Snooze</p>
+          <div className="chips-row">
+            {SNOOZE_OPTIONS.map((minutes) => (
+              <button
+                key={minutes}
+                className={`chip ${settings.defaultSnoozeDurationMinutes === minutes ? 'active' : ''}`}
+                onClick={() => handleDefaultSnooze(minutes)}
               >
                 {minutes}m
-              </Text>
-            </TouchableOpacity>
-          ))}
-        </View>
-      </View>
+              </button>
+            ))}
+          </div>
+        </div>
 
-      <View style={styles.section}>
-        <Text style={styles.sectionTitle}>Default Schedule</Text>
-        <Text style={styles.sectionDescription}>
-          Default active days and hours for new reminders
-        </Text>
+        {/* Default Schedule */}
+        <div className="settings-section">
+          <h2 className="settings-section-title">Default Schedule</h2>
+          <p className="settings-section-description">Default active days and hours for new reminders</p>
 
-        <Text style={styles.subLabel}>Active Days</Text>
-        <View style={styles.daysRow}>
-          {DAYS_OF_WEEK.map((day) => (
-            <TouchableOpacity
-              key={day}
-              style={[
-                styles.dayChip,
-                (schedule.activeDays as readonly string[]).includes(day) && styles.dayChipActive,
-              ]}
-              onPress={() => toggleDefaultDay(day as DayOfWeek)}
-            >
-              <Text
-                style={[
-                  styles.dayChipText,
-                  (schedule.activeDays as readonly string[]).includes(day) && styles.dayChipTextActive,
-                ]}
+          <span className="sub-label">Active Days</span>
+          <div className="days-row">
+            {DAYS_OF_WEEK.map((day) => (
+              <button
+                key={day}
+                className={`day-chip ${(schedule.activeDays as readonly string[]).includes(day) ? 'active' : ''}`}
+                onClick={() => toggleDefaultDay(day as DayOfWeek)}
               >
                 {day}
-              </Text>
-            </TouchableOpacity>
-          ))}
-        </View>
+              </button>
+            ))}
+          </div>
 
-        <Text style={styles.subLabel}>Active Hours</Text>
-        <View style={styles.timeRangeContainer}>
-          <View style={styles.timePickerGroup}>
-            <Text style={styles.timeLabel}>From</Text>
-            <View style={styles.timeControl}>
-              <TouchableOpacity
-                style={styles.timeArrow}
-                onPress={() => setDefaultStartHour(Math.max(0, schedule.startHour - 1))}
-              >
-                <Text style={styles.timeArrowText}>−</Text>
-              </TouchableOpacity>
-              <Text style={styles.timeValue}>{formatHour(schedule.startHour)}</Text>
-              <TouchableOpacity
-                style={styles.timeArrow}
-                onPress={() => setDefaultStartHour(Math.min(schedule.endHour - 1, schedule.startHour + 1))}
-              >
-                <Text style={styles.timeArrowText}>+</Text>
-              </TouchableOpacity>
-            </View>
-          </View>
+          <span className="sub-label">Active Hours</span>
+          <div className="time-range-container">
+            <div className="time-picker-group">
+              <span className="time-label">From</span>
+              <div className="time-control">
+                <button
+                  className="time-arrow"
+                  onClick={() => setDefaultStartHour(Math.max(0, schedule.startHour - 1))}
+                >
+                  −
+                </button>
+                <span className="time-value">{formatHour(schedule.startHour)}</span>
+                <button
+                  className="time-arrow"
+                  onClick={() => setDefaultStartHour(Math.min(schedule.endHour - 1, schedule.startHour + 1))}
+                >
+                  +
+                </button>
+              </div>
+            </div>
 
-          <Text style={styles.timeSeparator}>→</Text>
+            <span className="time-separator">→</span>
 
-          <View style={styles.timePickerGroup}>
-            <Text style={styles.timeLabel}>To</Text>
-            <View style={styles.timeControl}>
-              <TouchableOpacity
-                style={styles.timeArrow}
-                onPress={() => setDefaultEndHour(Math.max(schedule.startHour + 1, schedule.endHour - 1))}
-              >
-                <Text style={styles.timeArrowText}>−</Text>
-              </TouchableOpacity>
-              <Text style={styles.timeValue}>{formatHour(schedule.endHour)}</Text>
-              <TouchableOpacity
-                style={styles.timeArrow}
-                onPress={() => setDefaultEndHour(Math.min(23, schedule.endHour + 1))}
-              >
-                <Text style={styles.timeArrowText}>+</Text>
-              </TouchableOpacity>
-            </View>
-          </View>
-        </View>
-      </View>
+            <div className="time-picker-group">
+              <span className="time-label">To</span>
+              <div className="time-control">
+                <button
+                  className="time-arrow"
+                  onClick={() => setDefaultEndHour(Math.max(schedule.startHour + 1, schedule.endHour - 1))}
+                >
+                  −
+                </button>
+                <span className="time-value">{formatHour(schedule.endHour)}</span>
+                <button
+                  className="time-arrow"
+                  onClick={() => setDefaultEndHour(Math.min(23, schedule.endHour + 1))}
+                >
+                  +
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
 
-      <View style={styles.section}>
-        <Text style={styles.sectionTitle}>Data</Text>
-        <TouchableOpacity style={styles.dangerButton} onPress={handleResetAll}>
-          <Text style={styles.dangerButtonText}>Reset All Reminders</Text>
-        </TouchableOpacity>
-      </View>
+        {/* Data */}
+        <div className="settings-section">
+          <h2 className="settings-section-title">Data</h2>
+          <button className="btn btn-danger" onClick={handleResetAll}>
+            Reset All Reminders
+          </button>
+        </div>
 
-      <View style={styles.section}>
-        <Text style={styles.sectionTitle}>About</Text>
-        <View style={styles.aboutCard}>
-          <Text style={styles.aboutAppName}>Breakly</Text>
-          <Text style={styles.aboutVersion}>Version 1.0.0</Text>
-          <View style={styles.aboutDivider} />
-          <Text style={styles.aboutDescription}>
-            Breakly helps you build healthier work habits by reminding you to stretch, hydrate, move, and rest your eyes throughout the day.
-          </Text>
-          <Text style={styles.aboutDescription}>
-            Designed for professionals who spend long hours at their desk. Small breaks, big impact.
-          </Text>
-          <View style={styles.aboutDivider} />
-          <Text style={styles.aboutFooter}>Made with care for your wellbeing.</Text>
-        </View>
-      </View>
-    </ScrollView>
+        {/* About */}
+        <div className="settings-section">
+          <h2 className="settings-section-title">About</h2>
+          <div className="about-card">
+            <div className="about-app-name">Breakly</div>
+            <div className="about-version">Version 1.0.0</div>
+            <div className="about-divider" />
+            <p className="about-description">
+              Breakly helps you build healthier work habits by reminding you to stretch, hydrate, move, and rest your eyes throughout the day.
+            </p>
+            <p className="about-description">
+              Designed for professionals who spend long hours at their desk. Small breaks, big impact.
+            </p>
+            <div className="about-divider" />
+            <div className="about-footer">Made with care for your wellbeing.</div>
+          </div>
+        </div>
+      </div>
+
+      {/* Bottom Navigation */}
+      <nav className="bottom-nav">
+        <button className="bottom-nav-item" onClick={() => navigation('/home')}>
+          <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+            <path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z" />
+            <polyline points="9 22 9 12 15 12 15 22" />
+          </svg>
+          <span>Home</span>
+        </button>
+        <button className="bottom-nav-item" onClick={() => navigation('/progress')}>
+          <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+            <line x1="18" y1="20" x2="18" y2="10" />
+            <line x1="12" y1="20" x2="12" y2="4" />
+            <line x1="6" y1="20" x2="6" y2="14" />
+          </svg>
+          <span>Progress</span>
+        </button>
+        <button className="bottom-nav-item active" onClick={() => navigation('/settings')}>
+          <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+            <circle cx="12" cy="12" r="3" />
+            <path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-2 2 2 2 0 0 1-2-2v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83 0 2 2 0 0 1 0-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1-2-2 2 2 0 0 1 2-2h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 0-2.83 2 2 0 0 1 2.83 0l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 2-2 2 2 0 0 1 2 2v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 0 2 2 0 0 1 0 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 2 2 2 2 0 0 1-2 2h-.09a1.65 1.65 0 0 0-1.51 1z" />
+          </svg>
+          <span>Settings</span>
+        </button>
+      </nav>
+    </div>
   );
 }
-
-const styles = StyleSheet.create({
-  container: {
-    flex: 1,
-    backgroundColor: COLORS.background,
-  },
-  content: {
-    padding: 20,
-    paddingBottom: 40,
-  },
-  section: {
-    marginBottom: 28,
-  },
-  sectionTitle: {
-    fontSize: 14,
-    fontWeight: '600',
-    color: COLORS.textSecondary,
-    marginBottom: 4,
-    textTransform: 'uppercase',
-    letterSpacing: 0.5,
-  },
-  sectionDescription: {
-    fontSize: 13,
-    color: COLORS.textSecondary,
-    marginBottom: 12,
-  },
-  subLabel: {
-    fontSize: 12,
-    fontWeight: '600',
-    color: COLORS.textSecondary,
-    marginBottom: 8,
-    marginTop: 16,
-  },
-  row: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'space-between',
-    backgroundColor: COLORS.surface,
-    padding: 16,
-    borderRadius: 12,
-    marginTop: 8,
-  },
-  rowLeft: {
-    flex: 1,
-  },
-  rowLabel: {
-    fontSize: 16,
-    fontWeight: '500',
-    color: COLORS.text,
-  },
-  rowDescription: {
-    fontSize: 13,
-    color: COLORS.textSecondary,
-    marginTop: 2,
-  },
-  chipsRow: {
-    flexDirection: 'row',
-    flexWrap: 'wrap',
-    gap: 8,
-  },
-  chip: {
-    paddingHorizontal: 16,
-    paddingVertical: 10,
-    borderRadius: 20,
-    backgroundColor: COLORS.surface,
-    borderWidth: 1,
-    borderColor: COLORS.border,
-  },
-  chipActive: {
-    backgroundColor: COLORS.primaryLight,
-    borderColor: COLORS.primary,
-  },
-  chipText: {
-    fontSize: 14,
-    color: COLORS.text,
-  },
-  chipTextActive: {
-    color: COLORS.primary,
-    fontWeight: '600',
-  },
-  daysRow: {
-    flexDirection: 'row',
-    gap: 6,
-  },
-  dayChip: {
-    flex: 1,
-    paddingVertical: 10,
-    borderRadius: 8,
-    backgroundColor: COLORS.surface,
-    borderWidth: 1.5,
-    borderColor: COLORS.border,
-    alignItems: 'center',
-  },
-  dayChipActive: {
-    backgroundColor: COLORS.primary,
-    borderColor: COLORS.primary,
-  },
-  dayChipText: {
-    fontSize: 11,
-    fontWeight: '600',
-    color: COLORS.textSecondary,
-  },
-  dayChipTextActive: {
-    color: '#FFFFFF',
-  },
-  timeRangeContainer: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'space-between',
-    backgroundColor: COLORS.surface,
-    borderRadius: 14,
-    padding: 16,
-    borderWidth: 1,
-    borderColor: COLORS.border,
-    marginTop: 8,
-  },
-  timePickerGroup: {
-    alignItems: 'center',
-    flex: 1,
-  },
-  timeLabel: {
-    fontSize: 11,
-    fontWeight: '600',
-    color: COLORS.textSecondary,
-    textTransform: 'uppercase',
-    marginBottom: 8,
-  },
-  timeControl: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: 10,
-  },
-  timeArrow: {
-    width: 30,
-    height: 30,
-    borderRadius: 15,
-    backgroundColor: COLORS.primaryLight,
-    justifyContent: 'center',
-    alignItems: 'center',
-  },
-  timeArrowText: {
-    fontSize: 16,
-    color: COLORS.primary,
-    fontWeight: '600',
-  },
-  timeValue: {
-    fontSize: 14,
-    fontWeight: '700',
-    color: COLORS.text,
-    minWidth: 55,
-    textAlign: 'center',
-  },
-  timeSeparator: {
-    fontSize: 16,
-    color: COLORS.textSecondary,
-    marginHorizontal: 4,
-  },
-  dangerButton: {
-    backgroundColor: COLORS.dangerLight,
-    borderRadius: 12,
-    paddingVertical: 14,
-    alignItems: 'center',
-    marginTop: 8,
-  },
-  dangerButtonText: {
-    color: COLORS.danger,
-    fontSize: 15,
-    fontWeight: '600',
-  },
-  aboutCard: {
-    backgroundColor: COLORS.surface,
-    borderRadius: 14,
-    padding: 20,
-    marginTop: 10,
-    shadowColor: '#000',
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.05,
-    shadowRadius: 8,
-    elevation: 2,
-  },
-  aboutAppName: {
-    fontSize: 22,
-    fontWeight: '700',
-    color: COLORS.primary,
-    textAlign: 'center',
-  },
-  aboutVersion: {
-    fontSize: 13,
-    color: COLORS.textSecondary,
-    textAlign: 'center',
-    marginTop: 4,
-  },
-  aboutDivider: {
-    height: 1,
-    backgroundColor: COLORS.border,
-    marginVertical: 14,
-  },
-  aboutDescription: {
-    fontSize: 14,
-    color: COLORS.text,
-    lineHeight: 20,
-    marginBottom: 8,
-  },
-  aboutFooter: {
-    fontSize: 12,
-    color: COLORS.textSecondary,
-    textAlign: 'center',
-    fontStyle: 'italic',
-  },
-});

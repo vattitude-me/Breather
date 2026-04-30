@@ -1,4 +1,4 @@
-import React, { createContext, useContext, useReducer, useEffect, useState } from 'react';
+import React, { createContext, useContext, useReducer, useEffect, useState, ReactNode } from 'react';
 import { Reminder, ReminderAction, AppSettings } from '../types';
 import { loadReminders, saveReminders, loadSettings, saveSettings } from '../services/storage';
 import { DEFAULT_SETTINGS } from '../constants';
@@ -32,7 +32,11 @@ function remindersReducer(state: Reminder[], action: ReminderAction): Reminder[]
   }
 }
 
-export function RemindersProvider({ children }: { children: React.ReactNode }) {
+interface RemindersProviderProps {
+  children: ReactNode;
+}
+
+export function RemindersProvider({ children }: RemindersProviderProps) {
   const [reminders, dispatch] = useReducer(remindersReducer, []);
   const [settings, setSettings] = useState<AppSettings>(DEFAULT_SETTINGS);
   const [isLoading, setIsLoading] = useState(true);

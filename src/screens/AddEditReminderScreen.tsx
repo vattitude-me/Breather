@@ -1,27 +1,23 @@
-import React, { useState, useEffect } from 'react';
-import {
-  View,
-  Text,
-  TextInput,
-  TouchableOpacity,
-  StyleSheet,
-  ScrollView,
-} from 'react-native';
-import { useNavigation, useRoute } from '@react-navigation/native';
-import uuid from 'react-native-uuid';
+import { useState, useEffect } from 'react';
+import { useNavigate, useParams, useLocation } from 'react-router-dom';
+import { nanoid } from 'nanoid';
 import { useRemindersContext } from '../context/RemindersContext';
 import { scheduleReminder, cancelReminder } from '../services/notifications';
-import { COLORS, PRESET_REMINDERS, INTERVAL_PRESETS, DAYS_OF_WEEK, DEFAULT_SCHEDULE } from '../constants';
+import { PRESET_REMINDERS, INTERVAL_PRESETS, DAYS_OF_WEEK, DEFAULT_SCHEDULE } from '../constants';
 import { Reminder, DayOfWeek } from '../types';
+import '../screens.css';
 
 export default function AddEditReminderScreen() {
-  const navigation = useNavigation();
-  const route = useRoute();
+  const navigation = useNavigate();
+  const { reminderId } = useParams<{ reminderId: string }>();
+  const location = useLocation();
   const { reminders, settings, dispatch } = useRemindersContext();
 
-  const editId = (route.params as { reminderId?: string } | undefined)?.reminderId;
-  const existingReminder = editId ? reminders.find((r) => r.id === editId) : undefined;
-  const isEditing = !!existingReminder;
+  // Determine mode from URL path
+  const isEditing = location.pathname.startsWith('/edit-reminder');
+  const existingReminder = isEditing && reminderId 
+    ? reminders.find((r) => r.id === reminderId) 
+    : undefined;
 
   const [title, setTitle] = useState(existingReminder?.title || '');
   const [intervalMinutes, setIntervalMinutes] = useState(
@@ -69,7 +65,7 @@ export default function AddEditReminderScreen() {
 
   const handleQuickStart = async (preset: typeof PRESET_REMINDERS[0]) => {
     const reminder: Reminder = {
-      id: uuid.v4() as string,
+      id: nanoid(),
       title: preset.title,
       intervalMinutes: preset.defaultInterval,
       isActive: true,
@@ -82,13 +78,12 @@ export default function AddEditReminderScreen() {
     try {
       const notificationId = await scheduleReminder(reminder);
       reminder.notificationId = notificationId;
-    } catch {}
+    } catch (e) {
+      console.error('Failed to schedule reminder:', e);
+    }
 
     dispatch({ type: 'ADD', payload: reminder });
-
-    if (navigation.canGoBack()) {
-      navigation.goBack();
-    }
+    navigation('/home');
   };
 
   const handleIntervalPreset = (minutes: number) => {
@@ -103,20 +98,20 @@ export default function AddEditReminderScreen() {
 
   const handleSave = async () => {
     if (!title.trim()) {
-      if (window.alert) window.alert('Please enter a reminder title.');
+      alert('Please enter a reminder title.');
       return;
     }
     if (intervalMinutes < 1) {
-      if (window.alert) window.alert('Interval must be at least 1 minute.');
+      alert('Interval must be at least 1 minute.');
       return;
     }
     if (activeDays.length === 0) {
-      if (window.alert) window.alert('Please select at least one active day.');
+      alert('Please select at least one active day.');
       return;
     }
 
     const reminder: Reminder = {
-      id: existingReminder?.id || (uuid.v4() as string),
+      id: existingReminder?.id || nanoid(),
       title: title.trim(),
       intervalMinutes,
       isActive: true,
@@ -136,640 +131,284 @@ export default function AddEditReminderScreen() {
       }
       const notificationId = await scheduleReminder(reminder);
       reminder.notificationId = notificationId;
-    } catch {}
+    } catch (e) {
+      console.error('Failed to schedule reminder:', e);
+    }
 
     dispatch({
       type: isEditing ? 'UPDATE' : 'ADD',
       payload: reminder,
     });
 
-    setTitle('');
-    setIntervalValue(String(settings.defaultIntervalMinutes));
-    setIntervalUnit('minutes');
-    setIcon('🧘');
-    setShowCustom(false);
-    setActiveDays(settings.defaultSchedule?.activeDays || DEFAULT_SCHEDULE.activeDays as unknown as DayOfWeek[]);
-    setStartHour(settings.defaultSchedule?.startHour ?? DEFAULT_SCHEDULE.startHour);
-    setEndHour(settings.defaultSchedule?.endHour ?? DEFAULT_SCHEDULE.endHour);
-
-    if (navigation.canGoBack()) {
-      navigation.goBack();
-    }
+    navigation('/home');
   };
 
   const handleDelete = async () => {
     if (!existingReminder) return;
 
-    const confirmed = window.confirm
-      ? window.confirm(`Delete "${existingReminder.title}"?`)
-      : true;
-
-    if (!confirmed) return;
+    if (!window.confirm(`Delete "${existingReminder.title}"?`)) return;
 
     try {
       if (existingReminder.notificationId) {
         await cancelReminder(existingReminder.notificationId);
       }
-    } catch {}
-    dispatch({ type: 'DELETE', payload: existingReminder.id });
-    if (navigation.canGoBack()) {
-      navigation.goBack();
+    } catch (e) {
+      console.error('Failed to cancel reminder:', e);
     }
+    dispatch({ type: 'DELETE', payload: existingReminder.id });
+    navigation('/home');
   };
 
   return (
-    <ScrollView style={styles.container} contentContainerStyle={styles.content}>
-      {/* Quick Start - only show when creating new */}
-      {!isEditing && (
-        <View style={styles.section}>
-          <Text style={styles.heroTitle}>Quick Start</Text>
-          <Text style={styles.heroSubtitle}>
-            Tap a preset to instantly create a reminder
-          </Text>
-          <View style={styles.presetsGrid}>
-            {PRESET_REMINDERS.map((preset) => (
-              <TouchableOpacity
-                key={preset.title}
-                style={styles.presetCard}
-                onPress={() => handleQuickStart(preset)}
-                activeOpacity={0.7}
-              >
-                <Text style={styles.presetCardIcon}>{preset.icon}</Text>
-                <Text style={styles.presetCardTitle}>{preset.title}</Text>
-                <Text style={styles.presetCardInterval}>
-                  Every {preset.defaultInterval >= 60
-                    ? `${preset.defaultInterval / 60}h`
-                    : `${preset.defaultInterval}m`}
-                </Text>
-              </TouchableOpacity>
-            ))}
-          </View>
-        </View>
-      )}
-
-      {/* Custom / Edit Section */}
-      {!isEditing && !showCustom && (
-        <View style={styles.dividerSection}>
-          <View style={styles.dividerLine} />
-          <Text style={styles.dividerText}>or</Text>
-          <View style={styles.dividerLine} />
-        </View>
-      )}
-
-      {!isEditing && !showCustom && (
-        <TouchableOpacity
-          style={styles.customToggle}
-          onPress={() => setShowCustom(true)}
+    <div className="page">
+      <div className="page-header" style={{ padding: '16px 24px' }}>
+        <button
+          onClick={() => navigation(-1)}
+          style={{
+            background: 'none',
+            border: 'none',
+            color: '#FFFFFF',
+            fontSize: '24px',
+            cursor: 'pointer',
+            padding: 0,
+            marginBottom: '8px',
+          }}
         >
-          <Text style={styles.customToggleText}>Create Custom Reminder</Text>
-          <Text style={styles.customToggleArrow}>›</Text>
-        </TouchableOpacity>
-      )}
+          ←
+        </button>
+        <h1 style={{ fontSize: '20px', fontWeight: 700, color: '#FFFFFF', margin: 0 }}>
+          {isEditing ? 'Edit Reminder' : 'Add Reminder'}
+        </h1>
+      </div>
 
-      {(showCustom || isEditing) && (
-        <View style={styles.section}>
-          {!isEditing && (
-            <View style={styles.sectionHeader}>
-              <Text style={styles.sectionHeaderTitle}>Custom Reminder</Text>
-              <TouchableOpacity onPress={() => setShowCustom(false)}>
-                <Text style={styles.collapseText}>Hide</Text>
-              </TouchableOpacity>
-            </View>
-          )}
-
-          {/* Title */}
-          <View style={styles.fieldGroup}>
-            <Text style={styles.fieldLabel}>Title</Text>
-            <TextInput
-              style={styles.input}
-              value={title}
-              onChangeText={setTitle}
-              placeholder="What do you want to be reminded about?"
-              placeholderTextColor={COLORS.disabled}
-            />
-          </View>
-
-          {/* Icon */}
-          <View style={styles.fieldGroup}>
-            <Text style={styles.fieldLabel}>Icon</Text>
-            <View style={styles.iconRow}>
-              {PRESET_REMINDERS.map((p) => (
-                <TouchableOpacity
-                  key={p.icon}
-                  style={[styles.iconBtn, icon === p.icon && styles.iconBtnActive]}
-                  onPress={() => setIcon(p.icon)}
+      <div className="page-content">
+        {/* Quick Start - only show when creating new */}
+        {!isEditing && (
+          <div className="settings-section">
+            <h2 className="hero-title">Quick Start</h2>
+            <p className="hero-subtitle">Tap a preset to instantly create a reminder</p>
+            <div className="presets-grid">
+              {PRESET_REMINDERS.map((preset) => (
+                <button
+                  key={preset.title}
+                  className="preset-card"
+                  onClick={() => handleQuickStart(preset)}
                 >
-                  <Text style={styles.iconText}>{p.icon}</Text>
-                </TouchableOpacity>
+                  <div className="preset-card-icon">{preset.icon}</div>
+                  <div className="preset-card-title">{preset.title}</div>
+                  <div className="preset-card-interval">
+                    Every {preset.defaultInterval >= 60
+                      ? `${preset.defaultInterval / 60}h`
+                      : `${preset.defaultInterval}m`}
+                  </div>
+                </button>
               ))}
-            </View>
-          </View>
+            </div>
+          </div>
+        )}
 
-          {/* Interval */}
-          <View style={styles.fieldGroup}>
-            <Text style={styles.fieldLabel}>Remind me every</Text>
-            <View style={styles.intervalRow}>
-              <TextInput
-                style={[styles.input, styles.intervalInput]}
-                value={intervalValue}
-                onChangeText={setIntervalValue}
-                keyboardType="numeric"
-                placeholder="30"
-                placeholderTextColor={COLORS.disabled}
+        {/* Custom / Edit Section */}
+        {!isEditing && !showCustom && (
+          <>
+            <div className="divider-section">
+              <div className="divider-line" />
+              <span className="divider-text">or</span>
+              <div className="divider-line" />
+            </div>
+
+            <button
+              className="custom-toggle"
+              onClick={() => setShowCustom(true)}
+            >
+              <span className="custom-toggle-text">Create Custom Reminder</span>
+              <span className="custom-toggle-arrow">›</span>
+            </button>
+          </>
+        )}
+
+        {(showCustom || isEditing) && (
+          <div className="settings-section">
+            {!isEditing && (
+              <div className="section-header">
+                <h2 className="section-header-title">Custom Reminder</h2>
+                <button
+                  className="collapse-text"
+                  onClick={() => setShowCustom(false)}
+                >
+                  Hide
+                </button>
+              </div>
+            )}
+
+            {/* Title */}
+            <div className="form-group">
+              <label className="form-label">Title</label>
+              <input
+                type="text"
+                className="form-input"
+                value={title}
+                onChange={(e) => setTitle(e.target.value)}
+                placeholder="What do you want to be reminded about?"
               />
-              <View style={styles.unitToggle}>
-                <TouchableOpacity
-                  style={[styles.unitBtn, intervalUnit === 'minutes' && styles.unitBtnActive]}
-                  onPress={() => setIntervalUnit('minutes')}
-                >
-                  <Text style={[styles.unitText, intervalUnit === 'minutes' && styles.unitTextActive]}>
-                    Min
-                  </Text>
-                </TouchableOpacity>
-                <TouchableOpacity
-                  style={[styles.unitBtn, intervalUnit === 'hours' && styles.unitBtnActive]}
-                  onPress={() => setIntervalUnit('hours')}
-                >
-                  <Text style={[styles.unitText, intervalUnit === 'hours' && styles.unitTextActive]}>
-                    Hours
-                  </Text>
-                </TouchableOpacity>
-              </View>
-            </View>
+            </div>
 
-            <View style={styles.intervalPresets}>
-              {INTERVAL_PRESETS.map((minutes) => (
-                <TouchableOpacity
-                  key={minutes}
-                  style={[
-                    styles.intervalChip,
-                    intervalMinutes === minutes && styles.intervalChipActive,
-                  ]}
-                  onPress={() => handleIntervalPreset(minutes)}
-                >
-                  <Text
-                    style={[
-                      styles.intervalChipText,
-                      intervalMinutes === minutes && styles.intervalChipTextActive,
-                    ]}
+            {/* Icon */}
+            <div className="form-group">
+              <label className="form-label">Icon</label>
+              <div className="icon-row">
+                {PRESET_REMINDERS.map((p) => (
+                  <button
+                    key={p.icon}
+                    className={`icon-btn ${icon === p.icon ? 'active' : ''}`}
+                    onClick={() => setIcon(p.icon)}
+                  >
+                    <span className="icon-text">{p.icon}</span>
+                  </button>
+                ))}
+              </div>
+            </div>
+
+            {/* Interval */}
+            <div className="form-group">
+              <label className="form-label">Remind me every</label>
+              <div style={{ display: 'flex', alignItems: 'center', gap: '12px', marginBottom: '14px' }}>
+                <input
+                  type="text"
+                  className="form-input"
+                  value={intervalValue}
+                  onChange={(e) => setIntervalValue(e.target.value.replace(/\D/g, ''))}
+                  placeholder="30"
+                  style={{ flex: 1 }}
+                />
+                <div style={{ display: 'flex', borderRadius: '12px', overflow: 'hidden', border: '1px solid #F0E6E0' }}>
+                  <button
+                    className={`chip ${intervalUnit === 'minutes' ? 'active' : ''}`}
+                    onClick={() => setIntervalUnit('minutes')}
+                    style={{ borderRadius: 0, padding: '10px 18px' }}
+                  >
+                    Min
+                  </button>
+                  <button
+                    className={`chip ${intervalUnit === 'hours' ? 'active' : ''}`}
+                    onClick={() => setIntervalUnit('hours')}
+                    style={{ borderRadius: 0, padding: '10px 18px' }}
+                  >
+                    Hours
+                  </button>
+                </div>
+              </div>
+
+              <div className="interval-presets">
+                {INTERVAL_PRESETS.map((minutes) => (
+                  <button
+                    key={minutes}
+                    className={`interval-chip ${intervalMinutes === minutes ? 'active' : ''}`}
+                    onClick={() => handleIntervalPreset(minutes)}
                   >
                     {minutes >= 60 ? `${minutes / 60}h` : `${minutes}m`}
-                  </Text>
-                </TouchableOpacity>
-              ))}
-            </View>
-          </View>
+                  </button>
+                ))}
+              </div>
+            </div>
 
-          {/* Schedule - Days of Week */}
-          <View style={styles.fieldGroup}>
-            <Text style={styles.fieldLabel}>Active Days</Text>
-            <View style={styles.daysRow}>
-              {DAYS_OF_WEEK.map((day) => (
-                <TouchableOpacity
-                  key={day}
-                  style={[
-                    styles.dayChip,
-                    activeDays.includes(day as DayOfWeek) && styles.dayChipActive,
-                  ]}
-                  onPress={() => toggleDay(day as DayOfWeek)}
-                >
-                  <Text
-                    style={[
-                      styles.dayChipText,
-                      activeDays.includes(day as DayOfWeek) && styles.dayChipTextActive,
-                    ]}
+            {/* Schedule - Days of Week */}
+            <div className="form-group">
+              <label className="form-label">Active Days</label>
+              <div className="days-row">
+                {DAYS_OF_WEEK.map((day) => (
+                  <button
+                    key={day}
+                    className={`day-chip ${activeDays.includes(day as DayOfWeek) ? 'active' : ''}`}
+                    onClick={() => toggleDay(day as DayOfWeek)}
                   >
                     {day}
-                  </Text>
-                </TouchableOpacity>
-              ))}
-            </View>
-            <View style={styles.dayShortcuts}>
-              <TouchableOpacity
-                style={styles.shortcutBtn}
-                onPress={() => setActiveDays(['Mon', 'Tue', 'Wed', 'Thu', 'Fri'])}
-              >
-                <Text style={styles.shortcutText}>Weekdays</Text>
-              </TouchableOpacity>
-              <TouchableOpacity
-                style={styles.shortcutBtn}
-                onPress={() => setActiveDays(['Sat', 'Sun'])}
-              >
-                <Text style={styles.shortcutText}>Weekends</Text>
-              </TouchableOpacity>
-              <TouchableOpacity
-                style={styles.shortcutBtn}
-                onPress={() => setActiveDays(['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'])}
-              >
-                <Text style={styles.shortcutText}>Every Day</Text>
-              </TouchableOpacity>
-            </View>
-          </View>
+                  </button>
+                ))}
+              </div>
+              <div className="day-shortcuts">
+                <button
+                  className="shortcut-btn"
+                  onClick={() => setActiveDays(['Mon', 'Tue', 'Wed', 'Thu', 'Fri'] as DayOfWeek[])}
+                >
+                  Weekdays
+                </button>
+                <button
+                  className="shortcut-btn"
+                  onClick={() => setActiveDays(['Sat', 'Sun'] as DayOfWeek[])}
+                >
+                  Weekends
+                </button>
+                <button
+                  className="shortcut-btn"
+                  onClick={() => setActiveDays(['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'] as DayOfWeek[])}
+                >
+                  Every Day
+                </button>
+              </div>
+            </div>
 
-          {/* Schedule - Time Range */}
-          <View style={styles.fieldGroup}>
-            <Text style={styles.fieldLabel}>Active Hours</Text>
-            <View style={styles.timeRangeContainer}>
-              <View style={styles.timePickerGroup}>
-                <Text style={styles.timeLabel}>From</Text>
-                <View style={styles.timeControl}>
-                  <TouchableOpacity
-                    style={styles.timeArrow}
-                    onPress={() => setStartHour((h) => Math.max(0, h - 1))}
-                  >
-                    <Text style={styles.timeArrowText}>−</Text>
-                  </TouchableOpacity>
-                  <Text style={styles.timeValue}>{formatHour(startHour)}</Text>
-                  <TouchableOpacity
-                    style={styles.timeArrow}
-                    onPress={() => setStartHour((h) => Math.min(endHour - 1, h + 1))}
-                  >
-                    <Text style={styles.timeArrowText}>+</Text>
-                  </TouchableOpacity>
-                </View>
-              </View>
+            {/* Schedule - Time Range */}
+            <div className="form-group">
+              <label className="form-label">Active Hours</label>
+              <div className="time-range-container">
+                <div className="time-picker-group">
+                  <span className="time-label">From</span>
+                  <div className="time-control">
+                    <button
+                      className="time-arrow"
+                      onClick={() => setStartHour((h) => Math.max(0, h - 1))}
+                    >
+                      −
+                    </button>
+                    <span className="time-value">{formatHour(startHour)}</span>
+                    <button
+                      className="time-arrow"
+                      onClick={() => setStartHour((h) => Math.min(endHour - 1, h + 1))}
+                    >
+                      +
+                    </button>
+                  </div>
+                </div>
 
-              <Text style={styles.timeSeparator}>→</Text>
+                <span className="time-separator">→</span>
 
-              <View style={styles.timePickerGroup}>
-                <Text style={styles.timeLabel}>To</Text>
-                <View style={styles.timeControl}>
-                  <TouchableOpacity
-                    style={styles.timeArrow}
-                    onPress={() => setEndHour((h) => Math.max(startHour + 1, h - 1))}
-                  >
-                    <Text style={styles.timeArrowText}>−</Text>
-                  </TouchableOpacity>
-                  <Text style={styles.timeValue}>{formatHour(endHour)}</Text>
-                  <TouchableOpacity
-                    style={styles.timeArrow}
-                    onPress={() => setEndHour((h) => Math.min(23, h + 1))}
-                  >
-                    <Text style={styles.timeArrowText}>+</Text>
-                  </TouchableOpacity>
-                </View>
-              </View>
-            </View>
-            <Text style={styles.timeHint}>
-              Reminders will only fire between {formatHour(startHour)} and {formatHour(endHour)}
-            </Text>
-          </View>
+                <div className="time-picker-group">
+                  <span className="time-label">To</span>
+                  <div className="time-control">
+                    <button
+                      className="time-arrow"
+                      onClick={() => setEndHour((h) => Math.max(startHour + 1, h - 1))}
+                    >
+                      −
+                    </button>
+                    <span className="time-value">{formatHour(endHour)}</span>
+                    <button
+                      className="time-arrow"
+                      onClick={() => setEndHour((h) => Math.min(23, h + 1))}
+                    >
+                      +
+                    </button>
+                  </div>
+                </div>
+              </div>
+              <p className="time-hint">
+                Reminders will only fire between {formatHour(startHour)} and {formatHour(endHour)}
+              </p>
+            </div>
 
-          {/* Save Button */}
-          <TouchableOpacity style={styles.saveButton} onPress={handleSave}>
-            <Text style={styles.saveButtonText}>
+            {/* Save Button */}
+            <button className="btn btn-primary" onClick={handleSave}>
               {isEditing ? 'Update Reminder' : 'Create Reminder'}
-            </Text>
-          </TouchableOpacity>
+            </button>
 
-          {isEditing && (
-            <TouchableOpacity style={styles.deleteButton} onPress={handleDelete}>
-              <Text style={styles.deleteButtonText}>Delete Reminder</Text>
-            </TouchableOpacity>
-          )}
-        </View>
-      )}
-    </ScrollView>
+            {isEditing && (
+              <button className="btn btn-danger" onClick={handleDelete} style={{ marginTop: '14px' }}>
+                Delete Reminder
+              </button>
+            )}
+          </div>
+        )}
+      </div>
+    </div>
   );
 }
-
-const styles = StyleSheet.create({
-  container: {
-    flex: 1,
-    backgroundColor: COLORS.background,
-  },
-  content: {
-    padding: 24,
-    paddingBottom: 60,
-  },
-  section: {
-    marginBottom: 32,
-  },
-  heroTitle: {
-    fontSize: 22,
-    fontWeight: '700',
-    color: COLORS.text,
-    marginBottom: 4,
-  },
-  heroSubtitle: {
-    fontSize: 14,
-    color: COLORS.textSecondary,
-    marginBottom: 20,
-  },
-  presetsGrid: {
-    flexDirection: 'row',
-    flexWrap: 'wrap',
-    gap: 12,
-  },
-  presetCard: {
-    width: '47%',
-    backgroundColor: COLORS.surface,
-    borderRadius: 16,
-    padding: 20,
-    alignItems: 'center',
-    shadowColor: '#000',
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.06,
-    shadowRadius: 8,
-    elevation: 3,
-    borderWidth: 1,
-    borderColor: COLORS.border,
-  },
-  presetCardIcon: {
-    fontSize: 36,
-    marginBottom: 10,
-  },
-  presetCardTitle: {
-    fontSize: 15,
-    fontWeight: '600',
-    color: COLORS.text,
-    marginBottom: 4,
-  },
-  presetCardInterval: {
-    fontSize: 12,
-    color: COLORS.textSecondary,
-  },
-  dividerSection: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    marginVertical: 24,
-  },
-  dividerLine: {
-    flex: 1,
-    height: 1,
-    backgroundColor: COLORS.border,
-  },
-  dividerText: {
-    paddingHorizontal: 16,
-    fontSize: 13,
-    color: COLORS.textSecondary,
-  },
-  customToggle: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'space-between',
-    backgroundColor: COLORS.surface,
-    padding: 18,
-    borderRadius: 14,
-    borderWidth: 1,
-    borderColor: COLORS.border,
-    borderStyle: 'dashed',
-  },
-  customToggleText: {
-    fontSize: 15,
-    fontWeight: '500',
-    color: COLORS.primary,
-  },
-  customToggleArrow: {
-    fontSize: 22,
-    color: COLORS.primary,
-    fontWeight: '300',
-  },
-  sectionHeader: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    alignItems: 'center',
-    marginBottom: 24,
-  },
-  sectionHeaderTitle: {
-    fontSize: 18,
-    fontWeight: '700',
-    color: COLORS.text,
-  },
-  collapseText: {
-    fontSize: 14,
-    color: COLORS.primary,
-    fontWeight: '500',
-  },
-  fieldGroup: {
-    marginBottom: 28,
-  },
-  fieldLabel: {
-    fontSize: 13,
-    fontWeight: '600',
-    color: COLORS.textSecondary,
-    marginBottom: 10,
-    textTransform: 'uppercase',
-    letterSpacing: 0.5,
-  },
-  input: {
-    backgroundColor: COLORS.surface,
-    borderWidth: 1,
-    borderColor: COLORS.border,
-    borderRadius: 12,
-    paddingHorizontal: 16,
-    paddingVertical: 14,
-    fontSize: 16,
-    color: COLORS.text,
-  },
-  iconRow: {
-    flexDirection: 'row',
-    gap: 10,
-  },
-  iconBtn: {
-    width: 48,
-    height: 48,
-    borderRadius: 24,
-    justifyContent: 'center',
-    alignItems: 'center',
-    backgroundColor: COLORS.surface,
-    borderWidth: 1.5,
-    borderColor: COLORS.border,
-  },
-  iconBtnActive: {
-    borderColor: COLORS.primary,
-    backgroundColor: COLORS.primaryLight,
-    borderWidth: 2,
-  },
-  iconText: {
-    fontSize: 24,
-  },
-  intervalRow: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: 12,
-    marginBottom: 14,
-  },
-  intervalInput: {
-    flex: 1,
-  },
-  unitToggle: {
-    flexDirection: 'row',
-    borderRadius: 12,
-    overflow: 'hidden',
-    borderWidth: 1,
-    borderColor: COLORS.border,
-  },
-  unitBtn: {
-    paddingHorizontal: 18,
-    paddingVertical: 14,
-    backgroundColor: COLORS.surface,
-  },
-  unitBtnActive: {
-    backgroundColor: COLORS.primary,
-  },
-  unitText: {
-    fontSize: 14,
-    color: COLORS.text,
-    fontWeight: '500',
-  },
-  unitTextActive: {
-    color: '#FFFFFF',
-    fontWeight: '700',
-  },
-  intervalPresets: {
-    flexDirection: 'row',
-    flexWrap: 'wrap',
-    gap: 8,
-  },
-  intervalChip: {
-    paddingHorizontal: 16,
-    paddingVertical: 10,
-    borderRadius: 20,
-    backgroundColor: COLORS.surface,
-    borderWidth: 1,
-    borderColor: COLORS.border,
-  },
-  intervalChipActive: {
-    backgroundColor: COLORS.primaryLight,
-    borderColor: COLORS.primary,
-  },
-  intervalChipText: {
-    fontSize: 13,
-    color: COLORS.text,
-    fontWeight: '500',
-  },
-  intervalChipTextActive: {
-    color: COLORS.primary,
-    fontWeight: '700',
-  },
-  daysRow: {
-    flexDirection: 'row',
-    gap: 6,
-    marginBottom: 12,
-  },
-  dayChip: {
-    flex: 1,
-    paddingVertical: 12,
-    borderRadius: 10,
-    backgroundColor: COLORS.surface,
-    borderWidth: 1.5,
-    borderColor: COLORS.border,
-    alignItems: 'center',
-  },
-  dayChipActive: {
-    backgroundColor: COLORS.primary,
-    borderColor: COLORS.primary,
-  },
-  dayChipText: {
-    fontSize: 12,
-    fontWeight: '600',
-    color: COLORS.textSecondary,
-  },
-  dayChipTextActive: {
-    color: '#FFFFFF',
-  },
-  dayShortcuts: {
-    flexDirection: 'row',
-    gap: 8,
-  },
-  shortcutBtn: {
-    paddingHorizontal: 14,
-    paddingVertical: 8,
-    borderRadius: 16,
-    backgroundColor: COLORS.surface,
-    borderWidth: 1,
-    borderColor: COLORS.border,
-  },
-  shortcutText: {
-    fontSize: 12,
-    color: COLORS.primary,
-    fontWeight: '500',
-  },
-  timeRangeContainer: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'space-between',
-    backgroundColor: COLORS.surface,
-    borderRadius: 14,
-    padding: 16,
-    borderWidth: 1,
-    borderColor: COLORS.border,
-  },
-  timePickerGroup: {
-    alignItems: 'center',
-    flex: 1,
-  },
-  timeLabel: {
-    fontSize: 11,
-    fontWeight: '600',
-    color: COLORS.textSecondary,
-    textTransform: 'uppercase',
-    marginBottom: 8,
-  },
-  timeControl: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: 12,
-  },
-  timeArrow: {
-    width: 32,
-    height: 32,
-    borderRadius: 16,
-    backgroundColor: COLORS.primaryLight,
-    justifyContent: 'center',
-    alignItems: 'center',
-  },
-  timeArrowText: {
-    fontSize: 18,
-    color: COLORS.primary,
-    fontWeight: '600',
-  },
-  timeValue: {
-    fontSize: 16,
-    fontWeight: '700',
-    color: COLORS.text,
-    minWidth: 60,
-    textAlign: 'center',
-  },
-  timeSeparator: {
-    fontSize: 18,
-    color: COLORS.textSecondary,
-    marginHorizontal: 8,
-  },
-  timeHint: {
-    fontSize: 12,
-    color: COLORS.textSecondary,
-    marginTop: 10,
-    textAlign: 'center',
-    fontStyle: 'italic',
-  },
-  saveButton: {
-    backgroundColor: COLORS.primary,
-    borderRadius: 14,
-    paddingVertical: 18,
-    alignItems: 'center',
-    shadowColor: COLORS.primary,
-    shadowOffset: { width: 0, height: 4 },
-    shadowOpacity: 0.2,
-    shadowRadius: 8,
-    elevation: 4,
-  },
-  saveButtonText: {
-    color: '#FFFFFF',
-    fontSize: 16,
-    fontWeight: '700',
-  },
-  deleteButton: {
-    backgroundColor: COLORS.dangerLight,
-    borderRadius: 14,
-    paddingVertical: 16,
-    alignItems: 'center',
-    marginTop: 14,
-  },
-  deleteButtonText: {
-    color: COLORS.danger,
-    fontSize: 15,
-    fontWeight: '600',
-  },
-});

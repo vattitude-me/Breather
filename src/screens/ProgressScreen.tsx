@@ -1,16 +1,8 @@
-import React, { useState, useEffect, useCallback } from 'react';
-import {
-  View,
-  Text,
-  StyleSheet,
-  ScrollView,
-  TouchableOpacity,
-} from 'react-native';
-import AsyncStorage from '@react-native-async-storage/async-storage';
-import { useFocusEffect } from '@react-navigation/native';
+import { useState, useCallback, useEffect } from 'react';
 import { useRemindersContext } from '../context/RemindersContext';
-import { COLORS, STORAGE_KEYS } from '../constants';
+import { STORAGE_KEYS } from '../constants';
 import { ProgressData, ProgressEntry } from '../types';
+import '../screens.css';
 
 const DEFAULT_PROGRESS: ProgressData = {
   entries: [],
@@ -58,37 +50,39 @@ export default function ProgressScreen() {
   const [activeTab, setActiveTab] = useState<'overview' | 'charts'>('overview');
 
   const loadProgress = useCallback(async () => {
-    const data = await AsyncStorage.getItem(STORAGE_KEYS.PROGRESS);
-    if (data) {
-      const parsed: ProgressData = JSON.parse(data);
-      const streak = calculateStreak(parsed.entries);
-      setProgress({ ...parsed, currentStreak: streak });
-    } else {
-      const today = getToday();
-      const activeCount = reminders.filter((r) => r.isActive).length;
-      const initialEntry: ProgressEntry = {
-        date: today,
-        completedCount: activeCount,
-        totalMinutes: activeCount * 5,
-        sessions: activeCount > 0 ? 1 : 0,
-      };
-      const initial: ProgressData = {
-        entries: activeCount > 0 ? [initialEntry] : [],
-        currentStreak: activeCount > 0 ? 1 : 0,
-        longestStreak: activeCount > 0 ? 1 : 0,
-        totalSessions: activeCount > 0 ? 1 : 0,
-        totalMinutes: activeCount > 0 ? activeCount * 5 : 0,
-      };
-      setProgress(initial);
-      await AsyncStorage.setItem(STORAGE_KEYS.PROGRESS, JSON.stringify(initial));
+    try {
+      const data = localStorage.getItem(STORAGE_KEYS.PROGRESS);
+      if (data) {
+        const parsed: ProgressData = JSON.parse(data);
+        const streak = calculateStreak(parsed.entries);
+        setProgress({ ...parsed, currentStreak: streak });
+      } else {
+        const today = getToday();
+        const activeCount = reminders.filter((r) => r.isActive).length;
+        const initialEntry: ProgressEntry = {
+          date: today,
+          completedCount: activeCount,
+          totalMinutes: activeCount * 5,
+          sessions: activeCount > 0 ? 1 : 0,
+        };
+        const initial: ProgressData = {
+          entries: activeCount > 0 ? [initialEntry] : [],
+          currentStreak: activeCount > 0 ? 1 : 0,
+          longestStreak: activeCount > 0 ? 1 : 0,
+          totalSessions: activeCount > 0 ? 1 : 0,
+          totalMinutes: activeCount > 0 ? activeCount * 5 : 0,
+        };
+        setProgress(initial);
+        localStorage.setItem(STORAGE_KEYS.PROGRESS, JSON.stringify(initial));
+      }
+    } catch (error) {
+      console.error('Error loading progress:', error);
     }
   }, [reminders]);
 
-  useFocusEffect(
-    useCallback(() => {
-      loadProgress();
-    }, [loadProgress])
-  );
+  useEffect(() => {
+    loadProgress();
+  }, [loadProgress]);
 
   const todayEntry = progress.entries.find((e) => e.date === getToday());
   const thisWeekEntries = progress.entries.filter((e) => {
@@ -118,419 +112,202 @@ export default function ProgressScreen() {
       : "Keep it up! You're on fire!";
 
   return (
-    <ScrollView style={styles.container} showsVerticalScrollIndicator={false}>
+    <div className="page">
       {/* Tabs */}
-      <View style={styles.tabRow}>
-        <TouchableOpacity
-          style={[styles.tab, activeTab === 'overview' && styles.tabActive]}
-          onPress={() => setActiveTab('overview')}
+      <div className="tab-row">
+        <button
+          className={`tab ${activeTab === 'overview' ? 'active' : ''}`}
+          onClick={() => setActiveTab('overview')}
         >
-          <Text style={[styles.tabText, activeTab === 'overview' && styles.tabTextActive]}>
-            Overview
-          </Text>
-        </TouchableOpacity>
-        <TouchableOpacity
-          style={[styles.tab, activeTab === 'charts' && styles.tabActive]}
-          onPress={() => setActiveTab('charts')}
+          Overview
+        </button>
+        <button
+          className={`tab ${activeTab === 'charts' ? 'active' : ''}`}
+          onClick={() => setActiveTab('charts')}
         >
-          <Text style={[styles.tabText, activeTab === 'charts' && styles.tabTextActive]}>
-            Charts
-          </Text>
-        </TouchableOpacity>
-      </View>
+          Charts
+        </button>
+      </div>
 
-      {activeTab === 'overview' ? (
-        <View style={styles.content}>
-          {/* Streak Card */}
-          <View style={styles.streakCard}>
-            <Text style={styles.streakFireIcon}>🔥</Text>
-            <Text style={styles.streakNumber}>{progress.currentStreak}</Text>
-            <Text style={styles.streakLabel}>Day Streak</Text>
-            <Text style={styles.streakMessage}>{streakMessage}</Text>
-          </View>
+      <div className="page-content">
+        {activeTab === 'overview' ? (
+          <>
+            {/* Streak Card */}
+            <div className="streak-card">
+              <div className="streak-fire">🔥</div>
+              <div className="streak-number">{progress.currentStreak}</div>
+              <div className="streak-label">Day Streak</div>
+              <div className="streak-message">{streakMessage}</div>
+            </div>
 
-          {/* Today's Stats */}
-          <View style={styles.todayRow}>
-            <View style={styles.todayCard}>
-              <Text style={styles.todayCardIcon}>📋</Text>
-              <Text style={styles.todayCardNumber}>
-                {todayEntry?.sessions ?? 0}
-              </Text>
-              <Text style={styles.todayCardLabel}>Total Sessions</Text>
-            </View>
-            <View style={styles.todayCard}>
-              <Text style={styles.todayCardIcon}>🎯</Text>
-              <Text style={styles.todayCardNumber}>
-                {todayEntry?.completedCount ?? 0}
-              </Text>
-              <Text style={styles.todayCardLabel}>Today's Focus</Text>
-            </View>
-          </View>
+            {/* Today's Stats */}
+            <div className="today-row">
+              <div className="today-card">
+                <div className="today-card-icon">📋</div>
+                <div className="today-card-number">{todayEntry?.sessions ?? 0}</div>
+                <div className="today-card-label">Total Sessions</div>
+              </div>
+              <div className="today-card">
+                <div className="today-card-icon">🎯</div>
+                <div className="today-card-number">{todayEntry?.completedCount ?? 0}</div>
+                <div className="today-card-label">Today's Focus</div>
+              </div>
+            </div>
 
-          {/* This Week */}
-          <View style={styles.periodCard}>
-            <View style={styles.periodHeader}>
-              <Text style={styles.periodIcon}>📅</Text>
-              <Text style={styles.periodTitle}>This Week</Text>
-            </View>
-            <View style={styles.periodStatsRow}>
-              <View style={styles.periodStat}>
-                <Text style={styles.periodStatNumber}>{weekSessions}</Text>
-                <Text style={styles.periodStatLabel}>Sessions</Text>
-              </View>
-              <View style={styles.periodStat}>
-                <Text style={styles.periodStatNumber}>{weekBreaks}</Text>
-                <Text style={styles.periodStatLabel}>Breaks</Text>
-              </View>
-              <View style={styles.periodStat}>
-                <Text style={styles.periodStatNumber}>{weekMinutes}</Text>
-                <Text style={styles.periodStatLabel}>Minutes</Text>
-              </View>
-            </View>
-          </View>
+            {/* This Week */}
+            <div className="period-card">
+              <div className="period-header">
+                <span className="period-icon">📅</span>
+                <span className="period-title">This Week</span>
+              </div>
+              <div className="period-stats-row">
+                <div className="period-stat">
+                  <div className="period-stat-number">{weekSessions}</div>
+                  <div className="period-stat-label">Sessions</div>
+                </div>
+                <div className="period-stat">
+                  <div className="period-stat-number">{weekBreaks}</div>
+                  <div className="period-stat-label">Breaks</div>
+                </div>
+                <div className="period-stat">
+                  <div className="period-stat-number">{weekMinutes}</div>
+                  <div className="period-stat-label">Minutes</div>
+                </div>
+              </div>
+            </div>
 
-          {/* This Month */}
-          <View style={styles.periodCard}>
-            <View style={styles.periodHeader}>
-              <Text style={styles.periodIcon}>📆</Text>
-              <Text style={styles.periodTitle}>This Month</Text>
-            </View>
-            <View style={styles.periodStatsRow}>
-              <View style={styles.periodStat}>
-                <Text style={styles.periodStatNumber}>{monthSessions}</Text>
-                <Text style={styles.periodStatLabel}>Sessions</Text>
-              </View>
-              <View style={styles.periodStat}>
-                <Text style={styles.periodStatNumber}>{monthBreaks}</Text>
-                <Text style={styles.periodStatLabel}>Breaks</Text>
-              </View>
-              <View style={styles.periodStat}>
-                <Text style={styles.periodStatNumber}>{monthMinutes}</Text>
-                <Text style={styles.periodStatLabel}>Minutes</Text>
-              </View>
-            </View>
-          </View>
+            {/* This Month */}
+            <div className="period-card">
+              <div className="period-header">
+                <span className="period-icon">📆</span>
+                <span className="period-title">This Month</span>
+              </div>
+              <div className="period-stats-row">
+                <div className="period-stat">
+                  <div className="period-stat-number">{monthSessions}</div>
+                  <div className="period-stat-label">Sessions</div>
+                </div>
+                <div className="period-stat">
+                  <div className="period-stat-number">{monthBreaks}</div>
+                  <div className="period-stat-label">Breaks</div>
+                </div>
+                <div className="period-stat">
+                  <div className="period-stat-number">{monthMinutes}</div>
+                  <div className="period-stat-label">Minutes</div>
+                </div>
+              </div>
+            </div>
 
-          {/* Achievements */}
-          <View style={styles.achievementsCard}>
-            <View style={styles.periodHeader}>
-              <Text style={styles.periodIcon}>🏆</Text>
-              <Text style={styles.periodTitle}>Achievements</Text>
-            </View>
-            <View style={styles.achievementsList}>
-              <View style={styles.achievementItem}>
-                <Text style={styles.achievementBadge}>
-                  {progress.currentStreak >= 1 ? '✅' : '⬜'}
-                </Text>
-                <Text style={styles.achievementText}>First Day</Text>
-              </View>
-              <View style={styles.achievementItem}>
-                <Text style={styles.achievementBadge}>
-                  {progress.currentStreak >= 3 ? '✅' : '⬜'}
-                </Text>
-                <Text style={styles.achievementText}>3-Day Streak</Text>
-              </View>
-              <View style={styles.achievementItem}>
-                <Text style={styles.achievementBadge}>
-                  {progress.currentStreak >= 7 ? '✅' : '⬜'}
-                </Text>
-                <Text style={styles.achievementText}>Week Warrior</Text>
-              </View>
-              <View style={styles.achievementItem}>
-                <Text style={styles.achievementBadge}>
-                  {progress.totalSessions >= 10 ? '✅' : '⬜'}
-                </Text>
-                <Text style={styles.achievementText}>10 Sessions</Text>
-              </View>
-              <View style={styles.achievementItem}>
-                <Text style={styles.achievementBadge}>
-                  {progress.currentStreak >= 30 ? '✅' : '⬜'}
-                </Text>
-                <Text style={styles.achievementText}>Monthly Master</Text>
-              </View>
-            </View>
-          </View>
-        </View>
-      ) : (
-        <View style={styles.content}>
-          {/* Weekly Activity Chart (simple bar representation) */}
-          <View style={styles.chartCard}>
-            <Text style={styles.chartTitle}>Weekly Activity</Text>
-            <View style={styles.barChart}>
-              {['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'].map((day, i) => {
-                const dayDate = new Date();
-                const currentDay = dayDate.getDay();
-                const diff = i - ((currentDay + 6) % 7);
-                const targetDate = new Date(dayDate.getTime() + diff * 86400000);
-                const dateStr = targetDate.toISOString().split('T')[0];
-                const entry = progress.entries.find((e) => e.date === dateStr);
-                const height = entry ? Math.min(entry.completedCount * 20, 80) : 4;
+            {/* Achievements */}
+            <div className="period-card">
+              <div className="period-header">
+                <span className="period-icon">🏆</span>
+                <span className="period-title">Achievements</span>
+              </div>
+              <div className="achievements-list">
+                <div className="achievement-item">
+                  <span className="achievement-badge">{progress.currentStreak >= 1 ? '✅' : '⬜'}</span>
+                  <span className="achievement-text">First Day</span>
+                </div>
+                <div className="achievement-item">
+                  <span className="achievement-badge">{progress.currentStreak >= 3 ? '✅' : '⬜'}</span>
+                  <span className="achievement-text">3-Day Streak</span>
+                </div>
+                <div className="achievement-item">
+                  <span className="achievement-badge">{progress.currentStreak >= 7 ? '✅' : '⬜'}</span>
+                  <span className="achievement-text">Week Warrior</span>
+                </div>
+                <div className="achievement-item">
+                  <span className="achievement-badge">{progress.totalSessions >= 10 ? '✅' : '⬜'}</span>
+                  <span className="achievement-text">10 Sessions</span>
+                </div>
+                <div className="achievement-item">
+                  <span className="achievement-badge">{progress.currentStreak >= 30 ? '✅' : '⬜'}</span>
+                  <span className="achievement-text">Monthly Master</span>
+                </div>
+              </div>
+            </div>
+          </>
+        ) : (
+          <>
+            {/* Weekly Activity Chart */}
+            <div className="chart-card">
+              <div className="chart-title">Weekly Activity</div>
+              <div className="bar-chart">
+                {['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'].map((day, i) => {
+                  const dayDate = new Date();
+                  const currentDay = dayDate.getDay();
+                  const diff = i - ((currentDay + 6) % 7);
+                  const targetDate = new Date(dayDate.getTime() + diff * 86400000);
+                  const dateStr = targetDate.toISOString().split('T')[0];
+                  const entry = progress.entries.find((e) => e.date === dateStr);
+                  const height = entry ? Math.min(entry.completedCount * 20, 80) : 4;
 
-                return (
-                  <View key={day} style={styles.barCol}>
-                    <View style={styles.barTrack}>
-                      <View
-                        style={[
-                          styles.bar,
-                          { height },
-                          entry && entry.completedCount > 0 && styles.barFilled,
-                        ]}
-                      />
-                    </View>
-                    <Text style={styles.barLabel}>{day.charAt(0)}</Text>
-                  </View>
-                );
-              })}
-            </View>
-          </View>
+                  return (
+                    <div key={day} className="bar-col">
+                      <div className="bar-track">
+                        <div
+                          className={`bar ${entry && entry.completedCount > 0 ? 'filled' : ''}`}
+                          style={{ height }}
+                        />
+                      </div>
+                      <div className="bar-label">{day.charAt(0)}</div>
+                    </div>
+                  );
+                })}
+              </div>
+            </div>
 
-          {/* Best Streak */}
-          <View style={styles.periodCard}>
-            <View style={styles.periodHeader}>
-              <Text style={styles.periodIcon}>⭐</Text>
-              <Text style={styles.periodTitle}>Personal Best</Text>
-            </View>
-            <View style={styles.periodStatsRow}>
-              <View style={styles.periodStat}>
-                <Text style={styles.periodStatNumber}>{progress.longestStreak}</Text>
-                <Text style={styles.periodStatLabel}>Best Streak</Text>
-              </View>
-              <View style={styles.periodStat}>
-                <Text style={styles.periodStatNumber}>{progress.totalSessions}</Text>
-                <Text style={styles.periodStatLabel}>All Sessions</Text>
-              </View>
-              <View style={styles.periodStat}>
-                <Text style={styles.periodStatNumber}>{progress.totalMinutes}</Text>
-                <Text style={styles.periodStatLabel}>All Minutes</Text>
-              </View>
-            </View>
-          </View>
-        </View>
-      )}
+            {/* Best Streak */}
+            <div className="period-card">
+              <div className="period-header">
+                <span className="period-icon">⭐</span>
+                <span className="period-title">Personal Best</span>
+              </div>
+              <div className="period-stats-row">
+                <div className="period-stat">
+                  <div className="period-stat-number">{progress.longestStreak}</div>
+                  <div className="period-stat-label">Best Streak</div>
+                </div>
+                <div className="period-stat">
+                  <div className="period-stat-number">{progress.totalSessions}</div>
+                  <div className="period-stat-label">All Sessions</div>
+                </div>
+                <div className="period-stat">
+                  <div className="period-stat-number">{progress.totalMinutes}</div>
+                  <div className="period-stat-label">All Minutes</div>
+                </div>
+              </div>
+            </div>
+          </>
+        )}
+      </div>
 
-      <View style={styles.bottomSpacer} />
-    </ScrollView>
+      {/* Bottom Navigation */}
+      <nav className="bottom-nav">
+        <button className="bottom-nav-item" onClick={() => window.location.href = '/home'}>
+          <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+            <path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z" />
+            <polyline points="9 22 9 12 15 12 15 22" />
+          </svg>
+          <span>Home</span>
+        </button>
+        <button className="bottom-nav-item active" onClick={() => window.location.href = '/progress'}>
+          <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+            <line x1="18" y1="20" x2="18" y2="10" />
+            <line x1="12" y1="20" x2="12" y2="4" />
+            <line x1="6" y1="20" x2="6" y2="14" />
+          </svg>
+          <span>Progress</span>
+        </button>
+        <button className="bottom-nav-item" onClick={() => window.location.href = '/settings'}>
+          <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+            <circle cx="12" cy="12" r="3" />
+            <path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-2 2 2 2 0 0 1-2-2v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83 0 2 2 0 0 1 0-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1-2-2 2 2 0 0 1 2-2h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 0-2.83 2 2 0 0 1 2.83 0l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 2-2 2 2 0 0 1 2 2v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 0 2 2 0 0 1 0 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 2 2 2 2 0 0 1-2 2h-.09a1.65 1.65 0 0 0-1.51 1z" />
+          </svg>
+          <span>Settings</span>
+        </button>
+      </nav>
+    </div>
   );
 }
-
-const styles = StyleSheet.create({
-  container: {
-    flex: 1,
-    backgroundColor: COLORS.background,
-  },
-  tabRow: {
-    flexDirection: 'row',
-    paddingHorizontal: 20,
-    paddingTop: 12,
-    gap: 8,
-  },
-  tab: {
-    paddingVertical: 10,
-    paddingHorizontal: 20,
-    borderRadius: 20,
-    backgroundColor: COLORS.surface,
-    borderWidth: 1,
-    borderColor: COLORS.border,
-  },
-  tabActive: {
-    backgroundColor: COLORS.primary,
-    borderColor: COLORS.primary,
-  },
-  tabText: {
-    fontSize: 14,
-    fontWeight: '600',
-    color: COLORS.textSecondary,
-  },
-  tabTextActive: {
-    color: '#FFFFFF',
-  },
-  content: {
-    padding: 20,
-  },
-  streakCard: {
-    backgroundColor: COLORS.secondaryLight,
-    borderRadius: 20,
-    paddingVertical: 32,
-    paddingHorizontal: 24,
-    alignItems: 'center',
-    marginBottom: 16,
-    borderWidth: 1,
-    borderColor: COLORS.secondary,
-  },
-  streakFireIcon: {
-    fontSize: 36,
-    marginBottom: 8,
-  },
-  streakNumber: {
-    fontSize: 56,
-    fontWeight: '800',
-    color: COLORS.text,
-  },
-  streakLabel: {
-    fontSize: 16,
-    fontWeight: '600',
-    color: COLORS.text,
-    marginTop: 4,
-  },
-  streakMessage: {
-    fontSize: 13,
-    color: COLORS.textSecondary,
-    marginTop: 8,
-  },
-  todayRow: {
-    flexDirection: 'row',
-    gap: 12,
-    marginBottom: 16,
-  },
-  todayCard: {
-    flex: 1,
-    backgroundColor: COLORS.surface,
-    borderRadius: 16,
-    padding: 18,
-    alignItems: 'center',
-    shadowColor: '#000',
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.05,
-    shadowRadius: 8,
-    elevation: 2,
-  },
-  todayCardIcon: {
-    fontSize: 20,
-    marginBottom: 8,
-  },
-  todayCardNumber: {
-    fontSize: 28,
-    fontWeight: '700',
-    color: COLORS.primary,
-  },
-  todayCardLabel: {
-    fontSize: 11,
-    color: COLORS.textSecondary,
-    marginTop: 4,
-    fontWeight: '500',
-    textTransform: 'uppercase',
-  },
-  periodCard: {
-    backgroundColor: COLORS.surface,
-    borderRadius: 16,
-    padding: 20,
-    marginBottom: 16,
-    shadowColor: '#000',
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.05,
-    shadowRadius: 8,
-    elevation: 2,
-  },
-  periodHeader: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: 8,
-    marginBottom: 16,
-  },
-  periodIcon: {
-    fontSize: 18,
-  },
-  periodTitle: {
-    fontSize: 16,
-    fontWeight: '700',
-    color: COLORS.text,
-  },
-  periodStatsRow: {
-    flexDirection: 'row',
-    justifyContent: 'space-around',
-  },
-  periodStat: {
-    alignItems: 'center',
-  },
-  periodStatNumber: {
-    fontSize: 22,
-    fontWeight: '700',
-    color: COLORS.primary,
-  },
-  periodStatLabel: {
-    fontSize: 11,
-    color: COLORS.textSecondary,
-    marginTop: 4,
-    fontWeight: '500',
-  },
-  achievementsCard: {
-    backgroundColor: COLORS.surface,
-    borderRadius: 16,
-    padding: 20,
-    marginBottom: 16,
-    shadowColor: '#000',
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.05,
-    shadowRadius: 8,
-    elevation: 2,
-  },
-  achievementsList: {
-    gap: 12,
-  },
-  achievementItem: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: 12,
-  },
-  achievementBadge: {
-    fontSize: 18,
-  },
-  achievementText: {
-    fontSize: 14,
-    fontWeight: '500',
-    color: COLORS.text,
-  },
-  chartCard: {
-    backgroundColor: COLORS.surface,
-    borderRadius: 16,
-    padding: 20,
-    marginBottom: 16,
-    shadowColor: '#000',
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.05,
-    shadowRadius: 8,
-    elevation: 2,
-  },
-  chartTitle: {
-    fontSize: 16,
-    fontWeight: '700',
-    color: COLORS.text,
-    marginBottom: 20,
-  },
-  barChart: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    alignItems: 'flex-end',
-    height: 100,
-  },
-  barCol: {
-    alignItems: 'center',
-    flex: 1,
-  },
-  barTrack: {
-    height: 80,
-    justifyContent: 'flex-end',
-    width: 24,
-    borderRadius: 12,
-    backgroundColor: COLORS.border,
-    overflow: 'hidden',
-  },
-  bar: {
-    width: '100%',
-    borderRadius: 12,
-    backgroundColor: COLORS.border,
-    minHeight: 4,
-  },
-  barFilled: {
-    backgroundColor: COLORS.primary,
-  },
-  barLabel: {
-    fontSize: 11,
-    color: COLORS.textSecondary,
-    marginTop: 6,
-    fontWeight: '600',
-  },
-  bottomSpacer: {
-    height: 32,
-  },
-});

@@ -1,23 +1,11 @@
-import React, { useState, useEffect } from 'react';
-import {
-  View,
-  Text,
-  FlatList,
-  Switch,
-  TouchableOpacity,
-  StyleSheet,
-  ScrollView,
-} from 'react-native';
-import { useNavigation } from '@react-navigation/native';
-import { NativeStackNavigationProp } from '@react-navigation/native-stack';
-import uuid from 'react-native-uuid';
+import { useState, useEffect } from 'react';
+import { useNavigate } from 'react-router-dom';
+import { nanoid } from 'nanoid';
 import { useRemindersContext } from '../context/RemindersContext';
 import { scheduleReminder, cancelReminder, getNextFireTime, getAlertsSent } from '../services/notifications';
 import { COLORS, APP_NAME, PRESET_REMINDERS, DEFAULT_SCHEDULE } from '../constants';
 import { Reminder } from '../types';
-import { HomeStackParamList } from '../navigation/RootNavigator';
-
-type NavigationProp = NativeStackNavigationProp<HomeStackParamList, 'HomeList'>;
+import '../screens.css';
 
 function getGreeting(): string {
   const hour = new Date().getHours();
@@ -38,7 +26,7 @@ function getFormattedDate(): string {
 
 export default function HomeScreen() {
   const { reminders, settings, dispatch } = useRemindersContext();
-  const navigation = useNavigation<NavigationProp>();
+  const navigation = useNavigate();
 
   const activeReminders = reminders.filter((r) => r.isActive);
   const totalReminders = reminders.length;
@@ -105,7 +93,7 @@ export default function HomeScreen() {
     if (existing) return;
 
     const reminder: Reminder = {
-      id: uuid.v4() as string,
+      id: nanoid(),
       title: preset.title,
       intervalMinutes: preset.defaultInterval,
       isActive: true,
@@ -118,7 +106,9 @@ export default function HomeScreen() {
     try {
       const notificationId = await scheduleReminder(reminder);
       reminder.notificationId = notificationId;
-    } catch {}
+    } catch (e) {
+      console.error('Failed to schedule reminder:', e);
+    }
 
     dispatch({ type: 'ADD', payload: reminder });
   };
@@ -138,7 +128,8 @@ export default function HomeScreen() {
           payload: { ...reminder, isActive: true, notificationId },
         });
       }
-    } catch {
+    } catch (e) {
+      console.error('Failed to toggle reminder:', e);
       dispatch({
         type: 'UPDATE',
         payload: { ...reminder, isActive: !reminder.isActive },
@@ -146,18 +137,12 @@ export default function HomeScreen() {
     }
   };
 
-  const handleDelete = async (reminder: Reminder) => {
-    const confirmed = window.confirm
-      ? window.confirm(`Delete "${reminder.title}"?`)
-      : true;
+  const handleDelete = (reminder: Reminder) => {
+    if (!window.confirm(`Delete "${reminder.title}"?`)) return;
 
-    if (!confirmed) return;
-
-    try {
-      if (reminder.notificationId) {
-        await cancelReminder(reminder.notificationId);
-      }
-    } catch {}
+    if (reminder.notificationId) {
+      cancelReminder(reminder.notificationId).catch(console.error);
+    }
     dispatch({ type: 'DELETE', payload: reminder.id });
   };
 
@@ -175,449 +160,285 @@ export default function HomeScreen() {
     return colors[index % colors.length];
   };
 
-  const renderReminderItem = ({ item, index }: { item: Reminder; index: number }) => (
-    <View style={[styles.reminderCard, { backgroundColor: getCategoryColor(index) }]}>
-      <View style={styles.reminderTopRow}>
-        <TouchableOpacity
-          style={styles.reminderIconCircle}
-          onPress={() => navigation.navigate('EditReminder', { reminderId: item.id })}
-          activeOpacity={0.7}
-        >
-          <Text style={styles.reminderIcon}>{item.icon}</Text>
-        </TouchableOpacity>
-        <Switch
-          value={item.isActive}
-          onValueChange={() => handleToggle(item)}
-          trackColor={{ false: COLORS.disabled, true: COLORS.primary }}
-          thumbColor={item.isActive ? '#FFFFFF' : '#f4f3f4'}
-        />
-      </View>
-      <TouchableOpacity
-        style={styles.reminderBottom}
-        onPress={() => navigation.navigate('EditReminder', { reminderId: item.id })}
-        activeOpacity={0.7}
-      >
-        <Text style={styles.reminderTitle}>{item.title}</Text>
-        <Text style={styles.reminderInterval}>
-          Every {formatInterval(item.intervalMinutes)}
-        </Text>
-      </TouchableOpacity>
-      <View style={styles.reminderStatusRow}>
-        <View style={[styles.statusDot, { backgroundColor: item.isActive ? '#4CAF50' : COLORS.disabled }]} />
-        <Text style={styles.statusText}>{item.isActive ? 'Active' : 'Paused'}</Text>
-        <TouchableOpacity
-          style={styles.deleteIcon}
-          onPress={() => handleDelete(item)}
-        >
-          <Text style={styles.deleteIconText}>✕</Text>
-        </TouchableOpacity>
-      </View>
-    </View>
-  );
-
   return (
-    <ScrollView style={styles.container} showsVerticalScrollIndicator={false}>
+    <div className="page">
       {/* Welcome Header */}
-      <View style={styles.header}>
-        <View style={styles.headerTop}>
-          <View>
-            <Text style={styles.greeting}>{getGreeting()}</Text>
-            <Text style={styles.appTitle}>{APP_NAME}</Text>
-          </View>
-          <View style={styles.avatarCircle}>
-            <Text style={styles.avatarText}>🌿</Text>
-          </View>
-        </View>
-        <View style={styles.dateRow}>
-          <Text style={styles.dateIcon}>📅</Text>
-          <Text style={styles.dateText}>{getFormattedDate()}</Text>
-          <Text style={styles.timeText}>
+      <div className="page-header">
+        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '12px' }}>
+          <div>
+            <p style={{ fontSize: '14px', color: 'rgba(255,255,255,0.8)', fontWeight: 500, margin: 0 }}>
+              {getGreeting()}
+            </p>
+            <h1 style={{ fontSize: '26px', fontWeight: 800, color: '#FFFFFF', marginTop: '2px', margin: 0 }}>
+              {APP_NAME}
+            </h1>
+          </div>
+          <div style={{
+            width: '44px',
+            height: '44px',
+            borderRadius: '22px',
+            backgroundColor: 'rgba(255,255,255,0.2)',
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'center',
+            fontSize: '22px',
+          }}>
+            🌿
+          </div>
+        </div>
+        <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
+          <span>📅</span>
+          <span style={{ fontSize: '13px', color: 'rgba(255,255,255,0.9)', fontWeight: 400, flex: 1 }}>
+            {getFormattedDate()}
+          </span>
+          <span style={{ fontSize: '13px', color: 'rgba(255,255,255,0.9)', fontWeight: 600 }}>
             {currentTime.toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit' })}
-          </Text>
-        </View>
-      </View>
+          </span>
+        </div>
+      </div>
 
-      {/* Quick Stats Banner */}
-      {totalReminders > 0 && (
-        <View style={styles.statsBanner}>
-          <View style={styles.statItem}>
-            <Text style={styles.statNumber}>{activeReminders.length}</Text>
-            <Text style={styles.statLabel}>Active</Text>
-          </View>
-          <View style={styles.statDivider} />
-          <View style={styles.statItem}>
-            <Text style={styles.statNumber}>{alertsSent}</Text>
-            <Text style={styles.statLabel}>Alerts Sent</Text>
-          </View>
-          <View style={styles.statDivider} />
-          <View style={styles.statItem}>
-            <Text style={styles.statNumber}>{countdown}</Text>
-            <Text style={styles.statLabel}>Next In</Text>
-          </View>
-        </View>
-      )}
-
-      {/* My Routines */}
-      <View style={styles.sectionContainer}>
-        <View style={styles.sectionHeader}>
-          <Text style={styles.sectionTitle}>My Routines</Text>
-          <TouchableOpacity onPress={() => navigation.navigate('AddReminder')}>
-            <Text style={styles.seeAllText}>+ Add New</Text>
-          </TouchableOpacity>
-        </View>
-
-        {reminders.length === 0 ? (
-          <TouchableOpacity
-            style={styles.emptyCard}
-            onPress={() => navigation.navigate('AddReminder')}
-            activeOpacity={0.7}
-          >
-            <View style={styles.emptyIconWrap}>
-              <Text style={styles.emptyPlusIcon}>+</Text>
-            </View>
-            <Text style={styles.emptyTitle}>Create your first routine</Text>
-            <Text style={styles.emptySubtitle}>Tap to start</Text>
-          </TouchableOpacity>
-        ) : (
-          <View style={styles.routinesGrid}>
-            {reminders.map((item, index) => (
-              <View key={item.id} style={styles.routineGridItem}>
-                {renderReminderItem({ item, index })}
-              </View>
-            ))}
-          </View>
+      <div className="page-content">
+        {/* Quick Stats Banner */}
+        {totalReminders > 0 && (
+          <div style={{
+            display: 'flex',
+            backgroundColor: COLORS.surface,
+            borderRadius: '16px',
+            padding: '18px 16px',
+            marginBottom: '28px',
+            boxShadow: '0 4px 12px rgba(0,0,0,0.08)',
+            alignItems: 'center',
+          }}>
+            <div style={{ flex: 1, textAlign: 'center' }}>
+              <div style={{ fontSize: '18px', fontWeight: 700, color: COLORS.primary }}>{activeReminders.length}</div>
+              <div style={{ fontSize: '11px', color: COLORS.textSecondary, marginTop: '4px', fontWeight: 500, textTransform: 'uppercase' }}>Active</div>
+            </div>
+            <div style={{ width: '1px', height: '30px', backgroundColor: COLORS.border }} />
+            <div style={{ flex: 1, textAlign: 'center' }}>
+              <div style={{ fontSize: '18px', fontWeight: 700, color: COLORS.primary }}>{alertsSent}</div>
+              <div style={{ fontSize: '11px', color: COLORS.textSecondary, marginTop: '4px', fontWeight: 500, textTransform: 'uppercase' }}>Alerts Sent</div>
+            </div>
+            <div style={{ width: '1px', height: '30px', backgroundColor: COLORS.border }} />
+            <div style={{ flex: 1, textAlign: 'center' }}>
+              <div style={{ fontSize: '18px', fontWeight: 700, color: COLORS.primary }}>{countdown}</div>
+              <div style={{ fontSize: '11px', color: COLORS.textSecondary, marginTop: '4px', fontWeight: 500, textTransform: 'uppercase' }}>Next In</div>
+            </div>
+          </div>
         )}
-      </View>
 
-      {/* Quick Add */}
-      <View style={styles.sectionContainer}>
-        <Text style={styles.quickAddTitle}>Quick Add</Text>
-        <ScrollView horizontal showsHorizontalScrollIndicator={false} style={styles.quickAddScroll}>
-          {PRESET_REMINDERS.map((preset) => {
-            const alreadyExists = reminders.some((r) => r.title === preset.title);
-            return (
-              <TouchableOpacity
-                key={preset.title}
-                style={[styles.quickAddChip, alreadyExists && styles.quickAddChipDisabled]}
-                activeOpacity={alreadyExists ? 1 : 0.7}
-                onPress={() => handleQuickAdd(preset)}
-              >
-                <Text style={styles.quickAddChipIcon}>{preset.icon}</Text>
-                <Text style={[styles.quickAddChipLabel, alreadyExists && styles.quickAddChipLabelDisabled]}>
-                  {preset.title}
-                </Text>
-                {alreadyExists && <Text style={styles.quickAddChipCheck}>✓</Text>}
-              </TouchableOpacity>
-            );
-          })}
-        </ScrollView>
-      </View>
+        {/* My Routines */}
+        <div style={{ marginBottom: '28px' }}>
+          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '16px' }}>
+            <h2 style={{ fontSize: '18px', fontWeight: 700, color: COLORS.text, margin: 0 }}>My Routines</h2>
+            <button 
+              onClick={() => navigation('/add-reminder')}
+              style={{ background: 'none', border: 'none', color: COLORS.primary, fontSize: '14px', fontWeight: 600, cursor: 'pointer' }}
+            >
+              + Add New
+            </button>
+          </div>
 
-      {/* Tip of the Day */}
-      <View style={styles.tipCard}>
-        <Text style={styles.tipLabel}>💡 Tip</Text>
-        <Text style={styles.tipText}>
-          Taking a 5-minute stretch break every hour can reduce back pain by up to 40% and boost focus.
-        </Text>
-      </View>
+          {reminders.length === 0 ? (
+            <button
+              onClick={() => navigation('/add-reminder')}
+              style={{
+                width: '100%',
+                backgroundColor: COLORS.primaryLight,
+                borderRadius: '16px',
+                padding: '32px',
+                border: `2px dashed ${COLORS.primary}`,
+                display: 'flex',
+                flexDirection: 'column',
+                alignItems: 'center',
+                cursor: 'pointer',
+              }}
+            >
+              <div style={{
+                width: '56px',
+                height: '56px',
+                borderRadius: '28px',
+                backgroundColor: 'rgba(232, 97, 77, 0.15)',
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'center',
+                marginBottom: '12px',
+              }}>
+                <span style={{ fontSize: '28px', color: COLORS.primary, fontWeight: 600 }}>+</span>
+              </div>
+              <span style={{ fontSize: '16px', fontWeight: 700, color: COLORS.text, marginBottom: '4px' }}>Create your first routine</span>
+              <span style={{ fontSize: '13px', color: COLORS.textSecondary }}>Tap to start</span>
+            </button>
+          ) : (
+            <div style={{ display: 'flex', flexWrap: 'wrap', gap: '12px' }}>
+              {reminders.map((item, index) => (
+                <div key={item.id} style={{ width: '47%' }}>
+                  <div style={{
+                    ...styles.reminderCard,
+                    backgroundColor: getCategoryColor(index),
+                  }}>
+                    <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '14px' }}>
+                      <button
+                        onClick={() => navigation(`/edit-reminder/${item.id}`)}
+                        style={{
+                          width: '44px',
+                          height: '44px',
+                          borderRadius: '22px',
+                          backgroundColor: 'rgba(255,255,255,0.7)',
+                          display: 'flex',
+                          alignItems: 'center',
+                          justifyContent: 'center',
+                          border: 'none',
+                          cursor: 'pointer',
+                        }}
+                      >
+                        <span style={{ fontSize: '22px' }}>{item.icon}</span>
+                      </button>
+                      <label style={{ position: 'relative', display: 'inline-block', width: '51px', height: '31px' }}>
+                        <input
+                          type="checkbox"
+                          checked={item.isActive}
+                          onChange={() => handleToggle(item)}
+                          style={{ opacity: 0, width: 0, height: 0 }}
+                        />
+                        <span style={{
+                          position: 'absolute',
+                          cursor: 'pointer',
+                          inset: 0,
+                          backgroundColor: item.isActive ? COLORS.primary : COLORS.disabled,
+                          borderRadius: '31px',
+                          transition: '0.3s',
+                        }}>
+                          <span style={{
+                            position: 'absolute',
+                            left: item.isActive ? '23px' : '3px',
+                            top: '3px',
+                            width: '25px',
+                            height: '25px',
+                            backgroundColor: '#FFFFFF',
+                            borderRadius: '50%',
+                            transition: '0.3s',
+                          }} />
+                        </span>
+                      </label>
+                    </div>
+                    <button
+                      onClick={() => navigation(`/edit-reminder/${item.id}`)}
+                      style={{ background: 'none', border: 'none', padding: 0, cursor: 'pointer', textAlign: 'left', width: '100%' }}
+                    >
+                      <div style={{ fontSize: '15px', fontWeight: 700, color: COLORS.text, marginBottom: '2px' }}>{item.title}</div>
+                      <div style={{ fontSize: '12px', color: COLORS.textSecondary, marginTop: '2px' }}>Every {formatInterval(item.intervalMinutes)}</div>
+                    </button>
+                    <div style={{ display: 'flex', alignItems: 'center', marginTop: '10px', gap: '6px' }}>
+                      <div style={{ width: '8px', height: '8px', borderRadius: '4px', backgroundColor: item.isActive ? '#4CAF50' : COLORS.disabled }} />
+                      <span style={{ fontSize: '11px', color: COLORS.textSecondary, fontWeight: 500, flex: 1 }}>
+                        {item.isActive ? 'Active' : 'Paused'}
+                      </span>
+                      <button
+                        onClick={() => handleDelete(item)}
+                        style={{
+                          width: '24px',
+                          height: '24px',
+                          borderRadius: '12px',
+                          backgroundColor: 'rgba(239, 68, 68, 0.1)',
+                          display: 'flex',
+                          alignItems: 'center',
+                          justifyContent: 'center',
+                          border: 'none',
+                          cursor: 'pointer',
+                        }}
+                      >
+                        <span style={{ color: COLORS.danger, fontSize: '11px', fontWeight: 700 }}>✕</span>
+                      </button>
+                    </div>
+                  </div>
+                </div>
+              ))}
+            </div>
+          )}
+        </div>
 
-      <View style={styles.bottomSpacer} />
-    </ScrollView>
+        {/* Quick Add */}
+        <div style={{ marginBottom: '28px' }}>
+          <h3 style={{ fontSize: '15px', fontWeight: 700, color: COLORS.text, marginBottom: '10px' }}>Quick Add</h3>
+          <div style={{ display: 'flex', gap: '8px', overflowX: 'auto', paddingBottom: '8px', scrollbarWidth: 'none' }}>
+            {PRESET_REMINDERS.map((preset) => {
+              const alreadyExists = reminders.some((r) => r.title === preset.title);
+              return (
+                <button
+                  key={preset.title}
+                  onClick={() => !alreadyExists && handleQuickAdd(preset)}
+                  disabled={alreadyExists}
+                  style={{
+                    display: 'flex',
+                    alignItems: 'center',
+                    gap: '6px',
+                    backgroundColor: alreadyExists ? COLORS.border : COLORS.surface,
+                    borderRadius: '20px',
+                    padding: '8px 14px',
+                    border: `1px solid ${alreadyExists ? COLORS.border : COLORS.border}`,
+                    cursor: alreadyExists ? 'default' : 'pointer',
+                    opacity: alreadyExists ? 0.5 : 1,
+                    whiteSpace: 'nowrap',
+                  }}
+                >
+                  <span style={{ fontSize: '16px' }}>{preset.icon}</span>
+                  <span style={{ fontSize: '12px', fontWeight: 600, color: alreadyExists ? COLORS.textSecondary : COLORS.text }}>
+                    {preset.title}
+                  </span>
+                  {alreadyExists && <span style={{ fontSize: '10px', color: COLORS.accent, fontWeight: 700 }}>✓</span>}
+                </button>
+              );
+            })}
+          </div>
+        </div>
+
+        {/* Tip of the Day */}
+        <div style={{
+          backgroundColor: COLORS.accentLight,
+          borderRadius: '14px',
+          padding: '16px',
+          borderLeft: `4px solid ${COLORS.accent}`,
+        }}>
+          <div style={{ fontSize: '13px', fontWeight: 700, color: COLORS.accent, marginBottom: '6px' }}>💡 Tip</div>
+          <p style={{ fontSize: '13px', color: COLORS.text, lineHeight: 1.5, margin: 0 }}>
+            Taking a 5-minute stretch break every hour can reduce back pain by up to 40% and boost focus.
+          </p>
+        </div>
+      </div>
+
+      {/* Bottom Navigation */}
+      <nav className="bottom-nav">
+        <button className="bottom-nav-item active" onClick={() => navigation('/home')}>
+          <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+            <path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z" />
+            <polyline points="9 22 9 12 15 12 15 22" />
+          </svg>
+          <span>Home</span>
+        </button>
+        <button className="bottom-nav-item" onClick={() => navigation('/progress')}>
+          <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+            <line x1="18" y1="20" x2="18" y2="10" />
+            <line x1="12" y1="20" x2="12" y2="4" />
+            <line x1="6" y1="20" x2="6" y2="14" />
+          </svg>
+          <span>Progress</span>
+        </button>
+        <button className="bottom-nav-item" onClick={() => navigation('/settings')}>
+          <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+            <circle cx="12" cy="12" r="3" />
+            <path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-2 2 2 2 0 0 1-2-2v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83 0 2 2 0 0 1 0-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1-2-2 2 2 0 0 1 2-2h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 0-2.83 2 2 0 0 1 2.83 0l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 2-2 2 2 0 0 1 2 2v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 0 2 2 0 0 1 0 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 2 2 2 2 0 0 1-2 2h-.09a1.65 1.65 0 0 0-1.51 1z" />
+          </svg>
+          <span>Settings</span>
+        </button>
+      </nav>
+    </div>
   );
 }
 
-const styles = StyleSheet.create({
-  container: {
-    flex: 1,
-    backgroundColor: COLORS.background,
-  },
-  header: {
-    paddingHorizontal: 24,
-    paddingTop: 16,
-    paddingBottom: 20,
-    backgroundColor: COLORS.primary,
-    borderBottomLeftRadius: 28,
-    borderBottomRightRadius: 28,
-  },
-  headerTop: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    alignItems: 'center',
-    marginBottom: 12,
-  },
-  greeting: {
-    fontSize: 14,
-    color: 'rgba(255,255,255,0.8)',
-    fontWeight: '500',
-  },
-  appTitle: {
-    fontSize: 26,
-    fontWeight: '800',
-    color: '#FFFFFF',
-    marginTop: 2,
-  },
-  avatarCircle: {
-    width: 44,
-    height: 44,
-    borderRadius: 22,
-    backgroundColor: 'rgba(255,255,255,0.2)',
-    justifyContent: 'center',
-    alignItems: 'center',
-  },
-  avatarText: {
-    fontSize: 22,
-  },
-  dateRow: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: 6,
-  },
-  dateIcon: {
-    fontSize: 14,
-  },
-  dateText: {
-    fontSize: 13,
-    color: 'rgba(255,255,255,0.9)',
-    fontWeight: '400',
-    flex: 1,
-  },
-  timeText: {
-    fontSize: 13,
-    color: 'rgba(255,255,255,0.9)',
-    fontWeight: '600',
-  },
-  statsBanner: {
-    flexDirection: 'row',
-    backgroundColor: COLORS.surface,
-    marginHorizontal: 20,
-    marginTop: -20,
-    borderRadius: 16,
-    paddingVertical: 18,
-    paddingHorizontal: 16,
-    shadowColor: '#000',
-    shadowOffset: { width: 0, height: 4 },
-    shadowOpacity: 0.08,
-    shadowRadius: 12,
-    elevation: 4,
-    alignItems: 'center',
-  },
-  statItem: {
-    flex: 1,
-    alignItems: 'center',
-  },
-  statNumber: {
-    fontSize: 18,
-    fontWeight: '700',
-    color: COLORS.primary,
-  },
-  statLabel: {
-    fontSize: 11,
-    color: COLORS.textSecondary,
-    marginTop: 4,
-    fontWeight: '500',
-    textTransform: 'uppercase',
-  },
-  statDivider: {
-    width: 1,
-    height: 30,
-    backgroundColor: COLORS.border,
-  },
-  sectionContainer: {
-    paddingHorizontal: 20,
-    marginTop: 28,
-  },
-  sectionHeader: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    alignItems: 'center',
-    marginBottom: 16,
-  },
-  sectionTitle: {
-    fontSize: 18,
-    fontWeight: '700',
-    color: COLORS.text,
-    marginBottom: 16,
-  },
-  seeAllText: {
-    fontSize: 14,
-    fontWeight: '600',
-    color: COLORS.primary,
-  },
-  quickAddTitle: {
-    fontSize: 15,
-    fontWeight: '700',
-    color: COLORS.text,
-    marginBottom: 10,
-  },
-  quickAddScroll: {
-    marginHorizontal: -4,
-  },
-  quickAddChip: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    backgroundColor: COLORS.surface,
-    borderRadius: 20,
-    paddingVertical: 8,
-    paddingHorizontal: 14,
-    marginHorizontal: 4,
-    borderWidth: 1,
-    borderColor: COLORS.border,
-    gap: 6,
-  },
-  quickAddChipDisabled: {
-    opacity: 0.5,
-    backgroundColor: COLORS.border,
-  },
-  quickAddChipIcon: {
-    fontSize: 16,
-  },
-  quickAddChipLabel: {
-    fontSize: 12,
-    fontWeight: '600',
-    color: COLORS.text,
-  },
-  quickAddChipLabelDisabled: {
-    color: COLORS.textSecondary,
-  },
-  quickAddChipCheck: {
-    fontSize: 10,
-    color: COLORS.accent,
-    fontWeight: '700',
-  },
-  emptyCard: {
-    backgroundColor: COLORS.primaryLight,
-    borderRadius: 16,
-    paddingVertical: 32,
-    alignItems: 'center',
-    borderWidth: 2,
-    borderColor: COLORS.primary,
-    borderStyle: 'dashed',
-  },
-  emptyIconWrap: {
-    width: 56,
-    height: 56,
-    borderRadius: 28,
-    backgroundColor: 'rgba(232, 97, 77, 0.15)',
-    justifyContent: 'center',
-    alignItems: 'center',
-    marginBottom: 12,
-  },
-  emptyPlusIcon: {
-    fontSize: 28,
-    color: COLORS.primary,
-    fontWeight: '600',
-  },
-  emptyTitle: {
-    fontSize: 16,
-    fontWeight: '700',
-    color: COLORS.text,
-    marginBottom: 4,
-  },
-  emptySubtitle: {
-    fontSize: 13,
-    color: COLORS.textSecondary,
-  },
-  routinesGrid: {
-    flexDirection: 'row',
-    flexWrap: 'wrap',
-    gap: 12,
-  },
-  routineGridItem: {
-    width: '47%',
-  },
+const styles = {
   reminderCard: {
-    borderRadius: 18,
-    padding: 16,
-    shadowColor: '#000',
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.06,
-    shadowRadius: 8,
-    elevation: 3,
+    borderRadius: '18px',
+    padding: '16px',
+    boxShadow: '0 2px 8px rgba(0,0,0,0.06)',
   },
-  reminderTopRow: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    alignItems: 'center',
-    marginBottom: 14,
-  },
-  reminderIconCircle: {
-    width: 44,
-    height: 44,
-    borderRadius: 22,
-    backgroundColor: 'rgba(255,255,255,0.7)',
-    justifyContent: 'center',
-    alignItems: 'center',
-  },
-  reminderActions: {
-    transform: [{ scale: 0.85 }],
-  },
-  reminderBottom: {
-    gap: 2,
-  },
-  reminderIcon: {
-    fontSize: 22,
-  },
-  reminderTitle: {
-    fontSize: 15,
-    fontWeight: '700',
-    color: COLORS.text,
-  },
-  reminderInterval: {
-    fontSize: 12,
-    color: COLORS.textSecondary,
-    marginTop: 2,
-  },
-  reminderStatusRow: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    marginTop: 10,
-    gap: 6,
-  },
-  statusDot: {
-    width: 8,
-    height: 8,
-    borderRadius: 4,
-  },
-  statusText: {
-    fontSize: 11,
-    color: COLORS.textSecondary,
-    fontWeight: '500',
-    flex: 1,
-  },
-  deleteIcon: {
-    width: 24,
-    height: 24,
-    borderRadius: 12,
-    backgroundColor: 'rgba(239, 68, 68, 0.1)',
-    justifyContent: 'center',
-    alignItems: 'center',
-  },
-  deleteIconText: {
-    color: COLORS.danger,
-    fontSize: 11,
-    fontWeight: '700',
-  },
-  tipCard: {
-    marginHorizontal: 20,
-    marginTop: 28,
-    backgroundColor: COLORS.accentLight,
-    borderRadius: 14,
-    padding: 16,
-    borderLeftWidth: 4,
-    borderLeftColor: COLORS.accent,
-  },
-  tipLabel: {
-    fontSize: 13,
-    fontWeight: '700',
-    color: COLORS.accent,
-    marginBottom: 6,
-  },
-  tipText: {
-    fontSize: 13,
-    color: COLORS.text,
-    lineHeight: 19,
-  },
-  bottomSpacer: {
-    height: 32,
-  },
-});
+};
