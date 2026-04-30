@@ -4,7 +4,7 @@ import { nanoid } from 'nanoid';
 import { useRemindersContext } from '../context/RemindersContext';
 import { scheduleReminder, cancelReminder, getNextFireTime, getAlertsSent, isWithinSchedule } from '../services/notifications';
 import { getInstallPrompt, onInstallPromptChange } from '../services/installPrompt';
-import { COLORS, APP_NAME, PRESET_REMINDERS, DEFAULT_SCHEDULE } from '../constants';
+import { COLORS, APP_NAME, PRESET_REMINDERS, DEFAULT_SCHEDULE, WELLNESS_TIPS } from '../constants';
 import { Reminder } from '../types';
 import '../screens.css';
 
@@ -452,7 +452,7 @@ export default function HomeScreen() {
         }}>
           <div style={{ fontSize: '13px', fontWeight: 700, color: COLORS.accent, marginBottom: '6px' }}>💡 Tip</div>
           <p style={{ fontSize: '13px', color: COLORS.text, lineHeight: 1.5, margin: 0 }}>
-            Taking a 5-minute stretch break every hour can reduce back pain by up to 40% and boost focus.
+            {WELLNESS_TIPS[Math.floor(Date.now() / (1000 * 60 * 60 * 3)) % WELLNESS_TIPS.length]}
           </p>
         </div>
       </div>

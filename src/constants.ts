@@ -61,3 +61,26 @@ export const DEFAULT_SETTINGS = {
   notificationsEnabled: true,
   defaultSchedule: DEFAULT_SCHEDULE,
 };
+
+export const WELLNESS_TIPS = [
+  'Taking a 5-minute stretch break every hour can reduce back pain by up to 40% and boost focus.',
+  'Looking away from your screen every 20 minutes for 20 seconds at something 20 feet away helps prevent eye strain.',
+  'Standing up and walking for just 2 minutes every hour can offset the effects of prolonged sitting.',
+  'Drinking water regularly throughout the day improves concentration and reduces fatigue by up to 25%.',
+  'A short mindful breathing exercise can lower cortisol levels and reduce stress in under 3 minutes.',
+  'Proper posture while sitting can prevent up to 80% of back, neck, and shoulder pain at work.',
+  'Taking micro-breaks between tasks helps your brain consolidate information and improves creativity.',
+  'Rolling your shoulders back and down every 30 minutes prevents tension headaches from building up.',
+  'A 10-minute walk after lunch improves afternoon productivity and helps regulate blood sugar levels.',
+  'Blinking deliberately 10 times every 20 minutes keeps your eyes moisturised and reduces digital eye fatigue.',
+  'Stretching your wrists and fingers for 30 seconds every hour helps prevent repetitive strain injuries.',
+  'Natural daylight exposure during breaks helps regulate your circadian rhythm and improves sleep quality.',
+  'Deep belly breathing for 60 seconds activates your parasympathetic nervous system and calms anxiety.',
+  'Adjusting your monitor to arm length distance and eye level reduces neck strain by up to 50%.',
+  'A brief desk yoga routine can increase blood flow to the brain and sharpen your afternoon focus.',
+  'Staying hydrated helps your body flush toxins and keeps joints lubricated for less stiffness.',
+  'Taking the stairs instead of the lift adds up to significant cardiovascular benefit over a week.',
+  'Unclenching your jaw and relaxing your tongue from the roof of your mouth releases facial tension instantly.',
+  'A 5-minute gratitude pause during your workday has been shown to boost mood and team morale.',
+  'Keeping a plant on your desk can reduce stress, improve air quality, and increase productivity by 15%.',
+];
