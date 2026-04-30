@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { nanoid } from 'nanoid';
 import { useRemindersContext } from '../context/RemindersContext';
@@ -35,6 +35,9 @@ export default function HomeScreen() {
   const [countdown, setCountdown] = useState('--');
   const [currentTime, setCurrentTime] = useState(new Date());
   const [alertsSent, setAlertsSent] = useState(0);
+  const [notifPermission, setNotifPermission] = useState(
+    () => 'Notification' in window ? Notification.permission : 'denied'
+  );
   const [installPrompt, setInstallPrompt] = useState<any>(getInstallPrompt);
   const isInstalled = window.matchMedia('(display-mode: standalone)').matches;
 
@@ -53,6 +56,11 @@ export default function HomeScreen() {
       setInstallPrompt(null);
     }
   };
+
+  const handleEnableNotifications = useCallback(async () => {
+    const result = await Notification.requestPermission();
+    setNotifPermission(result);
+  }, []);
 
   useEffect(() => {
     getAlertsSent().then(setAlertsSent);
@@ -458,6 +466,40 @@ export default function HomeScreen() {
           </p>
         </div>
       </div>
+
+      {/* Notification Warning */}
+      {notifPermission !== 'granted' && (
+        <div style={{
+          flexShrink: 0,
+          display: 'flex',
+          alignItems: 'center',
+          gap: '10px',
+          padding: '10px 16px',
+          backgroundColor: '#FEF3CD',
+          borderTop: '1px solid #F0E6E0',
+        }}>
+          <span style={{ fontSize: '16px', flexShrink: 0 }}>⚠️</span>
+          <p style={{ fontSize: '12px', color: '#856404', lineHeight: 1.4, margin: 0, flex: 1 }}>
+            Notifications are off. Breakly can't remind you to take breaks.
+          </p>
+          <button
+            onClick={handleEnableNotifications}
+            style={{
+              flexShrink: 0,
+              padding: '6px 12px',
+              borderRadius: '8px',
+              border: 'none',
+              backgroundColor: COLORS.primary,
+              color: '#FFFFFF',
+              fontSize: '11px',
+              fontWeight: 600,
+              cursor: 'pointer',
+            }}
+          >
+            Enable
+          </button>
+        </div>
+      )}
 
       {/* Bottom Navigation */}
       <nav className="bottom-nav">
