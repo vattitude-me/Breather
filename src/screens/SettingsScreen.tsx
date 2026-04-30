@@ -6,6 +6,32 @@ import { COLORS, SNOOZE_OPTIONS, INTERVAL_PRESETS, DAYS_OF_WEEK, DEFAULT_SCHEDUL
 import { DayOfWeek } from '../types';
 import '../screens.css';
 
+function InfoTooltip({ text }: { text: string }) {
+  const [show, setShow] = useState(false);
+  return (
+    <span style={{ position: 'relative', display: 'inline-flex', marginLeft: '6px' }}>
+      <button
+        onClick={() => setShow(!show)}
+        onBlur={() => setShow(false)}
+        style={{
+          width: '16px', height: '16px', borderRadius: '8px',
+          background: '#F0E6E0', border: 'none', cursor: 'pointer',
+          fontSize: '10px', fontWeight: 700, color: '#9CA3AF',
+          display: 'flex', alignItems: 'center', justifyContent: 'center',
+        }}
+      >?</button>
+      {show && (
+        <span style={{
+          position: 'absolute', bottom: '24px', left: '50%', transform: 'translateX(-50%)',
+          background: '#1A1A2E', color: '#FFF', fontSize: '11px', padding: '8px 12px',
+          borderRadius: '8px', whiteSpace: 'nowrap', zIndex: 10,
+          boxShadow: '0 4px 12px rgba(0,0,0,0.15)',
+        }}>{text}</span>
+      )}
+    </span>
+  );
+}
+
 export default function SettingsScreen() {
   const { settings, updateSettings, reminders, dispatch } = useRemindersContext();
   const navigation = useNavigate();
@@ -94,16 +120,12 @@ export default function SettingsScreen() {
         </h1>
       </div>
 
-      <div className="page-content">
+      <div className="page-content" style={{ padding: '16px 20px' }}>
         {/* Notifications */}
-        <div className="settings-section">
-          <h2 className="settings-section-title">Notifications</h2>
-          <div className="settings-row">
-            <div style={{ flex: 1 }}>
-              <div className="settings-row-label">Enable Notifications</div>
-              <div className="settings-row-description">Turn off to pause all reminders</div>
-            </div>
-            <label style={{ position: 'relative', display: 'inline-block', width: '51px', height: '31px' }}>
+        <div className="settings-card">
+          <div className="settings-card-row">
+            <span className="settings-card-label">Notifications</span>
+            <label style={{ position: 'relative', display: 'inline-block', width: '44px', height: '26px' }}>
               <input
                 type="checkbox"
                 checked={notificationsEnabled}
@@ -111,32 +133,27 @@ export default function SettingsScreen() {
                 style={{ opacity: 0, width: 0, height: 0 }}
               />
               <span style={{
-                position: 'absolute',
-                cursor: 'pointer',
-                inset: 0,
+                position: 'absolute', cursor: 'pointer', inset: 0,
                 backgroundColor: notificationsEnabled ? COLORS.primary : COLORS.disabled,
-                borderRadius: '31px',
-                transition: '0.3s',
+                borderRadius: '26px', transition: '0.3s',
               }}>
                 <span style={{
                   position: 'absolute',
-                  left: notificationsEnabled ? '23px' : '3px',
-                  top: '3px',
-                  width: '25px',
-                  height: '25px',
-                  backgroundColor: '#FFFFFF',
-                  borderRadius: '50%',
-                  transition: '0.3s',
+                  left: notificationsEnabled ? '20px' : '3px', top: '3px',
+                  width: '20px', height: '20px',
+                  backgroundColor: '#FFFFFF', borderRadius: '50%', transition: '0.3s',
                 }} />
               </span>
             </label>
           </div>
         </div>
 
-        {/* Default Interval */}
-        <div className="settings-section">
-          <h2 className="settings-section-title">Default Interval</h2>
-          <p className="settings-section-description">Used when creating new reminders</p>
+        {/* Reminder Interval */}
+        <div className="settings-card">
+          <div className="settings-card-header">
+            <span className="settings-card-label">Reminder Interval</span>
+            <InfoTooltip text="How often you'll be reminded" />
+          </div>
           <div className="chips-row">
             {INTERVAL_PRESETS.map((minutes) => (
               <button
@@ -150,10 +167,12 @@ export default function SettingsScreen() {
           </div>
         </div>
 
-        {/* Default Snooze Duration */}
-        <div className="settings-section">
-          <h2 className="settings-section-title">Default Snooze Duration</h2>
-          <p className="settings-section-description">How long to snooze when you tap Snooze</p>
+        {/* Snooze */}
+        <div className="settings-card">
+          <div className="settings-card-header">
+            <span className="settings-card-label">Snooze Duration</span>
+            <InfoTooltip text="Delay before next reminder after snooze" />
+          </div>
           <div className="chips-row">
             {SNOOZE_OPTIONS.map((minutes) => (
               <button
@@ -167,13 +186,13 @@ export default function SettingsScreen() {
           </div>
         </div>
 
-        {/* Default Schedule */}
-        <div className="settings-section">
-          <h2 className="settings-section-title">Default Schedule</h2>
-          <p className="settings-section-description">Default active days and hours for new reminders</p>
-
-          <span className="sub-label">Active Days</span>
-          <div className="days-row">
+        {/* Schedule */}
+        <div className="settings-card">
+          <div className="settings-card-header">
+            <span className="settings-card-label">Schedule</span>
+            <InfoTooltip text="Reminders only fire on these days/hours" />
+          </div>
+          <div className="days-row" style={{ marginBottom: '14px' }}>
             {DAYS_OF_WEEK.map((day) => (
               <button
                 key={day}
@@ -184,75 +203,37 @@ export default function SettingsScreen() {
               </button>
             ))}
           </div>
-
-          <span className="sub-label">Active Hours</span>
           <div className="time-range-container">
             <div className="time-picker-group">
               <span className="time-label">From</span>
               <div className="time-control">
-                <button
-                  className="time-arrow"
-                  onClick={() => setDefaultStartHour(Math.max(0, schedule.startHour - 1))}
-                >
-                  −
-                </button>
+                <button className="time-arrow" onClick={() => setDefaultStartHour(Math.max(0, schedule.startHour - 1))}>−</button>
                 <span className="time-value">{formatHour(schedule.startHour)}</span>
-                <button
-                  className="time-arrow"
-                  onClick={() => setDefaultStartHour(Math.min(schedule.endHour - 1, schedule.startHour + 1))}
-                >
-                  +
-                </button>
+                <button className="time-arrow" onClick={() => setDefaultStartHour(Math.min(schedule.endHour - 1, schedule.startHour + 1))}>+</button>
               </div>
             </div>
-
             <span className="time-separator">→</span>
-
             <div className="time-picker-group">
               <span className="time-label">To</span>
               <div className="time-control">
-                <button
-                  className="time-arrow"
-                  onClick={() => setDefaultEndHour(Math.max(schedule.startHour + 1, schedule.endHour - 1))}
-                >
-                  −
-                </button>
+                <button className="time-arrow" onClick={() => setDefaultEndHour(Math.max(schedule.startHour + 1, schedule.endHour - 1))}>−</button>
                 <span className="time-value">{formatHour(schedule.endHour)}</span>
-                <button
-                  className="time-arrow"
-                  onClick={() => setDefaultEndHour(Math.min(23, schedule.endHour + 1))}
-                >
-                  +
-                </button>
+                <button className="time-arrow" onClick={() => setDefaultEndHour(Math.min(23, schedule.endHour + 1))}>+</button>
               </div>
             </div>
           </div>
         </div>
 
-        {/* Data */}
-        <div className="settings-section">
-          <h2 className="settings-section-title">Data</h2>
-          <button className="btn btn-danger" onClick={handleResetAll}>
+        {/* Reset */}
+        <div className="settings-card">
+          <button className="btn btn-danger" onClick={handleResetAll} style={{ fontSize: '14px', padding: '12px' }}>
             Reset All Reminders
           </button>
         </div>
 
         {/* About */}
-        <div className="settings-section">
-          <h2 className="settings-section-title">About</h2>
-          <div className="about-card">
-            <div className="about-app-name">Breakly</div>
-            <div className="about-version">Version 1.0.0</div>
-            <div className="about-divider" />
-            <p className="about-description">
-              Breakly helps you build healthier work habits by reminding you to stretch, hydrate, move, and rest your eyes throughout the day.
-            </p>
-            <p className="about-description">
-              Designed for professionals who spend long hours at their desk. Small breaks, big impact.
-            </p>
-            <div className="about-divider" />
-            <div className="about-footer">Made with care for your wellbeing.</div>
-          </div>
+        <div style={{ textAlign: 'center', padding: '16px 0 8px', color: '#9CA3AF', fontSize: '12px' }}>
+          <span style={{ fontWeight: 600, color: COLORS.primary }}>Breakly</span> v1.0 — Small breaks, big impact.
         </div>
       </div>
 

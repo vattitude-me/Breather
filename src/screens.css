@@ -375,47 +375,31 @@
   color: #1A1A2E;
 }
 
-/* Settings section */
-.settings-section {
-  margin-bottom: 20px;
-}
-
-.settings-section-title {
-  font-size: 12px;
-  font-weight: 700;
-  color: #9CA3AF;
-  margin-bottom: 2px;
-  text-transform: uppercase;
-  letter-spacing: 0.6px;
-}
-
-.settings-section-description {
-  font-size: 12px;
-  color: #9CA3AF;
-  margin-bottom: 10px;
-}
-
-.settings-row {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
+/* Settings card */
+.settings-card {
   background-color: #FFFFFF;
-  padding: 14px 16px;
-  border-radius: 12px;
-  margin-top: 6px;
+  border-radius: 14px;
+  padding: 16px;
+  margin-bottom: 12px;
   box-shadow: 0 1px 4px rgba(0, 0, 0, 0.04);
 }
 
-.settings-row-label {
+.settings-card-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.settings-card-header {
+  display: flex;
+  align-items: center;
+  margin-bottom: 12px;
+}
+
+.settings-card-label {
   font-size: 15px;
   font-weight: 600;
   color: #1A1A2E;
-}
-
-.settings-row-description {
-  font-size: 12px;
-  color: #9CA3AF;
-  margin-top: 2px;
 }
 
 /* About card */
