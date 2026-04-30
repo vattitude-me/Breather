@@ -368,7 +368,7 @@ export default function HomeScreen() {
         <div style={{ marginBottom: '28px' }}>
           <h3 style={{ fontSize: '15px', fontWeight: 700, color: COLORS.text, marginBottom: '10px' }}>Quick Add</h3>
           <div style={{ display: 'flex', gap: '8px', overflowX: 'auto', paddingBottom: '8px', scrollbarWidth: 'none' }}>
-            {PRESET_REMINDERS.map((preset) => {
+            {PRESET_REMINDERS.slice(0, 3).map((preset) => {
               const alreadyExists = reminders.some((r) => r.title === preset.title);
               return (
                 <button

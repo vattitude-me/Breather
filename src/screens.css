@@ -1,19 +1,4 @@
-/* Shared screen styles */
-.page {
-  padding-bottom: 80px;
-  min-height: 100vh;
-}
-
-.page-header {
-  background-color: #E8614D;
-  padding: 16px 24px;
-  border-bottom-left-radius: 28px;
-  border-bottom-right-radius: 28px;
-}
-
-.page-content {
-  padding: 20px 24px;
-}
+/* Shared screen styles — layout handled by App.css */
 
 /* Form styles */
 .form-group {
@@ -98,18 +83,18 @@
 .chips-row {
   display: flex;
   flex-wrap: wrap;
-  gap: 8px;
+  gap: 6px;
 }
 
 .chip {
   display: inline-flex;
   align-items: center;
-  padding: 10px 16px;
-  border-radius: 20px;
-  font-size: 14px;
-  font-weight: 500;
+  padding: 8px 14px;
+  border-radius: 18px;
+  font-size: 13px;
+  font-weight: 600;
   background-color: #FFFFFF;
-  border: 1px solid #F0E6E0;
+  border: 1.5px solid #F0E6E0;
   cursor: pointer;
   transition: all 0.2s ease;
 }
@@ -392,22 +377,22 @@
 
 /* Settings section */
 .settings-section {
-  margin-bottom: 28px;
+  margin-bottom: 20px;
 }
 
 .settings-section-title {
-  font-size: 14px;
-  font-weight: 600;
-  color: #6B7280;
-  margin-bottom: 4px;
+  font-size: 12px;
+  font-weight: 700;
+  color: #9CA3AF;
+  margin-bottom: 2px;
   text-transform: uppercase;
-  letter-spacing: 0.5px;
+  letter-spacing: 0.6px;
 }
 
 .settings-section-description {
-  font-size: 13px;
-  color: #6B7280;
-  margin-bottom: 12px;
+  font-size: 12px;
+  color: #9CA3AF;
+  margin-bottom: 10px;
 }
 
 .settings-row {
@@ -415,20 +400,21 @@
   align-items: center;
   justify-content: space-between;
   background-color: #FFFFFF;
-  padding: 16px;
+  padding: 14px 16px;
   border-radius: 12px;
-  margin-top: 8px;
+  margin-top: 6px;
+  box-shadow: 0 1px 4px rgba(0, 0, 0, 0.04);
 }
 
 .settings-row-label {
-  font-size: 16px;
-  font-weight: 500;
+  font-size: 15px;
+  font-weight: 600;
   color: #1A1A2E;
 }
 
 .settings-row-description {
-  font-size: 13px;
-  color: #6B7280;
+  font-size: 12px;
+  color: #9CA3AF;
   margin-top: 2px;
 }
 
@@ -436,40 +422,40 @@
 .about-card {
   background-color: #FFFFFF;
   border-radius: 14px;
-  padding: 20px;
-  margin-top: 10px;
-  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
+  padding: 16px;
+  margin-top: 8px;
+  box-shadow: 0 1px 4px rgba(0, 0, 0, 0.04);
   text-align: center;
 }
 
 .about-app-name {
-  font-size: 22px;
+  font-size: 18px;
   font-weight: 700;
   color: #E8614D;
 }
 
 .about-version {
-  font-size: 13px;
-  color: #6B7280;
-  margin-top: 4px;
+  font-size: 12px;
+  color: #9CA3AF;
+  margin-top: 2px;
 }
 
 .about-divider {
   height: 1px;
   background-color: #F0E6E0;
-  margin: 14px 0;
+  margin: 10px 0;
 }
 
 .about-description {
-  font-size: 14px;
+  font-size: 13px;
   color: #1A1A2E;
   line-height: 1.5;
-  margin-bottom: 8px;
+  margin-bottom: 6px;
 }
 
 .about-footer {
-  font-size: 12px;
-  color: #6B7280;
+  font-size: 11px;
+  color: #9CA3AF;
   font-style: italic;
 }
 
@@ -653,8 +639,8 @@
   align-items: center;
   justify-content: space-between;
   background-color: #FFFFFF;
-  border-radius: 14px;
-  padding: 16px;
+  border-radius: 12px;
+  padding: 12px;
   border: 1px solid #F0E6E0;
 }
 
@@ -711,11 +697,12 @@
 
 /* Sub label */
 .sub-label {
-  font-size: 12px;
+  display: block;
+  font-size: 11px;
   font-weight: 600;
-  color: #6B7280;
-  margin-bottom: 8px;
-  margin-top: 16px;
+  color: #9CA3AF;
+  margin-bottom: 6px;
+  margin-top: 12px;
 }
 
 /* Tip card */
