@@ -109,17 +109,25 @@ export async function scheduleReminder(reminder: Reminder): Promise<string> {
   const intervalMs = reminder.intervalMinutes * 60 * 1000;
 
   function fireNotification() {
-    // Check schedule before firing
     if (!isWithinSchedule(reminder.schedule)) return;
+    if (Notification.permission !== 'granted') return;
 
-    if (Notification.permission === 'granted') {
-      new Notification(`${reminder.icon} ${reminder.title}`, {
-        body: `Time for your ${reminder.title.toLowerCase()} break!`,
-        tag: `${reminder.id}_${Date.now()}`,
-        requireInteraction: true,
+    const title = `${reminder.icon} ${reminder.title}`;
+    const options: NotificationOptions = {
+      body: `Time for your ${reminder.title.toLowerCase()} break!`,
+      tag: `${reminder.id}_${Date.now()}`,
+      requireInteraction: true,
+      icon: '/pwa-192x192.png',
+    };
+
+    if ('serviceWorker' in navigator && navigator.serviceWorker.controller) {
+      navigator.serviceWorker.ready.then((reg) => {
+        reg.showNotification(title, options);
       });
-      incrementAlertsSent();
+    } else {
+      new Notification(title, options);
     }
+    incrementAlertsSent();
   }
 
   // Store the initial timeout so it can be cancelled
