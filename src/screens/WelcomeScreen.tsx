@@ -1,98 +1,71 @@
-import { useNavigate } from 'react-router-dom';
 import { COLORS } from '../constants';
-import '../screens.css';
 
-export default function WelcomeScreen() {
-  const navigation = useNavigate();
+interface WelcomeModalProps {
+  onDismiss: () => void;
+}
 
+export default function WelcomeModal({ onDismiss }: WelcomeModalProps) {
   const handleGetStarted = () => {
     localStorage.setItem('@breakly_onboarded', 'true');
-    navigation('/home');
+    onDismiss();
   };
 
   return (
-    <div className="page" style={{ background: COLORS.background }}>
+    <div style={{
+      position: 'fixed',
+      inset: 0,
+      background: 'rgba(0, 0, 0, 0.4)',
+      backdropFilter: 'blur(4px)',
+      display: 'flex',
+      alignItems: 'center',
+      justifyContent: 'center',
+      zIndex: 1000,
+      padding: '24px',
+    }}>
       <div style={{
-        flex: 1,
-        display: 'flex',
-        flexDirection: 'column',
-        alignItems: 'center',
-        justifyContent: 'center',
+        background: 'white',
+        borderRadius: '20px',
         padding: '32px 24px',
+        maxWidth: '340px',
+        width: '100%',
         textAlign: 'center',
+        boxShadow: '0 20px 60px rgba(0, 0, 0, 0.15)',
       }}>
-        {/* App Icon */}
-        <div style={{
-          width: '80px',
-          height: '80px',
-          borderRadius: '20px',
-          background: COLORS.primary,
-          display: 'flex',
-          alignItems: 'center',
-          justifyContent: 'center',
-          fontSize: '36px',
-          color: 'white',
-          fontWeight: 800,
-          marginBottom: '24px',
-          boxShadow: '0 8px 24px rgba(232, 97, 77, 0.3)',
+        <h2 style={{
+          fontSize: '22px',
+          fontWeight: 700,
+          color: COLORS.text,
+          marginBottom: '12px',
         }}>
-          B
-        </div>
+          Hey, welcome to Breakly
+        </h2>
 
-        <h1 style={{ fontSize: '28px', fontWeight: 800, color: COLORS.text, marginBottom: '8px' }}>
-          Breakly
-        </h1>
-        <p style={{ fontSize: '16px', color: COLORS.textSecondary, marginBottom: '40px', lineHeight: 1.5 }}>
-          Your friendly nudge to take better breaks
+        <p style={{
+          fontSize: '14px',
+          color: COLORS.textSecondary,
+          lineHeight: 1.6,
+          marginBottom: '24px',
+        }}>
+          A gentle reminder app that nudges you to stretch, move, and rest — only on the days and hours you choose. Nothing else, nothing fancy. Just a healthier you at work.
         </p>
 
-        {/* Features */}
-        <div style={{ width: '100%', maxWidth: '320px', marginBottom: '40px' }}>
-          <FeatureRow icon="⏰" text="Set reminders to stretch, drink water, walk, or rest your eyes" />
-          <FeatureRow icon="📅" text="Only get nudged during your working hours" />
-          <FeatureRow icon="🔒" text="100% private — nothing leaves your device" />
-          <FeatureRow icon="⚡" text="Ready in seconds — tap a preset and you're done" />
-        </div>
-
-        {/* CTA */}
         <button
           onClick={handleGetStarted}
           style={{
             width: '100%',
-            maxWidth: '280px',
-            padding: '16px',
+            padding: '14px',
             background: COLORS.primary,
             color: 'white',
             border: 'none',
-            borderRadius: '14px',
-            fontSize: '16px',
-            fontWeight: 700,
+            borderRadius: '12px',
+            fontSize: '15px',
+            fontWeight: 600,
             cursor: 'pointer',
-            boxShadow: '0 4px 16px rgba(232, 97, 77, 0.35)',
           }}
         >
-          Get Started
+          Let's go
         </button>
-
-        <p style={{ fontSize: '12px', color: COLORS.textSecondary, marginTop: '16px' }}>
-          No account needed. Completely free.
-        </p>
       </div>
-    </div>
-  );
-}
-
-function FeatureRow({ icon, text }: { icon: string; text: string }) {
-  return (
-    <div style={{
-      display: 'flex',
-      alignItems: 'flex-start',
-      gap: '12px',
-      marginBottom: '16px',
-      textAlign: 'left',
-    }}>
-      <span style={{ fontSize: '20px', flexShrink: 0 }}>{icon}</span>
-      <p style={{ fontSize: '14px', color: COLORS.text, lineHeight: 1.4, margin: 0 }}>{text}</p>
     </div>
   );
 }
