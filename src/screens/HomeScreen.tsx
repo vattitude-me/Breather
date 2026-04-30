@@ -280,7 +280,7 @@ export default function HomeScreen() {
         {/* My Routines */}
         <div style={{ marginBottom: '28px' }}>
           <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '16px' }}>
-            <h2 style={{ fontSize: '18px', fontWeight: 700, color: COLORS.text, margin: 0 }}>My Routines</h2>
+            <h2 style={{ fontSize: '18px', fontWeight: 700, color: COLORS.text, margin: 0 }}>My Break Routines</h2>
             <button 
               onClick={() => navigation('/add-reminder')}
               style={{ background: 'none', border: 'none', color: COLORS.primary, fontSize: '14px', fontWeight: 600, cursor: 'pointer' }}
@@ -316,8 +316,8 @@ export default function HomeScreen() {
               }}>
                 <span style={{ fontSize: '28px', color: COLORS.primary, fontWeight: 600 }}>+</span>
               </div>
-              <span style={{ fontSize: '16px', fontWeight: 700, color: COLORS.text, marginBottom: '4px' }}>Create your first routine</span>
-              <span style={{ fontSize: '13px', color: COLORS.textSecondary }}>Tap to start</span>
+              <span style={{ fontSize: '16px', fontWeight: 700, color: COLORS.text, marginBottom: '4px' }}>Create a break routine</span>
+              <span style={{ fontSize: '13px', color: COLORS.textSecondary }}>Set reminders to stretch, move, and rest</span>
             </button>
           ) : (
             <div style={{ display: 'flex', flexWrap: 'wrap', gap: '12px' }}>
