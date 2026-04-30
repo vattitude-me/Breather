@@ -2,10 +2,8 @@
 
 /* Bottom navigation styles */
 .bottom-nav {
-  position: sticky;
-  bottom: 0;
+  flex-shrink: 0;
   width: 100%;
-  max-width: 420px;
   background-color: #FFFFFF;
   border-top: 1px solid #F0E6E0;
   display: flex;
@@ -46,8 +44,11 @@
 
 /* Page container */
 .page {
-  padding-bottom: 80px;
-  min-height: 100vh;
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  overflow-y: auto;
+  overflow-x: hidden;
 }
 
 /* Header styles */
@@ -206,9 +207,3 @@
   color: #E8614D;
 }
 
-/* Responsive adjustments */
-@media (min-width: 768px) {
-  .app-container {
-    box-shadow: 0 0 20px rgba(0, 0, 0, 0.1);
-  }
-}

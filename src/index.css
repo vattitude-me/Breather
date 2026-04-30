@@ -28,23 +28,13 @@ body {
   }
 }
 
-/* Scrollbar styling */
-::-webkit-scrollbar {
-  width: 6px;
-  height: 6px;
+/* Hide scrollbar but keep scrollable */
+.page::-webkit-scrollbar {
+  display: none;
 }
 
-::-webkit-scrollbar-track {
-  background: transparent;
-}
-
-::-webkit-scrollbar-thumb {
-  background: #D1D5DB;
-  border-radius: 3px;
-}
-
-::-webkit-scrollbar-thumb:hover {
-  background: #9CA3AF;
+.page {
+  scrollbar-width: none;
 }
 
 /* App container for mobile-like experience */
@@ -52,19 +42,19 @@ body {
   max-width: 420px;
   width: 100%;
   margin: 0 auto;
-  min-height: 100vh;
+  height: 100vh;
   background-color: #FFF9F5;
   position: relative;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
 }
 
 @media (min-width: 520px) {
   .app-container {
-    min-height: 0;
     height: 740px;
     border-radius: 24px;
     box-shadow: 0 12px 48px rgba(0, 0, 0, 0.15);
-    overflow: hidden;
-    overflow-y: auto;
   }
 }
 
