@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useRemindersContext } from '../context/RemindersContext';
 import { cancelAllReminders, scheduleReminder } from '../services/notifications';
@@ -36,6 +36,35 @@ export default function SettingsScreen() {
   const { settings, updateSettings, reminders, dispatch } = useRemindersContext();
   const navigation = useNavigate();
   const [notificationsEnabled, setNotificationsEnabled] = useState(settings.notificationsEnabled);
+  const [installPrompt, setInstallPrompt] = useState<any>(null);
+  const [isInstalled, setIsInstalled] = useState(false);
+
+  useEffect(() => {
+    if (window.matchMedia('(display-mode: standalone)').matches) {
+      setIsInstalled(true);
+      return;
+    }
+
+    const handler = (e: Event) => {
+      e.preventDefault();
+      setInstallPrompt(e);
+    };
+    window.addEventListener('beforeinstallprompt', handler);
+
+    window.addEventListener('appinstalled', () => setIsInstalled(true));
+
+    return () => window.removeEventListener('beforeinstallprompt', handler);
+  }, []);
+
+  const handleInstall = async () => {
+    if (!installPrompt) return;
+    installPrompt.prompt();
+    const result = await installPrompt.userChoice;
+    if (result.outcome === 'accepted') {
+      setIsInstalled(true);
+    }
+    setInstallPrompt(null);
+  };
 
   const schedule = settings.defaultSchedule || DEFAULT_SCHEDULE;
 
@@ -223,6 +252,37 @@ export default function SettingsScreen() {
             </div>
           </div>
         </div>
+
+        {/* Install App */}
+        {!isInstalled && (
+          <div className="settings-card">
+            <div className="settings-card-header">
+              <span className="settings-card-label">Install App</span>
+              <InfoTooltip text="Pin Breakly to your taskbar/dock like a native app" />
+            </div>
+            <p style={{ fontSize: '12px', color: COLORS.textSecondary, margin: '0 0 12px' }}>
+              Install Breakly to your desktop for quick access - no browser needed.
+            </p>
+            <button
+              className="btn"
+              onClick={handleInstall}
+              disabled={!installPrompt}
+              style={{
+                fontSize: '14px',
+                padding: '12px',
+                backgroundColor: installPrompt ? COLORS.primary : COLORS.disabled,
+                color: '#FFFFFF',
+                border: 'none',
+                borderRadius: '10px',
+                width: '100%',
+                cursor: installPrompt ? 'pointer' : 'default',
+                fontWeight: 600,
+              }}
+            >
+              {installPrompt ? '⬇ Install to Desktop' : 'Open in Chrome/Edge to install'}
+            </button>
+          </div>
+        )}
 
         {/* Reset */}
         <div className="settings-card">
