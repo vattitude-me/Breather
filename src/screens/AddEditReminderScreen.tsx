@@ -3,7 +3,7 @@ import { useNavigate, useParams, useLocation } from 'react-router-dom';
 import { nanoid } from 'nanoid';
 import { useRemindersContext } from '../context/RemindersContext';
 import { scheduleReminder, cancelReminder } from '../services/notifications';
-import { PRESET_REMINDERS, INTERVAL_PRESETS, DAYS_OF_WEEK, DEFAULT_SCHEDULE } from '../constants';
+import { PRESET_REMINDERS, DAYS_OF_WEEK, DEFAULT_SCHEDULE } from '../constants';
 import { Reminder, DayOfWeek } from '../types';
 import '../screens.css';
 
@@ -221,10 +221,10 @@ export default function AddEditReminderScreen() {
         )}
 
         {(showCustom || isEditing) && (
-          <div className="settings-section">
+          <>
             {!isEditing && (
-              <div className="section-header">
-                <h2 className="section-header-title">Custom Reminder</h2>
+              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '16px' }}>
+                <h2 style={{ fontSize: '18px', fontWeight: 700, color: '#1A1A2E', margin: 0 }}>Custom Reminder</h2>
                 <button
                   className="collapse-text"
                   onClick={() => setShowCustom(false)}
@@ -235,8 +235,10 @@ export default function AddEditReminderScreen() {
             )}
 
             {/* Title */}
-            <div className="form-group">
-              <label className="form-label">Title</label>
+            <div className="settings-card">
+              <div className="settings-card-header">
+                <span className="settings-card-label">Title</span>
+              </div>
               <input
                 type="text"
                 className="form-input"
@@ -247,8 +249,10 @@ export default function AddEditReminderScreen() {
             </div>
 
             {/* Icon */}
-            <div className="form-group">
-              <label className="form-label">Icon</label>
+            <div className="settings-card">
+              <div className="settings-card-header">
+                <span className="settings-card-label">Icon</span>
+              </div>
               <div className="icon-row">
                 {PRESET_REMINDERS.map((p) => (
                   <button
@@ -263,40 +267,15 @@ export default function AddEditReminderScreen() {
             </div>
 
             {/* Interval */}
-            <div className="form-group">
-              <label className="form-label">Remind me every</label>
-              <div style={{ display: 'flex', alignItems: 'center', gap: '12px', marginBottom: '14px' }}>
-                <input
-                  type="text"
-                  className="form-input"
-                  value={intervalValue}
-                  onChange={(e) => setIntervalValue(e.target.value.replace(/\D/g, ''))}
-                  placeholder="30"
-                  style={{ flex: 1 }}
-                />
-                <div style={{ display: 'flex', borderRadius: '12px', overflow: 'hidden', border: '1px solid #F0E6E0' }}>
-                  <button
-                    className={`chip ${intervalUnit === 'minutes' ? 'active' : ''}`}
-                    onClick={() => setIntervalUnit('minutes')}
-                    style={{ borderRadius: 0, padding: '10px 18px' }}
-                  >
-                    Min
-                  </button>
-                  <button
-                    className={`chip ${intervalUnit === 'hours' ? 'active' : ''}`}
-                    onClick={() => setIntervalUnit('hours')}
-                    style={{ borderRadius: 0, padding: '10px 18px' }}
-                  >
-                    Hours
-                  </button>
-                </div>
+            <div className="settings-card">
+              <div className="settings-card-header">
+                <span className="settings-card-label">Remind me every</span>
               </div>
-
-              <div className="interval-presets">
-                {INTERVAL_PRESETS.map((minutes) => (
+              <div className="chips-row">
+                {[30, 45, 60, 90, 120].map((minutes) => (
                   <button
                     key={minutes}
-                    className={`interval-chip ${intervalMinutes === minutes ? 'active' : ''}`}
+                    className={`chip ${intervalMinutes === minutes ? 'active' : ''}`}
                     onClick={() => handleIntervalPreset(minutes)}
                   >
                     {minutes >= 60 ? `${minutes / 60}h` : `${minutes}m`}
@@ -305,10 +284,12 @@ export default function AddEditReminderScreen() {
               </div>
             </div>
 
-            {/* Schedule - Days of Week */}
-            <div className="form-group">
-              <label className="form-label">Active Days</label>
-              <div className="days-row">
+            {/* Schedule - Days */}
+            <div className="settings-card">
+              <div className="settings-card-header">
+                <span className="settings-card-label">Active Days</span>
+              </div>
+              <div className="days-row" style={{ marginBottom: '12px' }}>
                 {DAYS_OF_WEEK.map((day) => (
                   <button
                     key={day}
@@ -342,8 +323,10 @@ export default function AddEditReminderScreen() {
             </div>
 
             {/* Schedule - Time Range */}
-            <div className="form-group">
-              <label className="form-label">Active Hours</label>
+            <div className="settings-card">
+              <div className="settings-card-header">
+                <span className="settings-card-label">Active Hours</span>
+              </div>
               <div className="time-range-container">
                 <div className="time-picker-group">
                   <span className="time-label">From</span>
@@ -390,17 +373,19 @@ export default function AddEditReminderScreen() {
               </p>
             </div>
 
-            {/* Save Button */}
-            <button className="btn btn-primary" onClick={handleSave}>
-              {isEditing ? 'Update Reminder' : 'Create Reminder'}
-            </button>
-
-            {isEditing && (
-              <button className="btn btn-danger" onClick={handleDelete} style={{ marginTop: '14px' }}>
-                Delete Reminder
+            {/* Actions */}
+            <div className="settings-card">
+              <button className="btn btn-primary" onClick={handleSave} style={{ width: '100%' }}>
+                {isEditing ? 'Update Reminder' : 'Create Reminder'}
               </button>
-            )}
-          </div>
+
+              {isEditing && (
+                <button className="btn btn-danger" onClick={handleDelete} style={{ width: '100%', marginTop: '12px' }}>
+                  Delete Reminder
+                </button>
+              )}
+            </div>
+          </>
         )}
       </div>
     </div>
