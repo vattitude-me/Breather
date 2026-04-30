@@ -227,13 +227,15 @@ export default function HomeScreen() {
               width: '44px',
               height: '44px',
               borderRadius: '22px',
-              backgroundColor: 'rgba(255,255,255,0.2)',
+              backgroundColor: 'rgba(255,255,255,0.25)',
               display: 'flex',
               alignItems: 'center',
               justifyContent: 'center',
-              fontSize: '22px',
+              fontSize: '20px',
+              fontWeight: 800,
+              color: '#FFFFFF',
             }}>
-              🌿
+              B
             </div>
           </div>
         </div>
