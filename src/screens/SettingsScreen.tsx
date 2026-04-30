@@ -4,7 +4,7 @@ import { useRemindersContext } from '../context/RemindersContext';
 import { cancelAllReminders, scheduleReminder } from '../services/notifications';
 import { getInstallPrompt, onInstallPromptChange } from '../services/installPrompt';
 import { hasAnalyticsConsent, setAnalyticsConsent } from '../services/analytics';
-import { COLORS } from '../constants';
+import { COLORS, APP_VERSION } from '../constants';
 import '../screens.css';
 
 function InfoTooltip({ text }: { text: string }) {
@@ -259,7 +259,7 @@ export default function SettingsScreen() {
 
         {/* About */}
         <div style={{ textAlign: 'center', padding: '16px 0 8px', color: '#9CA3AF', fontSize: '12px' }}>
-          <span style={{ fontWeight: 600, color: COLORS.primary }}>Breakly</span> v1.0 - Small breaks, big impact.
+          <span style={{ fontWeight: 600, color: COLORS.primary }}>Breakly</span> v{APP_VERSION} - Small breaks, big impact.
         </div>
       </div>
 
