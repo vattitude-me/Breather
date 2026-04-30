@@ -255,26 +255,66 @@ export default function SettingsScreen() {
               <InfoTooltip text="Pin Breakly to your taskbar/dock like a native app" />
             </div>
             <p style={{ fontSize: '12px', color: COLORS.textSecondary, margin: '0 0 12px' }}>
-              Install Breakly to your desktop for quick access - no browser needed.
+              Install Breakly to your desktop for quick access - runs in its own window like a native app.
             </p>
-            <button
-              className="btn"
-              onClick={handleInstall}
-              disabled={!installPrompt}
-              style={{
-                fontSize: '14px',
-                padding: '12px',
-                backgroundColor: installPrompt ? COLORS.primary : COLORS.disabled,
-                color: '#FFFFFF',
-                border: 'none',
+            {installPrompt ? (
+              <button
+                className="btn"
+                onClick={handleInstall}
+                style={{
+                  fontSize: '14px',
+                  padding: '12px',
+                  backgroundColor: COLORS.primary,
+                  color: '#FFFFFF',
+                  border: 'none',
+                  borderRadius: '10px',
+                  width: '100%',
+                  cursor: 'pointer',
+                  fontWeight: 600,
+                }}
+              >
+                ⬇ Install to Desktop
+              </button>
+            ) : (
+              <div style={{
+                backgroundColor: '#F8F4F2',
                 borderRadius: '10px',
-                width: '100%',
-                cursor: installPrompt ? 'pointer' : 'default',
-                fontWeight: 600,
-              }}
-            >
-              {installPrompt ? '⬇ Install to Desktop' : 'Open in Chrome/Edge to install'}
-            </button>
+                padding: '14px',
+              }}>
+                <p style={{ fontSize: '13px', fontWeight: 600, color: COLORS.text, margin: '0 0 8px' }}>
+                  How to install:
+                </p>
+                <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
+                  <div style={{ display: 'flex', alignItems: 'flex-start', gap: '8px' }}>
+                    <span style={{ fontSize: '16px', flexShrink: 0 }}>🌐</span>
+                    <div>
+                      <span style={{ fontSize: '12px', fontWeight: 600, color: COLORS.text }}>Chrome / Edge</span>
+                      <p style={{ fontSize: '11px', color: COLORS.textSecondary, margin: '2px 0 0' }}>
+                        Click the install icon (⊕) in the address bar, or Menu &rarr; "Install Breakly"
+                      </p>
+                    </div>
+                  </div>
+                  <div style={{ display: 'flex', alignItems: 'flex-start', gap: '8px' }}>
+                    <span style={{ fontSize: '16px', flexShrink: 0 }}>🍎</span>
+                    <div>
+                      <span style={{ fontSize: '12px', fontWeight: 600, color: COLORS.text }}>Safari (Mac/iOS)</span>
+                      <p style={{ fontSize: '11px', color: COLORS.textSecondary, margin: '2px 0 0' }}>
+                        Tap Share &rarr; "Add to Home Screen"
+                      </p>
+                    </div>
+                  </div>
+                  <div style={{ display: 'flex', alignItems: 'flex-start', gap: '8px' }}>
+                    <span style={{ fontSize: '16px', flexShrink: 0 }}>🦊</span>
+                    <div>
+                      <span style={{ fontSize: '12px', fontWeight: 600, color: COLORS.text }}>Firefox</span>
+                      <p style={{ fontSize: '11px', color: COLORS.textSecondary, margin: '2px 0 0' }}>
+                        Not supported - use Chrome or Edge for install
+                      </p>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            )}
           </div>
         )}
 

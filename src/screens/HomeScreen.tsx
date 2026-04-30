@@ -3,6 +3,7 @@ import { useNavigate } from 'react-router-dom';
 import { nanoid } from 'nanoid';
 import { useRemindersContext } from '../context/RemindersContext';
 import { scheduleReminder, cancelReminder, getNextFireTime, getAlertsSent, isWithinSchedule } from '../services/notifications';
+import { getInstallPrompt, onInstallPromptChange } from '../services/installPrompt';
 import { COLORS, APP_NAME, PRESET_REMINDERS, DEFAULT_SCHEDULE } from '../constants';
 import { Reminder } from '../types';
 import '../screens.css';
@@ -34,6 +35,24 @@ export default function HomeScreen() {
   const [countdown, setCountdown] = useState('--');
   const [currentTime, setCurrentTime] = useState(new Date());
   const [alertsSent, setAlertsSent] = useState(0);
+  const [installPrompt, setInstallPrompt] = useState<any>(getInstallPrompt);
+  const isInstalled = window.matchMedia('(display-mode: standalone)').matches;
+
+  useEffect(() => {
+    if (isInstalled) return;
+    return onInstallPromptChange((prompt) => {
+      setInstallPrompt(prompt);
+    });
+  }, [isInstalled]);
+
+  const handleInstall = async () => {
+    if (!installPrompt) return;
+    installPrompt.prompt();
+    const result = await installPrompt.userChoice;
+    if (result.outcome === 'accepted') {
+      setInstallPrompt(null);
+    }
+  };
 
   useEffect(() => {
     getAlertsSent().then(setAlertsSent);
@@ -180,17 +199,42 @@ export default function HomeScreen() {
               {APP_NAME}
             </h1>
           </div>
-          <div style={{
-            width: '44px',
-            height: '44px',
-            borderRadius: '22px',
-            backgroundColor: 'rgba(255,255,255,0.2)',
-            display: 'flex',
-            alignItems: 'center',
-            justifyContent: 'center',
-            fontSize: '22px',
-          }}>
-            🌿
+          <div style={{ display: 'flex', gap: '8px', alignItems: 'center' }}>
+            {!isInstalled && installPrompt && (
+              <button
+                onClick={handleInstall}
+                style={{
+                  width: '44px',
+                  height: '44px',
+                  borderRadius: '22px',
+                  backgroundColor: 'rgba(255,255,255,0.25)',
+                  display: 'flex',
+                  alignItems: 'center',
+                  justifyContent: 'center',
+                  border: 'none',
+                  cursor: 'pointer',
+                }}
+                title="Install Breakly"
+              >
+                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#FFFFFF" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                  <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4" />
+                  <polyline points="7 10 12 15 17 10" />
+                  <line x1="12" y1="15" x2="12" y2="3" />
+                </svg>
+              </button>
+            )}
+            <div style={{
+              width: '44px',
+              height: '44px',
+              borderRadius: '22px',
+              backgroundColor: 'rgba(255,255,255,0.2)',
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'center',
+              fontSize: '22px',
+            }}>
+              🌿
+            </div>
           </div>
         </div>
         <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
