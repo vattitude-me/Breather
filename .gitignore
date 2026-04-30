@@ -22,3 +22,6 @@ yarn-error.*
 /ios
 /android
 *.epub
+.claude/
+.vite/
+scripts/

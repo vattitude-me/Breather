@@ -46,7 +46,7 @@ export default function WelcomeModal({ onDismiss }: WelcomeModalProps) {
           lineHeight: 1.6,
           marginBottom: '24px',
         }}>
-          A gentle reminder app that nudges you to stretch, move, and rest — only on the days and hours you choose. Nothing else, nothing fancy. Just a healthier you at work.
+          A gentle reminder app that nudges you to stretch, move, and rest - only on the days and hours you choose. Nothing else, nothing fancy. Just a healthier you at work.
         </p>
 
         <button

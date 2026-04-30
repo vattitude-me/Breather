@@ -8,7 +8,7 @@
 
 Sedentary work kills productivity. Employees who sit for hours without movement suffer from back pain, eye strain, fatigue, and reduced concentration. Studies show that prolonged sitting increases absenteeism and healthcare costs while reducing cognitive performance.
 
-Most people *know* they should take breaks — they just forget.
+Most people *know* they should take breaks - they just forget.
 
 ## The Solution
 
@@ -22,27 +22,27 @@ It's not another wellness platform that employees ignore. It's a simple tool tha
 
 ### For Employers
 
-- **Reduced absenteeism** — Regular movement breaks reduce musculoskeletal complaints, the #1 cause of workplace sick leave
-- **Higher productivity** — Short breaks restore focus and prevent the afternoon slump
-- **Low cost, high impact** — No hardware, no training, no ongoing admin; employees self-manage
-- **Duty of care** — Demonstrates investment in employee wellbeing (relevant for ESG and HR reporting)
+- **Reduced absenteeism** - Regular movement breaks reduce musculoskeletal complaints, the #1 cause of workplace sick leave
+- **Higher productivity** - Short breaks restore focus and prevent the afternoon slump
+- **Low cost, high impact** - No hardware, no training, no ongoing admin; employees self-manage
+- **Duty of care** - Demonstrates investment in employee wellbeing (relevant for ESG and HR reporting)
 
 ### For Employees
 
-- **Personalised reminders** — Stretch, drink water, walk, rest eyes, or create custom activities
-- **Respects work hours** — Only active during configured days and times (defaults to Mon-Fri, 8am-5pm)
-- **Non-disruptive** — Gentle push notifications with one-tap actions: Done, Snooze, or Dismiss
-- **Quick setup** — Pre-built presets get users started in under 30 seconds
-- **Private** — All data stays on-device; no accounts, no tracking, no data collection
+- **Personalised reminders** - Stretch, drink water, walk, rest eyes, or create custom activities
+- **Respects work hours** - Only active during configured days and times (defaults to Mon-Fri, 8am-5pm)
+- **Non-disruptive** - Gentle push notifications with one-tap actions: Done, Snooze, or Dismiss
+- **Quick setup** - Pre-built presets get users started in under 30 seconds
+- **Private** - All data stays on-device; no accounts, no tracking, no data collection
 
 ---
 
 ## How It Works
 
-1. **Choose an activity** — Pick from presets (Stretch, Drink Water, Walk, Eye Break) or create your own
-2. **Set the interval** — Every 15, 30, 45, 60, 90, or 120 minutes
-3. **Configure your schedule** — Select active days and working hours
-4. **Get reminded** — Receive a notification, tap Done when complete, or Snooze if you're in the middle of something
+1. **Choose an activity** - Pick from presets (Stretch, Drink Water, Walk, Eye Break) or create your own
+2. **Set the interval** - Every 15, 30, 45, 60, 90, or 120 minutes
+3. **Configure your schedule** - Select active days and working hours
+4. **Get reminded** - Receive a notification, tap Done when complete, or Snooze if you're in the middle of something
 
 That's it. No onboarding flow, no account creation, no subscription.
 
@@ -77,11 +77,11 @@ That's it. No onboarding flow, no account creation, no subscription.
 
 Built with modern, well-supported technologies:
 
-- **React Native + Expo** — Cross-platform (iOS & Android) from one codebase
-- **TypeScript** — Type-safe, maintainable code
-- **Local notifications** — No server required; works offline
-- **On-device storage** — No backend, no database, no cloud dependency
-- **EAS Build** — Automated CI/CD for app store and enterprise distribution
+- **React Native + Expo** - Cross-platform (iOS & Android) from one codebase
+- **TypeScript** - Type-safe, maintainable code
+- **Local notifications** - No server required; works offline
+- **On-device storage** - No backend, no database, no cloud dependency
+- **EAS Build** - Automated CI/CD for app store and enterprise distribution
 
 ---
 
