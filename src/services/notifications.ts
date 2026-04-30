@@ -1,8 +1,12 @@
-import { Reminder } from '../types';
+import { Reminder, DayOfWeek } from '../types';
 import { loadProgress, saveProgress } from './storage';
 
 const ALERTS_SENT_KEY = '@breakly_alerts_sent';
-const webTimers: Map<string, number> = new Map();
+const DAYS_MAP: DayOfWeek[] = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'] as unknown as DayOfWeek[];
+
+// Track both initial timeouts and recurring intervals separately
+const initialTimers: Map<string, number> = new Map();
+const recurringTimers: Map<string, number> = new Map();
 const webScheduledAt: Map<string, number> = new Map();
 
 export async function getAlertsSent(): Promise<number> {
@@ -23,7 +27,7 @@ async function incrementAlertsSent(): Promise<void> {
 async function updateProgressOnAlert(): Promise<void> {
   const today = new Date().toISOString().split('T')[0];
   const progressStr = await loadProgress();
-  
+
   let progress = progressStr ? JSON.parse(progressStr) : {
     entries: [],
     currentStreak: 0,
@@ -73,26 +77,41 @@ async function updateProgressOnAlert(): Promise<void> {
 
 export async function requestPermissions(): Promise<boolean> {
   if (!('Notification' in window)) return false;
-  
+
   if (Notification.permission === 'granted') return true;
   if (Notification.permission === 'denied') return false;
-  
+
   const result = await Notification.requestPermission();
   return result === 'granted';
 }
 
+function isWithinSchedule(schedule: Reminder['schedule']): boolean {
+  if (!schedule) return true;
+  const now = new Date();
+  const dayName = DAYS_MAP[now.getDay()];
+  const hour = now.getHours();
+
+  if (!schedule.activeDays.includes(dayName as DayOfWeek)) return false;
+  if (hour < schedule.startHour || hour >= schedule.endHour) return false;
+  return true;
+}
+
+export { isWithinSchedule };
+
 export async function scheduleReminder(reminder: Reminder): Promise<string> {
   const id = `web_${reminder.id}`;
-  
-  // Cancel any existing timer for this reminder
+
+  // Cancel any existing timers for this reminder
   cancelWebTimer(id);
-  
-  // Request permission first
+
   await requestPermissions();
-  
+
   const intervalMs = reminder.intervalMinutes * 60 * 1000;
-  
+
   function fireNotification() {
+    // Check schedule before firing
+    if (!isWithinSchedule(reminder.schedule)) return;
+
     if (Notification.permission === 'granted') {
       new Notification(`${reminder.icon} ${reminder.title}`, {
         body: `Time for your ${reminder.title.toLowerCase()} break!`,
@@ -102,32 +121,34 @@ export async function scheduleReminder(reminder: Reminder): Promise<string> {
       incrementAlertsSent();
     }
   }
-  
-  // Schedule the first notification after the interval
-  window.setTimeout(() => {
+
+  // Store the initial timeout so it can be cancelled
+  const initialTimer = window.setTimeout(() => {
+    initialTimers.delete(id);
     fireNotification();
-    // Then set up recurring notifications
+    // Set up recurring interval
     const recurringTimer = window.setInterval(fireNotification, intervalMs);
-    webTimers.set(id, recurringTimer);
+    recurringTimers.set(id, recurringTimer);
   }, intervalMs);
-  
+
+  initialTimers.set(id, initialTimer);
   webScheduledAt.set(id, Date.now());
-  
+
   return id;
 }
 
 function cancelWebTimer(id: string): void {
-  const existing = webTimers.get(id);
-  if (existing) {
-    window.clearInterval(existing);
-    webTimers.delete(id);
+  // Clear initial timeout if still pending
+  const initial = initialTimers.get(id);
+  if (initial) {
+    window.clearTimeout(initial);
+    initialTimers.delete(id);
   }
-  // Also clear any pending timeout
-  const pendingTimers = Array.from(webTimers.entries());
-  for (const [timerId, timer] of pendingTimers) {
-    if (timerId === id) {
-      window.clearTimeout(timer);
-    }
+  // Clear recurring interval
+  const recurring = recurringTimers.get(id);
+  if (recurring) {
+    window.clearInterval(recurring);
+    recurringTimers.delete(id);
   }
 }
 
@@ -135,41 +156,17 @@ export async function cancelReminder(notificationId: string): Promise<void> {
   cancelWebTimer(notificationId);
 }
 
-export async function snoozeReminder(reminder: Reminder): Promise<string> {
-  if (reminder.notificationId) {
-    await cancelReminder(reminder.notificationId);
-  }
-  
-  const id = `web_snooze_${reminder.id}`;
-  const snoozeMs = reminder.snoozeDurationMinutes * 60 * 1000;
-  
-  const timer = window.setTimeout(() => {
-    if (Notification.permission === 'granted') {
-      new Notification(`${reminder.icon} ${reminder.title}`, {
-        body: `Snoozed reminder: ${reminder.title}`,
-        tag: reminder.id,
-        requireInteraction: true,
-      });
-    }
-    webTimers.delete(id);
-  }, snoozeMs);
-  
-  webTimers.set(id, timer as unknown as number);
-  return id;
-}
-
 export async function cancelAllReminders(): Promise<void> {
-  webTimers.forEach((timer) => {
-    window.clearInterval(timer);
-    window.clearTimeout(timer);
-  });
-  webTimers.clear();
+  initialTimers.forEach((timer) => window.clearTimeout(timer));
+  initialTimers.clear();
+  recurringTimers.forEach((timer) => window.clearInterval(timer));
+  recurringTimers.clear();
   webScheduledAt.clear();
 }
 
 export function getNextFireTime(reminder: Reminder): Date | null {
   if (!reminder.isActive || !reminder.notificationId) return null;
-  
+
   const id = reminder.notificationId;
   const scheduledTime = webScheduledAt.get(id);
   const baseTime = scheduledTime || new Date(reminder.createdAt).getTime();
@@ -178,6 +175,6 @@ export function getNextFireTime(reminder: Reminder): Date | null {
   const elapsed = now - baseTime;
   const cyclesCompleted = Math.floor(elapsed / intervalMs);
   const nextFire = new Date(baseTime + (cyclesCompleted + 1) * intervalMs);
-  
+
   return nextFire;
 }

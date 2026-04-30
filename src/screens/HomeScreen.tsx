@@ -2,7 +2,7 @@ import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { nanoid } from 'nanoid';
 import { useRemindersContext } from '../context/RemindersContext';
-import { scheduleReminder, cancelReminder, getNextFireTime, getAlertsSent } from '../services/notifications';
+import { scheduleReminder, cancelReminder, getNextFireTime, getAlertsSent, isWithinSchedule } from '../services/notifications';
 import { COLORS, APP_NAME, PRESET_REMINDERS, DEFAULT_SCHEDULE } from '../constants';
 import { Reminder } from '../types';
 import '../screens.css';
@@ -50,10 +50,17 @@ export default function HomeScreen() {
         return;
       }
 
+      // Check if any active reminder is within schedule
+      const scheduledReminders = activeReminders.filter(r => isWithinSchedule(r.schedule));
+      if (scheduledReminders.length === 0) {
+        setCountdown('Paused');
+        return;
+      }
+
       const now = Date.now();
       let soonest = Infinity;
 
-      for (const r of activeReminders) {
+      for (const r of scheduledReminders) {
         const next = getNextFireTime(r);
         if (next) {
           const diff = next.getTime() - now;
@@ -329,9 +336,9 @@ export default function HomeScreen() {
                       <div style={{ fontSize: '12px', color: COLORS.textSecondary, marginTop: '2px' }}>Every {formatInterval(item.intervalMinutes)}</div>
                     </button>
                     <div style={{ display: 'flex', alignItems: 'center', marginTop: '10px', gap: '6px' }}>
-                      <div style={{ width: '8px', height: '8px', borderRadius: '4px', backgroundColor: item.isActive ? '#4CAF50' : COLORS.disabled }} />
+                      <div style={{ width: '8px', height: '8px', borderRadius: '4px', backgroundColor: !item.isActive ? COLORS.disabled : isWithinSchedule(item.schedule) ? '#4CAF50' : COLORS.secondary }} />
                       <span style={{ fontSize: '11px', color: COLORS.textSecondary, fontWeight: 500, flex: 1 }}>
-                        {item.isActive ? 'Active' : 'Paused'}
+                        {!item.isActive ? 'Paused' : isWithinSchedule(item.schedule) ? 'Active' : 'Outside hours'}
                       </span>
                       <button
                         onClick={() => handleDelete(item)}

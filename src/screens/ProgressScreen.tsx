@@ -1,5 +1,5 @@
 import { useState, useCallback, useEffect } from 'react';
-import { useRemindersContext } from '../context/RemindersContext';
+import { useNavigate } from 'react-router-dom';
 import { STORAGE_KEYS } from '../constants';
 import { ProgressData, ProgressEntry } from '../types';
 import '../screens.css';
@@ -45,7 +45,7 @@ function calculateStreak(entries: ProgressEntry[]): number {
 }
 
 export default function ProgressScreen() {
-  const { reminders } = useRemindersContext();
+  const navigation = useNavigate();
   const [progress, setProgress] = useState<ProgressData>(DEFAULT_PROGRESS);
   const [activeTab, setActiveTab] = useState<'overview' | 'charts'>('overview');
 
@@ -57,28 +57,12 @@ export default function ProgressScreen() {
         const streak = calculateStreak(parsed.entries);
         setProgress({ ...parsed, currentStreak: streak });
       } else {
-        const today = getToday();
-        const activeCount = reminders.filter((r) => r.isActive).length;
-        const initialEntry: ProgressEntry = {
-          date: today,
-          completedCount: activeCount,
-          totalMinutes: activeCount * 5,
-          sessions: activeCount > 0 ? 1 : 0,
-        };
-        const initial: ProgressData = {
-          entries: activeCount > 0 ? [initialEntry] : [],
-          currentStreak: activeCount > 0 ? 1 : 0,
-          longestStreak: activeCount > 0 ? 1 : 0,
-          totalSessions: activeCount > 0 ? 1 : 0,
-          totalMinutes: activeCount > 0 ? activeCount * 5 : 0,
-        };
-        setProgress(initial);
-        localStorage.setItem(STORAGE_KEYS.PROGRESS, JSON.stringify(initial));
+        setProgress(DEFAULT_PROGRESS);
       }
     } catch (error) {
       console.error('Error loading progress:', error);
     }
-  }, [reminders]);
+  }, []);
 
   useEffect(() => {
     loadProgress();
@@ -285,14 +269,14 @@ export default function ProgressScreen() {
 
       {/* Bottom Navigation */}
       <nav className="bottom-nav">
-        <button className="bottom-nav-item" onClick={() => window.location.href = '/home'}>
+        <button className="bottom-nav-item" onClick={() => navigation('/home')}>
           <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
             <path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z" />
             <polyline points="9 22 9 12 15 12 15 22" />
           </svg>
           <span>Home</span>
         </button>
-        <button className="bottom-nav-item active" onClick={() => window.location.href = '/progress'}>
+        <button className="bottom-nav-item active" onClick={() => navigation('/progress')}>
           <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
             <line x1="18" y1="20" x2="18" y2="10" />
             <line x1="12" y1="20" x2="12" y2="4" />
@@ -300,7 +284,7 @@ export default function ProgressScreen() {
           </svg>
           <span>Progress</span>
         </button>
-        <button className="bottom-nav-item" onClick={() => window.location.href = '/settings'}>
+        <button className="bottom-nav-item" onClick={() => navigation('/settings')}>
           <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
             <circle cx="12" cy="12" r="3" />
             <path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-2 2 2 2 0 0 1-2-2v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83 0 2 2 0 0 1 0-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1-2-2 2 2 0 0 1 2-2h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 0-2.83 2 2 0 0 1 2.83 0l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 2-2 2 2 0 0 1 2 2v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 0 2 2 0 0 1 0 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 2 2 2 2 0 0 1-2 2h-.09a1.65 1.65 0 0 0-1.51 1z" />
