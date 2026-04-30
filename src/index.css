@@ -50,6 +50,20 @@ body {
   }
 }
 
+/* When running as installed PWA, use full viewport */
+@media (display-mode: standalone) {
+  .app-container {
+    height: 100dvh;
+    max-width: 100%;
+    border-radius: 0;
+    box-shadow: none;
+  }
+
+  #root {
+    padding: 0;
+  }
+}
+
 /* Utility classes */
 .sr-only {
   position: absolute;
