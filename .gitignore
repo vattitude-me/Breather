@@ -22,3 +22,4 @@ yarn-error.*
 /ios
 /android
 *.epub
+scripts/

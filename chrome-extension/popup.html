@@ -1,0 +1,303 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Breakly</title>
+  <link rel="stylesheet" href="popup.css" />
+</head>
+<body>
+  <div id="app">
+    <!-- Header -->
+    <header class="header">
+      <div class="header-top">
+        <div class="greeting">
+          <span class="avatar">🌿</span>
+          <div>
+            <h1 id="greeting-text">Good Morning</h1>
+            <p class="date" id="date-text"></p>
+          </div>
+        </div>
+        <div class="clock" id="clock"></div>
+      </div>
+      <!-- Stats Banner -->
+      <div class="stats-banner" id="stats-banner">
+        <div class="stat-item">
+          <span class="stat-value" id="active-count">0</span>
+          <span class="stat-label">Active</span>
+        </div>
+        <div class="stat-item">
+          <span class="stat-value" id="alerts-sent">0</span>
+          <span class="stat-label">Alerts Sent</span>
+        </div>
+        <div class="stat-item">
+          <span class="stat-value" id="next-countdown">--:--</span>
+          <span class="stat-label">Next Break</span>
+        </div>
+      </div>
+    </header>
+
+    <!-- Tab Navigation -->
+    <nav class="tab-nav">
+      <button class="tab-btn active" data-tab="home">Home</button>
+      <button class="tab-btn" data-tab="progress">Progress</button>
+      <button class="tab-btn" data-tab="settings">Settings</button>
+    </nav>
+
+    <!-- HOME TAB -->
+    <section id="tab-home" class="tab-content active">
+      <!-- Quick Add Chips -->
+      <div class="section">
+        <h2>Quick Add</h2>
+        <div class="quick-chips" id="quick-chips"></div>
+      </div>
+
+      <!-- Reminders List -->
+      <div class="section">
+        <h2>Your Routines</h2>
+        <div id="reminders-grid" class="reminders-grid"></div>
+      </div>
+
+      <!-- Tip -->
+      <div class="tip-card">
+        <span>💡</span>
+        <p>Regular breaks improve focus by up to 25% and reduce eye strain significantly.</p>
+      </div>
+    </section>
+
+    <!-- PROGRESS TAB -->
+    <section id="tab-progress" class="tab-content">
+      <!-- Sub-tabs -->
+      <div class="sub-tabs">
+        <button class="sub-tab active" data-subtab="overview">Overview</button>
+        <button class="sub-tab" data-subtab="charts">Charts</button>
+      </div>
+
+      <!-- Overview Sub-tab -->
+      <div id="subtab-overview" class="subtab-content active">
+        <!-- Streak -->
+        <div class="streak-card">
+          <div class="streak-fire">🔥</div>
+          <div class="streak-number" id="streak-count">0</div>
+          <div class="streak-label">Day Streak</div>
+          <div class="streak-message" id="streak-message">Start your streak today!</div>
+        </div>
+
+        <!-- Today Stats -->
+        <div class="stats-row">
+          <div class="stat-card">
+            <span class="stat-icon">📋</span>
+            <span class="stat-card-value" id="today-sessions">0</span>
+            <span class="stat-card-label">Sessions Today</span>
+          </div>
+          <div class="stat-card">
+            <span class="stat-icon">🎯</span>
+            <span class="stat-card-value" id="today-completed">0</span>
+            <span class="stat-card-label">Breaks Done</span>
+          </div>
+        </div>
+
+        <!-- This Week -->
+        <div class="period-card">
+          <h3>📅 This Week</h3>
+          <div class="period-stats">
+            <div><strong id="week-sessions">0</strong> Sessions</div>
+            <div><strong id="week-breaks">0</strong> Breaks</div>
+            <div><strong id="week-minutes">0</strong> Minutes</div>
+          </div>
+        </div>
+
+        <!-- This Month -->
+        <div class="period-card">
+          <h3>📆 This Month</h3>
+          <div class="period-stats">
+            <div><strong id="month-sessions">0</strong> Sessions</div>
+            <div><strong id="month-breaks">0</strong> Breaks</div>
+            <div><strong id="month-minutes">0</strong> Minutes</div>
+          </div>
+        </div>
+
+        <!-- Achievements -->
+        <div class="section">
+          <h2>Achievements</h2>
+          <div class="achievements-grid" id="achievements-grid"></div>
+        </div>
+      </div>
+
+      <!-- Charts Sub-tab -->
+      <div id="subtab-charts" class="subtab-content">
+        <div class="section">
+          <h2>Weekly Activity</h2>
+          <div class="chart-container" id="weekly-chart"></div>
+        </div>
+
+        <div class="section">
+          <h2>Personal Best</h2>
+          <div class="stats-row">
+            <div class="stat-card">
+              <span class="stat-icon">🔥</span>
+              <span class="stat-card-value" id="best-streak">0</span>
+              <span class="stat-card-label">Best Streak</span>
+            </div>
+            <div class="stat-card">
+              <span class="stat-icon">📋</span>
+              <span class="stat-card-value" id="all-sessions">0</span>
+              <span class="stat-card-label">All Sessions</span>
+            </div>
+            <div class="stat-card">
+              <span class="stat-icon">⏱️</span>
+              <span class="stat-card-value" id="all-minutes">0</span>
+              <span class="stat-card-label">All Minutes</span>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- SETTINGS TAB -->
+    <section id="tab-settings" class="tab-content">
+      <!-- Notifications -->
+      <div class="settings-group">
+        <h2>Notifications</h2>
+        <div class="setting-row">
+          <div>
+            <div class="setting-title">Enable Notifications</div>
+            <div class="setting-desc">Turn off to pause all reminders</div>
+          </div>
+          <button class="toggle-switch" id="notifications-toggle"></button>
+        </div>
+      </div>
+
+      <!-- Default Interval -->
+      <div class="settings-group">
+        <h2>Default Interval</h2>
+        <p class="setting-desc">Applied to new reminders</p>
+        <div class="chip-row" id="interval-chips"></div>
+      </div>
+
+      <!-- Default Schedule -->
+      <div class="settings-group">
+        <h2>Default Schedule</h2>
+        <p class="setting-desc">Active days and hours for new reminders</p>
+
+        <div class="days-row" id="default-days"></div>
+
+        <div class="time-range">
+          <div class="time-control">
+            <label>From</label>
+            <div class="time-stepper">
+              <button class="stepper-btn" id="start-hour-down">−</button>
+              <span id="start-hour-display">8 AM</span>
+              <button class="stepper-btn" id="start-hour-up">+</button>
+            </div>
+          </div>
+          <div class="time-control">
+            <label>To</label>
+            <div class="time-stepper">
+              <button class="stepper-btn" id="end-hour-down">−</button>
+              <span id="end-hour-display">5 PM</span>
+              <button class="stepper-btn" id="end-hour-up">+</button>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Data -->
+      <div class="settings-group">
+        <h2>Data</h2>
+        <button class="btn-danger" id="reset-all-btn">Reset All Reminders</button>
+      </div>
+
+      <!-- About -->
+      <div class="settings-group about">
+        <h2>About</h2>
+        <p><strong>Breakly</strong> v1.0.0</p>
+        <p>Breakly helps you build healthier work habits by reminding you to take regular breaks.</p>
+        <p class="footer-text">Made with care for your wellbeing.</p>
+      </div>
+    </section>
+
+    <!-- ADD/EDIT MODAL -->
+    <div id="add-edit-modal" class="modal hidden">
+      <div class="modal-content">
+        <div class="modal-header">
+          <h2 id="modal-title">Add Reminder</h2>
+          <button class="modal-close" id="modal-close">✕</button>
+        </div>
+
+        <!-- Quick Start Presets (only on add) -->
+        <div id="modal-presets" class="section">
+          <h3>Quick Start</h3>
+          <p class="setting-desc">Tap a preset to instantly create a reminder</p>
+          <div class="preset-grid" id="modal-preset-grid"></div>
+        </div>
+
+        <!-- Custom Form -->
+        <div class="modal-form">
+          <h3 id="custom-form-title">Custom Reminder</h3>
+
+          <div class="form-group">
+            <label>Activity Name</label>
+            <input type="text" id="form-title" placeholder="What do you want to be reminded about?" />
+          </div>
+
+          <div class="form-group">
+            <label>Icon</label>
+            <div class="icon-picker" id="icon-picker"></div>
+          </div>
+
+          <div class="form-group">
+            <label>Interval</label>
+            <div class="interval-input">
+              <div class="chip-row" id="form-interval-chips"></div>
+            </div>
+          </div>
+
+          <div class="form-group">
+            <label>Active Days</label>
+            <div class="days-row" id="form-days"></div>
+            <div class="day-shortcuts">
+              <button class="shortcut-btn" data-days="weekdays">Weekdays</button>
+              <button class="shortcut-btn" data-days="weekends">Weekends</button>
+              <button class="shortcut-btn" data-days="everyday">Every Day</button>
+            </div>
+          </div>
+
+          <div class="form-group">
+            <label>Active Hours</label>
+            <p class="setting-desc" id="hours-hint">Reminders will only fire between these hours</p>
+            <div class="time-range">
+              <div class="time-control">
+                <label>From</label>
+                <div class="time-stepper">
+                  <button class="stepper-btn" id="form-start-down">−</button>
+                  <span id="form-start-display">8 AM</span>
+                  <button class="stepper-btn" id="form-start-up">+</button>
+                </div>
+              </div>
+              <div class="time-control">
+                <label>To</label>
+                <div class="time-stepper">
+                  <button class="stepper-btn" id="form-end-down">−</button>
+                  <span id="form-end-display">5 PM</span>
+                  <button class="stepper-btn" id="form-end-up">+</button>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <div class="form-actions">
+            <button class="btn-primary" id="form-save">Create Reminder</button>
+            <button class="btn-danger hidden" id="form-delete">Delete Reminder</button>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- FAB -->
+    <button class="fab" id="fab-add" title="Add Reminder">+</button>
+  </div>
+
+  <script src="popup.js"></script>
+</body>
+</html>

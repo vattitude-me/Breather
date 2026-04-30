@@ -1,118 +1,86 @@
 # Breakly
 
-**A workplace wellness app that keeps your team healthy, focused, and productive.**
+**Your friendly nudge to move, stretch, and feel better at work.**
 
 ---
 
-## The Problem
+## What is Breakly?
 
-Sedentary work kills productivity. Employees who sit for hours without movement suffer from back pain, eye strain, fatigue, and reduced concentration. Studies show that prolonged sitting increases absenteeism and healthcare costs while reducing cognitive performance.
+We all get stuck at our desks. Hours fly by, and before you know it — your back hurts, your eyes are tired, and you haven't had a sip of water since morning.
 
-Most people *know* they should take breaks — they just forget.
-
-## The Solution
-
-Breakly is a lightweight mobile app (Android & iOS) that delivers timely, non-intrusive nudges to move, stretch, hydrate, and rest their eyes throughout the workday.
-
-It's not another wellness platform that employees ignore. It's a simple tool that does one thing brilliantly: reminds people to take care of themselves.
+Breakly fixes that. It's a simple app that gently reminds you to take short breaks throughout your day. That's it. No complicated setup, no accounts to create, no subscriptions to pay for.
 
 ---
 
-## Key Benefits
+## Why you'll love it
 
-### For Employers
-
-- **Reduced absenteeism** — Regular movement breaks reduce musculoskeletal complaints, the #1 cause of workplace sick leave
-- **Higher productivity** — Short breaks restore focus and prevent the afternoon slump
-- **Low cost, high impact** — No hardware, no training, no ongoing admin; employees self-manage
-- **Duty of care** — Demonstrates investment in employee wellbeing (relevant for ESG and HR reporting)
-
-### For Employees
-
-- **Personalised reminders** — Stretch, drink water, walk, rest eyes, or create custom activities
-- **Respects work hours** — Only active during configured days and times (defaults to Mon-Fri, 8am-5pm)
-- **Non-disruptive** — Gentle push notifications with one-tap actions: Done, Snooze, or Dismiss
-- **Quick setup** — Pre-built presets get users started in under 30 seconds
-- **Private** — All data stays on-device; no accounts, no tracking, no data collection
+- **Set it and forget it** — Pick your reminders once, and Breakly takes care of the rest
+- **Your schedule, your rules** — Only get nudged during your working hours
+- **Totally private** — Nothing leaves your phone. No sign-ups, no tracking, no data collection
+- **Ready in seconds** — Choose from quick-start presets or create your own reminders
+- **Works offline** — No internet needed, ever
 
 ---
 
-## How It Works
+## What can it remind you to do?
 
-1. **Choose an activity** — Pick from presets (Stretch, Drink Water, Walk, Eye Break) or create your own
-2. **Set the interval** — Every 15, 30, 45, 60, 90, or 120 minutes
-3. **Configure your schedule** — Select active days and working hours
-4. **Get reminded** — Receive a notification, tap Done when complete, or Snooze if you're in the middle of something
+Anything you want! Here are some popular ones:
 
-That's it. No onboarding flow, no account creation, no subscription.
-
----
-
-## Features at a Glance
-
-| Feature | Detail |
-|---------|--------|
-| Custom reminders | Any activity, any interval, any icon |
-| Smart scheduling | Active only during selected days and hours |
-| Snooze | Configurable 5-30 minute snooze per reminder |
-| Quick-start presets | One tap to create common wellness reminders |
-| Notification actions | Done / Snooze / Dismiss directly from the notification |
-| Cross-platform | Android and iOS from a single codebase |
-| Offline-first | Works without internet; no server dependency |
-| Privacy-first | Zero data leaves the device |
+- Stand up and stretch
+- Drink a glass of water
+- Take a short walk
+- Rest your eyes
+- Do some deep breathing
+- ...or add your own!
 
 ---
 
-## Deployment Options
+## How it works
 
-| Option | Best For |
-|--------|----------|
-| **Public app stores** | Broad distribution, consumer-facing |
-| **Enterprise MDM** | Managed rollout via Intune, Jamf, etc. |
-| **Direct APK / TestFlight** | Pilot programs, small teams |
+1. **Pick an activity** — Choose from presets or make your own
+2. **Set how often** — Every 15 minutes, every hour, whatever works for you
+3. **Choose your days** — Weekdays only? Every day? Up to you
+4. **That's it!** — You'll get a gentle notification when it's time for a break
 
----
-
-## Technical Overview
-
-Built with modern, well-supported technologies:
-
-- **React Native + Expo** — Cross-platform (iOS & Android) from one codebase
-- **TypeScript** — Type-safe, maintainable code
-- **Local notifications** — No server required; works offline
-- **On-device storage** — No backend, no database, no cloud dependency
-- **EAS Build** — Automated CI/CD for app store and enterprise distribution
+When the reminder pops up, just tap **Done**, **Snooze**, or **Dismiss**. Simple as that.
 
 ---
 
-## Getting Started (Development)
+## What makes Breakly different?
+
+- No accounts or sign-ups
+- No ads
+- No internet required
+- No data ever leaves your phone
+- Works on both Android and iPhone
+- Completely free to use
+
+---
+
+## Who is it for?
+
+Anyone who spends long hours at a desk — office workers, remote workers, students, gamers, or anyone who just wants a healthier daily routine.
+
+---
+
+## Coming soon
+
+- Streaks and progress tracking
+- Team challenges (opt-in)
+- Weekly wellness summaries
+- Slack and Teams status integration
+
+---
+
+## For developers
 
 ```bash
-# Install dependencies
 npm install
-
-# Start the development server
 npx expo start
-
-# Build Android APK
-eas build --platform android --profile preview
-
-# Build iOS
-eas build --platform ios --profile preview
 ```
 
----
-
-## Roadmap
-
-- Team leaderboards and streaks (opt-in)
-- Integration with Microsoft Teams / Slack status
-- Weekly wellness summary reports
-- Custom corporate branding
-- Admin dashboard for enterprise deployments
+Built with React Native + Expo. Works on Android and iOS from a single codebase.
 
 ---
 
-## License
-
-Internal use. Contact the development team for licensing enquiries.
+*Made with care for people who forget to take care of themselves.*
