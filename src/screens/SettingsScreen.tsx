@@ -2,6 +2,7 @@ import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useRemindersContext } from '../context/RemindersContext';
 import { cancelAllReminders, scheduleReminder } from '../services/notifications';
+import { getInstallPrompt, onInstallPromptChange } from '../services/installPrompt';
 import { COLORS, SNOOZE_OPTIONS, INTERVAL_PRESETS, DAYS_OF_WEEK, DEFAULT_SCHEDULE } from '../constants';
 import { DayOfWeek } from '../types';
 import '../screens.css';
@@ -36,25 +37,18 @@ export default function SettingsScreen() {
   const { settings, updateSettings, reminders, dispatch } = useRemindersContext();
   const navigation = useNavigate();
   const [notificationsEnabled, setNotificationsEnabled] = useState(settings.notificationsEnabled);
-  const [installPrompt, setInstallPrompt] = useState<any>(null);
-  const [isInstalled, setIsInstalled] = useState(false);
+  const [installPrompt, setInstallPrompt] = useState<any>(getInstallPrompt);
+  const [isInstalled, setIsInstalled] = useState(
+    () => window.matchMedia('(display-mode: standalone)').matches
+  );
 
   useEffect(() => {
-    if (window.matchMedia('(display-mode: standalone)').matches) {
-      setIsInstalled(true);
-      return;
-    }
-
-    const handler = (e: Event) => {
-      e.preventDefault();
-      setInstallPrompt(e);
-    };
-    window.addEventListener('beforeinstallprompt', handler);
-
-    window.addEventListener('appinstalled', () => setIsInstalled(true));
-
-    return () => window.removeEventListener('beforeinstallprompt', handler);
-  }, []);
+    if (isInstalled) return;
+    return onInstallPromptChange((prompt) => {
+      if (prompt) setInstallPrompt(prompt);
+      else setIsInstalled(true);
+    });
+  }, [isInstalled]);
 
   const handleInstall = async () => {
     if (!installPrompt) return;

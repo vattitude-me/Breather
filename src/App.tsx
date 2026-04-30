@@ -1,6 +1,7 @@
 import { useState } from 'react';
 import { Routes, Route, Navigate } from 'react-router-dom';
 import { useNotifications } from './hooks/useNotifications';
+import './services/installPrompt';
 import HomeScreen from './screens/HomeScreen';
 import AddEditReminderScreen from './screens/AddEditReminderScreen';
 import ProgressScreen from './screens/ProgressScreen';
