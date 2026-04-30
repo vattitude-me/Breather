@@ -164,17 +164,11 @@ export default function AddEditReminderScreen() {
       <div className="page-header" style={{ padding: '16px 24px' }}>
         <button
           onClick={() => navigation(-1)}
-          style={{
-            background: 'none',
-            border: 'none',
-            color: '#FFFFFF',
-            fontSize: '24px',
-            cursor: 'pointer',
-            padding: 0,
-            marginBottom: '8px',
-          }}
+          className="page-header-back"
         >
-          ←
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#FFFFFF" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+            <polyline points="15 18 9 12 15 6" />
+          </svg>
         </button>
         <h1 style={{ fontSize: '20px', fontWeight: 700, color: '#FFFFFF', margin: 0 }}>
           {isEditing ? 'Edit Reminder' : 'Add Reminder'}

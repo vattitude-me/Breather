@@ -97,6 +97,15 @@ export default function ProgressScreen() {
 
   return (
     <div className="page">
+      <div className="page-header" style={{ padding: '16px 24px' }}>
+        <h1 style={{ fontSize: '20px', fontWeight: 700, color: '#FFFFFF', margin: 0 }}>
+          Progress
+        </h1>
+        <p style={{ fontSize: '13px', color: 'rgba(255,255,255,0.8)', margin: '4px 0 0' }}>
+          Track your wellness journey
+        </p>
+      </div>
+
       {/* Tabs */}
       <div className="tab-row">
         <button
