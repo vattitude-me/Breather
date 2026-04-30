@@ -47,8 +47,7 @@
   flex: 1;
   display: flex;
   flex-direction: column;
-  overflow-y: auto;
-  overflow-x: hidden;
+  overflow: hidden;
 }
 
 /* Header styles */
@@ -75,7 +74,15 @@
 
 /* Content area */
 .page-content {
+  flex: 1;
+  overflow-y: auto;
+  overflow-x: hidden;
   padding: 20px 24px;
+  scrollbar-width: none;
+}
+
+.page-content::-webkit-scrollbar {
+  display: none;
 }
 
 /* Card styles */

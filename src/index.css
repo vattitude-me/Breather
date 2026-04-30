@@ -28,14 +28,6 @@ body {
   }
 }
 
-/* Hide scrollbar but keep scrollable */
-.page::-webkit-scrollbar {
-  display: none;
-}
-
-.page {
-  scrollbar-width: none;
-}
 
 /* App container for mobile-like experience */
 .app-container {
