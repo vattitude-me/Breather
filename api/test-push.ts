@@ -17,7 +17,7 @@ export default async function handler(_req: VercelRequest, res: VercelResponse) 
     let cursor = 0;
     do {
       const [nextCursor, batch] = await redis.scan(cursor, { match: 'push:*', count: 100 });
-      cursor = nextCursor as number;
+      cursor = nextCursor as unknown as number;
       keys.push(...(batch as string[]));
     } while (cursor !== 0);
     steps.push(`redis-scan: ${Date.now() - start}ms, found ${keys.length} keys`);
