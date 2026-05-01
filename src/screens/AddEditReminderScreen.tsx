@@ -101,8 +101,8 @@ export default function AddEditReminderScreen() {
       alert('Please enter a reminder title.');
       return;
     }
-    if (intervalMinutes < 1) {
-      alert('Interval must be at least 1 minute.');
+    if (intervalMinutes < 15) {
+      alert('Interval must be at least 15 minutes.');
       return;
     }
     if (activeDays.length === 0) {
@@ -389,7 +389,7 @@ export default function AddEditReminderScreen() {
                   <div className="time-control">
                     <button
                       className="time-arrow"
-                      onClick={() => setStartHour((h) => Math.max(0, h - 1))}
+                      onClick={() => setStartHour((h) => Math.max(7, h - 1))}
                     >
                       −
                     </button>
@@ -417,7 +417,7 @@ export default function AddEditReminderScreen() {
                     <span className="time-value">{formatHour(endHour)}</span>
                     <button
                       className="time-arrow"
-                      onClick={() => setEndHour((h) => Math.min(23, h + 1))}
+                      onClick={() => setEndHour((h) => Math.min(19, h + 1))}
                     >
                       +
                     </button>

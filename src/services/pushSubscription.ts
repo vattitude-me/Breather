@@ -59,6 +59,36 @@ export async function syncSubscriptionWithServer(
   }
 }
 
+let heartbeatInterval: ReturnType<typeof setInterval> | null = null;
+
+export function startHeartbeat(): void {
+  if (heartbeatInterval) return;
+
+  const sendHeartbeat = async () => {
+    const subscription = await subscribeToPush();
+    if (!subscription) return;
+    try {
+      await fetch('/api/heartbeat', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ endpoint: subscription.endpoint }),
+      });
+    } catch {
+      // Silently fail — next heartbeat will retry
+    }
+  };
+
+  sendHeartbeat();
+  heartbeatInterval = setInterval(sendHeartbeat, 60_000);
+}
+
+export function stopHeartbeat(): void {
+  if (heartbeatInterval) {
+    clearInterval(heartbeatInterval);
+    heartbeatInterval = null;
+  }
+}
+
 export async function unsubscribeFromPush(): Promise<void> {
   if (!('serviceWorker' in navigator)) return;
 

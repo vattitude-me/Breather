@@ -13,6 +13,8 @@ webpush.setVapidDetails(
   process.env.VAPID_PRIVATE_KEY!
 );
 
+const ACTIVE_THRESHOLD_MS = 2 * 60 * 1000;
+
 interface StoredData {
   subscription: {
     endpoint: string;
@@ -30,6 +32,7 @@ interface StoredData {
     };
   }>;
   updatedAt: number;
+  lastActiveAt?: number;
 }
 
 function isWithinSchedule(schedule?: StoredData['reminders'][0]['schedule']): boolean {
@@ -63,12 +66,18 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
 
     let sent = 0;
     let failed = 0;
+    let skippedActive = 0;
 
     for (const key of keys) {
       const raw = await redis.get<string>(key);
       if (!raw) continue;
 
       const data: StoredData = typeof raw === 'string' ? JSON.parse(raw) : raw;
+
+      if (data.lastActiveAt && (Date.now() - data.lastActiveAt) < ACTIVE_THRESHOLD_MS) {
+        skippedActive++;
+        continue;
+      }
 
       const activeReminders = data.reminders.filter((r) => isWithinSchedule(r.schedule));
       if (activeReminders.length === 0) continue;
@@ -92,7 +101,7 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
       }
     }
 
-    return res.status(200).json({ sent, failed, total: keys.length });
+    return res.status(200).json({ sent, failed, skippedActive, total: keys.length });
   } catch (error) {
     console.error('Send notifications error:', error);
     return res.status(500).json({ error: 'Internal server error' });

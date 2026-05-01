@@ -12,24 +12,26 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
   }
 
   try {
-    const { subscription, reminders } = req.body;
+    const { endpoint } = req.body;
 
-    if (!subscription?.endpoint || !subscription?.keys) {
-      return res.status(400).json({ error: 'Invalid subscription' });
+    if (!endpoint) {
+      return res.status(400).json({ error: 'Missing endpoint' });
     }
 
-    const key = `push:${Buffer.from(subscription.endpoint).toString('base64url').slice(0, 64)}`;
+    const key = `push:${Buffer.from(endpoint).toString('base64url').slice(0, 64)}`;
+    const raw = await redis.get<string>(key);
+    if (!raw) {
+      return res.status(404).json({ error: 'Subscription not found' });
+    }
 
-    await redis.set(key, JSON.stringify({
-      subscription,
-      reminders: reminders || [],
-      updatedAt: Date.now(),
-      lastActiveAt: Date.now(),
-    }), { ex: 60 * 60 * 24 * 30 });
+    const data = typeof raw === 'string' ? JSON.parse(raw) : raw;
+    data.lastActiveAt = Date.now();
+
+    await redis.set(key, JSON.stringify(data), { ex: 60 * 60 * 24 * 30 });
 
     return res.status(200).json({ success: true });
   } catch (error) {
-    console.error('Subscribe error:', error);
+    console.error('Heartbeat error:', error);
     return res.status(500).json({ error: 'Internal server error' });
   }
 }

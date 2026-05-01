@@ -1,7 +1,7 @@
 import { useEffect } from 'react';
 import { useRemindersContext } from '../context/RemindersContext';
 import { requestPermissions } from '../services/notifications';
-import { syncSubscriptionWithServer } from '../services/pushSubscription';
+import { syncSubscriptionWithServer, startHeartbeat, stopHeartbeat } from '../services/pushSubscription';
 
 const ALERTS_SENT_KEY = '@breakly_alerts_sent';
 const COMPLETED_KEY = '@breakly_completed';
@@ -11,6 +11,7 @@ export function useNotifications() {
 
   useEffect(() => {
     requestPermissions();
+    startHeartbeat();
 
     if (!('serviceWorker' in navigator)) return;
     const handler = (event: MessageEvent) => {
@@ -25,7 +26,10 @@ export function useNotifications() {
       }
     };
     navigator.serviceWorker.addEventListener('message', handler);
-    return () => navigator.serviceWorker.removeEventListener('message', handler);
+    return () => {
+      stopHeartbeat();
+      navigator.serviceWorker.removeEventListener('message', handler);
+    };
   }, []);
 
   useEffect(() => {
