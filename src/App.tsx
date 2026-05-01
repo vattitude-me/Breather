@@ -20,6 +20,14 @@ function App() {
     initAnalytics();
   }, []);
 
+  useEffect(() => {
+    const handleBeforeUnload = (e: BeforeUnloadEvent) => {
+      e.preventDefault();
+    };
+    window.addEventListener('beforeunload', handleBeforeUnload);
+    return () => window.removeEventListener('beforeunload', handleBeforeUnload);
+  }, []);
+
   const [showWelcome, setShowWelcome] = useState(
     () => localStorage.getItem('@breakly_onboarded') !== 'true'
   );
