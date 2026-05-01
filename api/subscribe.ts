@@ -12,7 +12,7 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
   }
 
   try {
-    const { subscription, reminders } = req.body;
+    const { subscription, reminders, tzOffset } = req.body;
 
     if (!subscription?.endpoint || !subscription?.keys) {
       return res.status(400).json({ error: 'Invalid subscription' });
@@ -25,6 +25,7 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
       reminders: reminders || [],
       updatedAt: Date.now(),
       lastActiveAt: Date.now(),
+      tzOffset: tzOffset ?? new Date().getTimezoneOffset(),
     }), { ex: 60 * 60 * 24 * 30 });
 
     return res.status(200).json({ success: true });

@@ -52,6 +52,7 @@ export async function syncSubscriptionWithServer(
       body: JSON.stringify({
         subscription: subscription.toJSON(),
         reminders,
+        tzOffset: new Date().getTimezoneOffset(),
       }),
     });
   } catch (error) {

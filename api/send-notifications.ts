@@ -33,14 +33,18 @@ interface StoredData {
   }>;
   updatedAt: number;
   lastActiveAt?: number;
+  tzOffset?: number;
 }
 
-function isWithinSchedule(schedule?: StoredData['reminders'][0]['schedule']): boolean {
+function isWithinSchedule(schedule?: StoredData['reminders'][0]['schedule'], tzOffset?: number): boolean {
   if (!schedule) return true;
   const now = new Date();
+  // Apply client timezone offset if available, otherwise assume UTC+10 (AEST)
+  const offsetMs = (tzOffset ?? -600) * 60 * 1000;
+  const localNow = new Date(now.getTime() - offsetMs);
   const days = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'];
-  const dayName = days[now.getUTCDay()];
-  const hour = now.getUTCHours();
+  const dayName = days[localNow.getUTCDay()];
+  const hour = localNow.getUTCHours();
   if (!schedule.activeDays.includes(dayName)) return false;
   if (hour < schedule.startHour || hour >= schedule.endHour) return false;
   return true;
@@ -67,11 +71,15 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
     let sent = 0;
     let failed = 0;
     let skippedActive = 0;
+    const pushJobs: Promise<void>[] = [];
 
-    for (const key of keys) {
-      const raw = await redis.get<string>(key);
+    const allData = await Promise.all(keys.map((key) => redis.get<string>(key)));
+
+    for (let i = 0; i < keys.length; i++) {
+      const raw = allData[i];
       if (!raw) continue;
 
+      const key = keys[i];
       const data: StoredData = typeof raw === 'string' ? JSON.parse(raw) : raw;
 
       if (data.lastActiveAt && (Date.now() - data.lastActiveAt) < ACTIVE_THRESHOLD_MS) {
@@ -79,7 +87,7 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
         continue;
       }
 
-      const activeReminders = data.reminders.filter((r) => isWithinSchedule(r.schedule));
+      const activeReminders = data.reminders.filter((r) => isWithinSchedule(r.schedule, data.tzOffset));
       if (activeReminders.length === 0) continue;
 
       const reminder = activeReminders[0];
@@ -90,16 +98,19 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
         data: { reminderId: reminder.id, title: reminder.title },
       });
 
-      try {
-        await webpush.sendNotification(data.subscription, payload);
-        sent++;
-      } catch (error: any) {
-        if (error.statusCode === 410 || error.statusCode === 404) {
-          await redis.del(key);
-        }
-        failed++;
-      }
+      pushJobs.push(
+        webpush.sendNotification(data.subscription, payload)
+          .then(() => { sent++; })
+          .catch(async (error: any) => {
+            if (error.statusCode === 410 || error.statusCode === 404) {
+              await redis.del(key);
+            }
+            failed++;
+          })
+      );
     }
+
+    await Promise.all(pushJobs);
 
     return res.status(200).json({ sent, failed, skippedActive, total: keys.length });
   } catch (error) {
