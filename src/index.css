@@ -52,11 +52,21 @@ body {
 
 /* When running as installed PWA, use full viewport */
 @media (display-mode: standalone) {
+  html, body, #root {
+    height: 100%;
+    overflow: hidden;
+  }
+
   .app-container {
-    height: 100dvh;
+    height: 100%;
     max-width: 100%;
     border-radius: 0;
     box-shadow: none;
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
   }
 
   #root {

@@ -98,6 +98,12 @@ function isWithinSchedule(schedule: Reminder['schedule']): boolean {
 
 export { isWithinSchedule };
 
+function postToServiceWorker(message: unknown): void {
+  if ('serviceWorker' in navigator && navigator.serviceWorker.controller) {
+    navigator.serviceWorker.controller.postMessage(message);
+  }
+}
+
 export async function scheduleReminder(reminder: Reminder): Promise<string> {
   const id = `web_${reminder.id}`;
 
@@ -108,13 +114,25 @@ export async function scheduleReminder(reminder: Reminder): Promise<string> {
 
   const intervalMs = reminder.intervalMinutes * 60 * 1000;
 
+  // Register with service worker for background notifications
+  postToServiceWorker({
+    type: 'SCHEDULE_REMINDER',
+    payload: {
+      id,
+      title: reminder.title,
+      icon: reminder.icon,
+      intervalMs,
+      schedule: reminder.schedule,
+    },
+  });
+
   function fireNotification() {
     if (!isWithinSchedule(reminder.schedule)) return;
     if (Notification.permission !== 'granted') return;
 
     const title = `${reminder.icon} ${reminder.title}`;
     const options: NotificationOptions = {
-      body: `Time for your ${reminder.title.toLowerCase()} break!`,
+      body: `${reminder.title} complete — check-in!`,
       tag: `${reminder.id}_${Date.now()}`,
       requireInteraction: true,
       icon: '/pwa-192x192.png',
@@ -162,6 +180,7 @@ function cancelWebTimer(id: string): void {
 
 export async function cancelReminder(notificationId: string): Promise<void> {
   cancelWebTimer(notificationId);
+  postToServiceWorker({ type: 'CANCEL_REMINDER', payload: { id: notificationId } });
 }
 
 export async function cancelAllReminders(): Promise<void> {
@@ -170,6 +189,7 @@ export async function cancelAllReminders(): Promise<void> {
   recurringTimers.forEach((timer) => window.clearInterval(timer));
   recurringTimers.clear();
   webScheduledAt.clear();
+  postToServiceWorker({ type: 'CANCEL_ALL' });
 }
 
 export function getNextFireTime(reminder: Reminder): Date | null {
