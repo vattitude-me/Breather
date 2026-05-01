@@ -98,13 +98,13 @@ self.addEventListener('message', (event) => {
   const { type, payload } = event.data || {};
 
   if (type === 'SCHEDULE_REMINDER') {
-    const { id, title, icon, intervalMs, schedule } = payload;
+    const { id, title, icon, intervalMs, nextFireTime, schedule } = payload;
     scheduledReminders.set(id, {
       id,
       title,
       icon,
       intervalMs,
-      nextFireTime: Date.now() + intervalMs,
+      nextFireTime: nextFireTime || (Date.now() + intervalMs),
       schedule,
     });
     startCheckLoop();
@@ -121,12 +121,20 @@ self.addEventListener('message', (event) => {
   if (type === 'SYNC_REMINDERS') {
     scheduledReminders.clear();
     for (const r of payload.reminders) {
+      // Calculate next clock-aligned fire time
+      const now = Date.now();
+      const todayStart = new Date();
+      todayStart.setHours(0, 0, 0, 0);
+      const msSinceMidnight = now - todayStart.getTime();
+      const cyclesPassed = Math.floor(msSinceMidnight / r.intervalMs);
+      const nextFireTime = todayStart.getTime() + (cyclesPassed + 1) * r.intervalMs;
+
       scheduledReminders.set(r.id, {
         id: r.id,
         title: r.title,
         icon: r.icon,
         intervalMs: r.intervalMs,
-        nextFireTime: Date.now() + r.intervalMs,
+        nextFireTime,
         schedule: r.schedule,
       });
     }

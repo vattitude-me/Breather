@@ -120,6 +120,17 @@ function postToServiceWorker(message: unknown): void {
   }
 }
 
+function getNextClockAlignedTime(intervalMinutes: number): number {
+  const now = Date.now();
+  const intervalMs = intervalMinutes * 60 * 1000;
+  const todayStart = new Date();
+  todayStart.setHours(0, 0, 0, 0);
+  const msSinceMidnight = now - todayStart.getTime();
+  const cyclesPassed = Math.floor(msSinceMidnight / intervalMs);
+  const nextFireMs = todayStart.getTime() + (cyclesPassed + 1) * intervalMs;
+  return nextFireMs;
+}
+
 export async function scheduleReminder(reminder: Reminder): Promise<string> {
   const id = `web_${reminder.id}`;
 
@@ -129,6 +140,8 @@ export async function scheduleReminder(reminder: Reminder): Promise<string> {
   await requestPermissions();
 
   const intervalMs = reminder.intervalMinutes * 60 * 1000;
+  const nextFireTime = getNextClockAlignedTime(reminder.intervalMinutes);
+  const delayMs = nextFireTime - Date.now();
 
   // Register with service worker for background notifications
   postToServiceWorker({
@@ -138,6 +151,7 @@ export async function scheduleReminder(reminder: Reminder): Promise<string> {
       title: reminder.title,
       icon: reminder.icon,
       intervalMs,
+      nextFireTime,
       schedule: reminder.schedule,
     },
   });
@@ -170,17 +184,16 @@ export async function scheduleReminder(reminder: Reminder): Promise<string> {
     incrementAlertsSent();
   }
 
-  // Store the initial timeout so it can be cancelled
+  // First fire at the next clock-aligned time, then repeat on interval
   const initialTimer = window.setTimeout(() => {
     initialTimers.delete(id);
     fireNotification();
-    // Set up recurring interval
     const recurringTimer = window.setInterval(fireNotification, intervalMs);
     recurringTimers.set(id, recurringTimer);
-  }, intervalMs);
+  }, delayMs);
 
   initialTimers.set(id, initialTimer);
-  webScheduledAt.set(id, Date.now());
+  webScheduledAt.set(id, nextFireTime);
 
   return id;
 }
@@ -219,12 +232,16 @@ export function getNextFireTime(reminder: Reminder): Date | null {
 
   const id = reminder.notificationId;
   const scheduledTime = webScheduledAt.get(id);
-  const baseTime = scheduledTime || new Date(reminder.createdAt).getTime();
-  const now = Date.now();
-  const intervalMs = reminder.intervalMinutes * 60 * 1000;
-  const elapsed = now - baseTime;
-  const cyclesCompleted = Math.floor(elapsed / intervalMs);
-  const nextFire = new Date(baseTime + (cyclesCompleted + 1) * intervalMs);
 
-  return nextFire;
+  if (scheduledTime) {
+    const now = Date.now();
+    if (scheduledTime > now) return new Date(scheduledTime);
+    // Scheduled time has passed, calculate next aligned time
+    const intervalMs = reminder.intervalMinutes * 60 * 1000;
+    const elapsed = now - scheduledTime;
+    const cyclesPassed = Math.floor(elapsed / intervalMs);
+    return new Date(scheduledTime + (cyclesPassed + 1) * intervalMs);
+  }
+
+  return new Date(getNextClockAlignedTime(reminder.intervalMinutes));
 }
