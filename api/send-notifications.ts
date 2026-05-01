@@ -73,6 +73,8 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
     let skippedActive = 0;
     const pushJobs: Promise<void>[] = [];
 
+    console.log(`Found ${keys.length} push subscriptions`);
+
     const allData = await Promise.all(keys.map((key) => redis.get<string>(key)));
 
     for (let i = 0; i < keys.length; i++) {
@@ -98,11 +100,18 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
         data: { reminderId: reminder.id, title: reminder.title },
       });
 
+      const timeoutPromise = (ms: number) => new Promise<never>((_, reject) =>
+        setTimeout(() => reject(new Error('timeout')), ms)
+      );
+
       pushJobs.push(
-        webpush.sendNotification(data.subscription, payload)
+        Promise.race([
+          webpush.sendNotification(data.subscription, payload),
+          timeoutPromise(5000),
+        ])
           .then(() => { sent++; })
           .catch(async (error: any) => {
-            if (error.statusCode === 410 || error.statusCode === 404) {
+            if (error?.statusCode === 410 || error?.statusCode === 404) {
               await redis.del(key);
             }
             failed++;
