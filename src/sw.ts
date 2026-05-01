@@ -134,6 +134,26 @@ self.addEventListener('message', (event) => {
   }
 });
 
+self.addEventListener('push', (event) => {
+  if (!event.data) return;
+
+  const payload = event.data.json();
+  const title = payload.title || 'Breakly';
+  const options = {
+    body: payload.body || 'Time for a break!',
+    icon: payload.icon || '/pwa-192x192.png',
+    requireInteraction: true,
+    data: payload.data || {},
+    actions: [
+      { action: 'complete', title: `${payload.data?.title || 'Break'} complete` },
+      { action: 'snooze', title: 'Snooze' },
+      { action: 'dismiss', title: 'Dismiss' },
+    ],
+  } as unknown as NotificationOptions;
+
+  event.waitUntil(self.registration.showNotification(title, options));
+});
+
 self.addEventListener('notificationclick', (event) => {
   const action = event.action;
   const data = event.notification.data || {};

@@ -1,6 +1,7 @@
 import { useEffect } from 'react';
 import { useRemindersContext } from '../context/RemindersContext';
 import { requestPermissions } from '../services/notifications';
+import { syncSubscriptionWithServer } from '../services/pushSubscription';
 
 const ALERTS_SENT_KEY = '@breakly_alerts_sent';
 const COMPLETED_KEY = '@breakly_completed';
@@ -19,7 +20,6 @@ export function useNotifications() {
           const current = parseInt(localStorage.getItem(COMPLETED_KEY) || '0', 10);
           localStorage.setItem(COMPLETED_KEY, String(current + 1));
         }
-        // Always count as alert sent
         const alerts = parseInt(localStorage.getItem(ALERTS_SENT_KEY) || '0', 10);
         localStorage.setItem(ALERTS_SENT_KEY, String(alerts + 1));
       }
@@ -33,23 +33,36 @@ export function useNotifications() {
     if (!('serviceWorker' in navigator)) return;
 
     const activeReminders = reminders.filter((r) => r.isActive && r.notificationId);
-    if (activeReminders.length === 0) return;
 
-    navigator.serviceWorker.ready.then((reg) => {
-      if (reg.active) {
-        reg.active.postMessage({
-          type: 'SYNC_REMINDERS',
-          payload: {
-            reminders: activeReminders.map((r) => ({
-              id: r.notificationId,
-              title: r.title,
-              icon: r.icon,
-              intervalMs: r.intervalMinutes * 60 * 1000,
-              schedule: r.schedule,
-            })),
-          },
-        });
-      }
-    });
+    // Sync with local service worker
+    if (activeReminders.length > 0) {
+      navigator.serviceWorker.ready.then((reg) => {
+        if (reg.active) {
+          reg.active.postMessage({
+            type: 'SYNC_REMINDERS',
+            payload: {
+              reminders: activeReminders.map((r) => ({
+                id: r.notificationId,
+                title: r.title,
+                icon: r.icon,
+                intervalMs: r.intervalMinutes * 60 * 1000,
+                schedule: r.schedule,
+              })),
+            },
+          });
+        }
+      });
+    }
+
+    // Sync with push server for background notifications
+    syncSubscriptionWithServer(
+      activeReminders.map((r) => ({
+        id: r.id,
+        title: r.title,
+        icon: r.icon,
+        intervalMinutes: r.intervalMinutes,
+        schedule: r.schedule,
+      }))
+    );
   }, [reminders, isLoading]);
 }
