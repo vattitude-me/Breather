@@ -229,19 +229,5 @@ export async function cancelAllReminders(): Promise<void> {
 
 export function getNextFireTime(reminder: Reminder): Date | null {
   if (!reminder.isActive || !reminder.notificationId) return null;
-
-  const id = reminder.notificationId;
-  const scheduledTime = webScheduledAt.get(id);
-
-  if (scheduledTime) {
-    const now = Date.now();
-    if (scheduledTime > now) return new Date(scheduledTime);
-    // Scheduled time has passed, calculate next aligned time
-    const intervalMs = reminder.intervalMinutes * 60 * 1000;
-    const elapsed = now - scheduledTime;
-    const cyclesPassed = Math.floor(elapsed / intervalMs);
-    return new Date(scheduledTime + (cyclesPassed + 1) * intervalMs);
-  }
-
   return new Date(getNextClockAlignedTime(reminder.intervalMinutes));
 }

@@ -20,7 +20,7 @@ export const COLORS = {
 };
 
 export const APP_NAME = 'Breakly';
-export const APP_VERSION = '1.7.1';
+export const APP_VERSION = '1.7.2';
 
 export const CATEGORIES = [
   { title: 'Targeted', icon: '🎯', color: '#FCE4EC' },
