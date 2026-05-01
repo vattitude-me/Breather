@@ -9,7 +9,7 @@
   display: block;
   font-size: 13px;
   font-weight: 600;
-  color: #6B7280;
+  color: #5C6370;
   margin-bottom: 10px;
   text-transform: uppercase;
   letter-spacing: 0.5px;
@@ -28,11 +28,11 @@
 
 .form-input:focus {
   outline: none;
-  border-color: #E8614D;
+  border-color: #D4503C;
 }
 
 .form-input::placeholder {
-  color: #D1D5DB;
+  color: #6B7280;
 }
 
 /* Card styles */
@@ -61,7 +61,7 @@
 }
 
 .btn-primary {
-  background-color: #E8614D;
+  background-color: #D4503C;
   color: #FFFFFF;
   box-shadow: 0 4px 12px rgba(232, 97, 77, 0.3);
 }
@@ -72,7 +72,7 @@
 
 .btn-danger {
   background-color: #FEE2E2;
-  color: #EF4444;
+  color: #DC2626;
 }
 
 .btn-danger:hover {
@@ -100,13 +100,13 @@
 }
 
 .chip:hover {
-  border-color: #E8614D;
+  border-color: #D4503C;
 }
 
 .chip.active {
   background-color: #FDE8E4;
-  border-color: #E8614D;
-  color: #E8614D;
+  border-color: #D4503C;
+  color: #D4503C;
 }
 
 /* Day selector */
@@ -127,12 +127,12 @@
   transition: all 0.2s ease;
   font-size: 12px;
   font-weight: 600;
-  color: #6B7280;
+  color: #5C6370;
 }
 
 .day-chip.active {
-  background-color: #E8614D;
-  border-color: #E8614D;
+  background-color: #D4503C;
+  border-color: #D4503C;
   color: #FFFFFF;
 }
 
@@ -147,7 +147,7 @@
 .time-label {
   font-size: 11px;
   font-weight: 600;
-  color: #6B7280;
+  color: #5C6370;
   text-transform: uppercase;
   margin-bottom: 8px;
 }
@@ -169,7 +169,7 @@
   cursor: pointer;
   border: none;
   font-size: 18px;
-  color: #E8614D;
+  color: #D4503C;
   font-weight: 600;
 }
 
@@ -200,12 +200,12 @@
 .stat-number {
   font-size: 18px;
   font-weight: 700;
-  color: #E8614D;
+  color: #D4503C;
 }
 
 .stat-label {
   font-size: 11px;
-  color: #6B7280;
+  color: #5C6370;
   margin-top: 4px;
   font-weight: 500;
   text-transform: uppercase;
@@ -218,7 +218,7 @@
   padding: 32px 24px;
   text-align: center;
   margin-bottom: 16px;
-  border: 1px solid #F4A261;
+  border: 1px solid #C47A30;
 }
 
 .streak-fire {
@@ -241,7 +241,7 @@
 
 .streak-message {
   font-size: 13px;
-  color: #6B7280;
+  color: #5C6370;
   margin-top: 8px;
 }
 
@@ -283,12 +283,12 @@
 .period-stat-number {
   font-size: 22px;
   font-weight: 700;
-  color: #E8614D;
+  color: #D4503C;
 }
 
 .period-stat-label {
   font-size: 11px;
-  color: #6B7280;
+  color: #5C6370;
   margin-top: 4px;
   font-weight: 500;
 }
@@ -342,12 +342,12 @@
 }
 
 .bar.filled {
-  background-color: #E8614D;
+  background-color: #D4503C;
 }
 
 .bar-label {
   font-size: 11px;
-  color: #6B7280;
+  color: #5C6370;
   margin-top: 6px;
   font-weight: 600;
 }
@@ -415,12 +415,12 @@
 .about-app-name {
   font-size: 18px;
   font-weight: 700;
-  color: #E8614D;
+  color: #D4503C;
 }
 
 .about-version {
   font-size: 12px;
-  color: #9CA3AF;
+  color: #6B7280;
   margin-top: 2px;
 }
 
@@ -439,7 +439,7 @@
 
 .about-footer {
   font-size: 11px;
-  color: #9CA3AF;
+  color: #6B7280;
   font-style: italic;
 }
 
@@ -463,7 +463,7 @@
 }
 
 .preset-card:hover {
-  border-color: #E8614D;
+  border-color: #D4503C;
   transform: translateY(-2px);
 }
 
@@ -481,7 +481,7 @@
 
 .preset-card-interval {
   font-size: 12px;
-  color: #6B7280;
+  color: #5C6370;
 }
 
 /* Divider */
@@ -500,7 +500,7 @@
 .divider-text {
   padding: 0 16px;
   font-size: 13px;
-  color: #6B7280;
+  color: #5C6370;
 }
 
 /* Custom toggle */
@@ -517,18 +517,18 @@
 }
 
 .custom-toggle:hover {
-  border-color: #E8614D;
+  border-color: #D4503C;
 }
 
 .custom-toggle-text {
   font-size: 15px;
   font-weight: 500;
-  color: #E8614D;
+  color: #D4503C;
 }
 
 .custom-toggle-arrow {
   font-size: 22px;
-  color: #E8614D;
+  color: #D4503C;
   font-weight: 300;
 }
 
@@ -552,11 +552,11 @@
 }
 
 .icon-btn:hover {
-  border-color: #E8614D;
+  border-color: #D4503C;
 }
 
 .icon-btn.active {
-  border-color: #E8614D;
+  border-color: #D4503C;
   background-color: #FDE8E4;
   border-width: 2px;
 }
@@ -586,13 +586,13 @@
 }
 
 .interval-chip:hover {
-  border-color: #E8614D;
+  border-color: #D4503C;
 }
 
 .interval-chip.active {
   background-color: #FDE8E4;
-  border-color: #E8614D;
-  color: #E8614D;
+  border-color: #D4503C;
+  color: #D4503C;
 }
 
 /* Day shortcuts */
@@ -608,13 +608,13 @@
   border: 1px solid #F0E6E0;
   cursor: pointer;
   font-size: 12px;
-  color: #E8614D;
+  color: #D4503C;
   font-weight: 500;
   transition: all 0.2s ease;
 }
 
 .shortcut-btn:hover {
-  border-color: #E8614D;
+  border-color: #D4503C;
 }
 
 /* Time range */
@@ -630,13 +630,13 @@
 
 .time-separator {
   font-size: 18px;
-  color: #6B7280;
+  color: #5C6370;
   margin: 0 8px;
 }
 
 .time-hint {
   font-size: 12px;
-  color: #6B7280;
+  color: #5C6370;
   margin-top: 10px;
   text-align: center;
   font-style: italic;
@@ -658,7 +658,7 @@
 
 .collapse-text {
   font-size: 14px;
-  color: #E8614D;
+  color: #D4503C;
   font-weight: 500;
   cursor: pointer;
   background: none;
@@ -675,7 +675,7 @@
 
 .hero-subtitle {
   font-size: 14px;
-  color: #6B7280;
+  color: #5C6370;
   margin-bottom: 20px;
 }
 
@@ -684,7 +684,7 @@
   display: block;
   font-size: 11px;
   font-weight: 600;
-  color: #9CA3AF;
+  color: #6B7280;
   margin-bottom: 6px;
   margin-top: 12px;
 }
@@ -694,13 +694,13 @@
   background-color: #E0F7F5;
   border-radius: 14px;
   padding: 16px;
-  border-left: 4px solid #2EC4B6;
+  border-left: 4px solid #0E8A7D;
 }
 
 .tip-label {
   font-size: 13px;
   font-weight: 700;
-  color: #2EC4B6;
+  color: #0E8A7D;
   margin-bottom: 6px;
 }
 
@@ -726,14 +726,14 @@
   cursor: pointer;
   font-size: 14px;
   font-weight: 600;
-  color: #6B7280;
+  color: #5C6370;
   transition: all 0.2s ease;
   background: none;
 }
 
 .tab.active {
-  background-color: #E8614D;
-  border-color: #E8614D;
+  background-color: #D4503C;
+  border-color: #D4503C;
   color: #FFFFFF;
 }
 
@@ -761,12 +761,12 @@
 .today-card-number {
   font-size: 28px;
   font-weight: 700;
-  color: #E8614D;
+  color: #D4503C;
 }
 
 .today-card-label {
   font-size: 11px;
-  color: #6B7280;
+  color: #5C6370;
   margin-top: 4px;
   font-weight: 500;
   text-transform: uppercase;
@@ -803,7 +803,7 @@
 }
 
 .quick-add-chip:hover:not(:disabled) {
-  border-color: #E8614D;
+  border-color: #D4503C;
 }
 
 .quick-add-chip:disabled {
@@ -818,7 +818,7 @@
 
 .quick-add-chip-check {
   font-size: 10px;
-  color: #2EC4B6;
+  color: #0E8A7D;
   font-weight: 700;
 }
 
@@ -828,7 +828,7 @@
   background-color: #FDE8E4;
   border-radius: 16px;
   padding: 32px;
-  border: 2px dashed #E8614D;
+  border: 2px dashed #D4503C;
   display: flex;
   flex-direction: column;
   align-items: center;
@@ -854,7 +854,7 @@
 
 .empty-plus-icon {
   font-size: 28px;
-  color: #E8614D;
+  color: #D4503C;
   font-weight: 600;
 }
 
@@ -867,5 +867,5 @@
 
 .empty-subtitle {
   font-size: 13px;
-  color: #6B7280;
+  color: #5C6370;
 }

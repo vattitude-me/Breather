@@ -17,7 +17,7 @@ function InfoTooltip({ text }: { text: string }) {
         style={{
           width: '16px', height: '16px', borderRadius: '8px',
           background: '#F0E6E0', border: 'none', cursor: 'pointer',
-          fontSize: '10px', fontWeight: 700, color: '#9CA3AF',
+          fontSize: '10px', fontWeight: 700, color: '#6B7280',
           display: 'flex', alignItems: 'center', justifyContent: 'center',
         }}
       >?</button>
@@ -98,7 +98,7 @@ export default function SettingsScreen() {
   return (
     <div className="page">
       <div className="page-header" style={{ padding: '16px 24px' }}>
-        <h1 style={{ fontSize: '20px', fontWeight: 700, color: '#FFFFFF', margin: 0 }}>
+        <h1 style={{ fontSize: '20px', fontWeight: 700, color: '#1A1A2E', margin: 0 }}>
           Settings
         </h1>
       </div>
@@ -258,7 +258,7 @@ export default function SettingsScreen() {
         </div>
 
         {/* About */}
-        <div style={{ textAlign: 'center', padding: '16px 0 8px', color: '#9CA3AF', fontSize: '12px' }}>
+        <div style={{ textAlign: 'center', padding: '16px 0 8px', color: '#6B7280', fontSize: '12px' }}>
           <span style={{ fontWeight: 600, color: COLORS.primary }}>Breather</span> v{APP_VERSION} - Small breaks, big impact.
         </div>
       </div>

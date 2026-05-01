@@ -1,18 +1,18 @@
 export const COLORS = {
-  primary: '#E8614D',
+  primary: '#D4503C',
   primaryLight: '#FDE8E4',
-  secondary: '#F4A261',
+  secondary: '#C47A30',
   secondaryLight: '#FEF3E2',
-  accent: '#2EC4B6',
+  accent: '#0E8A7D',
   accentLight: '#E0F7F5',
   background: '#FFF9F5',
   surface: '#FFFFFF',
   text: '#1A1A2E',
-  textSecondary: '#6B7280',
-  danger: '#EF4444',
+  textSecondary: '#5C6370',
+  danger: '#DC2626',
   dangerLight: '#FEE2E2',
   border: '#F0E6E0',
-  disabled: '#D1D5DB',
+  disabled: '#9CA3AF',
   cardPink: '#FCE4EC',
   cardPeach: '#FFF3E0',
   cardMint: '#E0F2F1',
@@ -20,7 +20,7 @@ export const COLORS = {
 };
 
 export const APP_NAME = 'Breather';
-export const APP_VERSION = '2.0.0';
+export const APP_VERSION = '2.1.0';
 
 export const CATEGORIES = [
   { title: 'Targeted', icon: '🎯', color: '#FCE4EC' },
