@@ -6,7 +6,7 @@ interface WelcomeModalProps {
 
 export default function WelcomeModal({ onDismiss }: WelcomeModalProps) {
   const handleGetStarted = () => {
-    localStorage.setItem('@breakly_onboarded', 'true');
+    localStorage.setItem('@breather_onboarded', 'true');
     onDismiss();
   };
 
@@ -38,7 +38,7 @@ export default function WelcomeModal({ onDismiss }: WelcomeModalProps) {
           color: COLORS.text,
           marginBottom: '12px',
         }}>
-          Welcome to Breakly
+          Welcome to Breather
         </h2>
         <p style={{
           fontSize: '15px',
@@ -55,7 +55,7 @@ export default function WelcomeModal({ onDismiss }: WelcomeModalProps) {
           lineHeight: 1.6,
           marginBottom: '24px',
         }}>
-          Breakly reminds you to take regular breaks - stretch, hydrate, walk, and rest your eyes. Set your schedule, and we'll nudge you at the right time. Small breaks, big impact.
+          Breather reminds you to take regular breaks - stretch, hydrate, walk, and rest your eyes. Set your schedule, and we'll nudge you at the right time. Small breaks, big impact.
         </p>
 
         <button

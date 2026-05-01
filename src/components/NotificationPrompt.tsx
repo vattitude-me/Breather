@@ -8,7 +8,7 @@ export default function NotificationPrompt() {
     if (!('Notification' in window)) return;
     if (Notification.permission !== 'default') return;
 
-    const dismissed = sessionStorage.getItem('@breakly_notif_prompt_dismissed');
+    const dismissed = sessionStorage.getItem('@breather_notif_prompt_dismissed');
     if (dismissed) return;
 
     const timer = setTimeout(() => setShow(true), 1500);
@@ -20,13 +20,13 @@ export default function NotificationPrompt() {
     if (result === 'granted') {
       setShow(false);
     } else {
-      sessionStorage.setItem('@breakly_notif_prompt_dismissed', 'true');
+      sessionStorage.setItem('@breather_notif_prompt_dismissed', 'true');
       setShow(false);
     }
   };
 
   const handleDismiss = () => {
-    sessionStorage.setItem('@breakly_notif_prompt_dismissed', 'true');
+    sessionStorage.setItem('@breather_notif_prompt_dismissed', 'true');
     setShow(false);
   };
 
@@ -68,7 +68,7 @@ export default function NotificationPrompt() {
           lineHeight: 1.6,
           marginBottom: '20px',
         }}>
-          Breakly needs notifications to remind you to take breaks. Without them, reminders won't work when the app is in the background.
+          Breather needs notifications to remind you to take breaks. Without them, reminders won't work when the app is in the background.
         </p>
         <button
           onClick={handleEnable}

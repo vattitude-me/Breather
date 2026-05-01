@@ -14,8 +14,8 @@ export default defineConfig({
       injectRegister: 'auto',
       includeAssets: ['favicon.ico', 'apple-touch-icon.png', 'masked-icon.svg'],
       manifest: {
-        name: 'Breakly - Workplace Wellness',
-        short_name: 'Breakly',
+        name: 'Breather - Workplace Wellness',
+        short_name: 'Breather',
         description: 'A workplace wellness app that keeps your team healthy, focused, and productive',
         theme_color: '#FFF9F5',
         background_color: '#FFF9F5',

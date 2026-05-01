@@ -19,8 +19,8 @@ export const COLORS = {
   cardLavender: '#EDE7F6',
 };
 
-export const APP_NAME = 'Breakly';
-export const APP_VERSION = '1.9.0';
+export const APP_NAME = 'Breather';
+export const APP_VERSION = '2.0.0';
 
 export const CATEGORIES = [
   { title: 'Targeted', icon: '🎯', color: '#FCE4EC' },
@@ -51,9 +51,9 @@ export const DEFAULT_SCHEDULE = {
 };
 
 export const STORAGE_KEYS = {
-  REMINDERS: '@breakly_reminders',
-  SETTINGS: '@breakly_settings',
-  PROGRESS: '@breakly_progress',
+  REMINDERS: '@breather_reminders',
+  SETTINGS: '@breather_settings',
+  PROGRESS: '@breather_progress',
 };
 
 export const DEFAULT_SETTINGS = {

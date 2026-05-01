@@ -225,7 +225,7 @@ export default function HomeScreen() {
                   border: 'none',
                   cursor: 'pointer',
                 }}
-                title="Install Breakly"
+                title="Install Breather"
               >
                 <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#FFFFFF" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
                   <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4" />
@@ -496,7 +496,7 @@ export default function HomeScreen() {
         }}>
           <span style={{ fontSize: '16px', flexShrink: 0 }}>⚠️</span>
           <p style={{ fontSize: '12px', color: '#856404', lineHeight: 1.4, margin: 0, flex: 1 }}>
-            Notifications are off. Breakly can't remind you to take breaks.
+            Notifications are off. Breather can't remind you to take breaks.
           </p>
           <button
             onClick={handleEnableNotifications}

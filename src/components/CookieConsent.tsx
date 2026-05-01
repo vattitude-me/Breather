@@ -4,7 +4,7 @@ import { setAnalyticsConsent } from '../services/analytics';
 
 export default function CookieConsent() {
   const [visible, setVisible] = useState(
-    () => localStorage.getItem('@breakly_analytics_consent') === null
+    () => localStorage.getItem('@breather_analytics_consent') === null
   );
 
   if (!visible) return null;
@@ -42,7 +42,7 @@ export default function CookieConsent() {
         pointerEvents: 'auto',
       }}>
         <p style={{ fontSize: '13px', color: COLORS.text, lineHeight: 1.5, margin: '0 0 12px' }}>
-          We use cookies to understand how Breakly is used and improve the experience. No personal data is collected.
+          We use cookies to understand how Breather is used and improve the experience. No personal data is collected.
         </p>
         <div style={{ display: 'flex', gap: '8px' }}>
           <button

@@ -4,7 +4,7 @@ let initialized = false;
 
 export function initAnalytics() {
   if (initialized) return;
-  if (localStorage.getItem('@breakly_analytics_consent') !== 'accepted') return;
+  if (localStorage.getItem('@breather_analytics_consent') !== 'accepted') return;
 
   (window as any).dataLayer = (window as any).dataLayer || [];
   (window as any).gtag = function() {
@@ -22,10 +22,10 @@ export function initAnalytics() {
 }
 
 export function hasAnalyticsConsent(): boolean {
-  return localStorage.getItem('@breakly_analytics_consent') === 'accepted';
+  return localStorage.getItem('@breather_analytics_consent') === 'accepted';
 }
 
 export function setAnalyticsConsent(accepted: boolean) {
-  localStorage.setItem('@breakly_analytics_consent', accepted ? 'accepted' : 'declined');
+  localStorage.setItem('@breather_analytics_consent', accepted ? 'accepted' : 'declined');
   if (accepted) initAnalytics();
 }

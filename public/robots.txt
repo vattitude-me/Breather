@@ -1,4 +1,4 @@
 User-agent: *
 Allow: /
 
-Sitemap: https://breakly-eight.vercel.app/sitemap.xml
+Sitemap: https://breather.vercel.app/sitemap.xml

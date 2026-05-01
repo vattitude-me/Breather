@@ -2,8 +2,8 @@ import { useEffect } from 'react';
 import { useRemindersContext } from '../context/RemindersContext';
 import { requestPermissions } from '../services/notifications';
 
-const ALERTS_SENT_KEY = '@breakly_alerts_sent';
-const COMPLETED_KEY = '@breakly_completed';
+const ALERTS_SENT_KEY = '@breather_alerts_sent';
+const COMPLETED_KEY = '@breather_completed';
 
 export function useNotifications() {
   const { reminders, isLoading } = useRemindersContext();

@@ -1,8 +1,8 @@
 import { Reminder, DayOfWeek } from '../types';
 import { loadProgress, saveProgress } from './storage';
 
-const ALERTS_SENT_KEY = '@breakly_alerts_sent';
-const COMPLETED_KEY = '@breakly_completed';
+const ALERTS_SENT_KEY = '@breather_alerts_sent';
+const COMPLETED_KEY = '@breather_completed';
 const DAYS_MAP: DayOfWeek[] = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'] as unknown as DayOfWeek[];
 
 // Track both initial timeouts and recurring intervals separately

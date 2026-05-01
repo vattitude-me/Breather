@@ -137,10 +137,10 @@ export default function SettingsScreen() {
           <div className="settings-card">
             <div className="settings-card-header">
               <span className="settings-card-label">Install App</span>
-              <InfoTooltip text="Pin Breakly to your taskbar/dock like a native app" />
+              <InfoTooltip text="Pin Breather to your taskbar/dock like a native app" />
             </div>
             <p style={{ fontSize: '12px', color: COLORS.textSecondary, margin: '0 0 12px' }}>
-              Install Breakly to your desktop for quick access - runs in its own window like a native app.
+              Install Breather to your desktop for quick access - runs in its own window like a native app.
             </p>
             {installPrompt ? (
               <button
@@ -175,7 +175,7 @@ export default function SettingsScreen() {
                     <div>
                       <span style={{ fontSize: '12px', fontWeight: 600, color: COLORS.text }}>Chrome / Edge</span>
                       <p style={{ fontSize: '11px', color: COLORS.textSecondary, margin: '2px 0 0' }}>
-                        Click the install icon (⊕) in the address bar, or Menu &rarr; "Install Breakly"
+                        Click the install icon (⊕) in the address bar, or Menu &rarr; "Install Breather"
                       </p>
                     </div>
                   </div>
@@ -208,7 +208,7 @@ export default function SettingsScreen() {
           <div className="settings-card-row">
             <div style={{ display: 'flex', alignItems: 'center' }}>
               <span className="settings-card-label">Analytics</span>
-              <InfoTooltip text="Help improve Breakly with anonymous usage data" />
+              <InfoTooltip text="Help improve Breather with anonymous usage data" />
             </div>
             <label style={{ position: 'relative', display: 'inline-block', width: '44px', height: '26px' }}>
               <input
@@ -259,7 +259,7 @@ export default function SettingsScreen() {
 
         {/* About */}
         <div style={{ textAlign: 'center', padding: '16px 0 8px', color: '#9CA3AF', fontSize: '12px' }}>
-          <span style={{ fontWeight: 600, color: COLORS.primary }}>Breakly</span> v{APP_VERSION} - Small breaks, big impact.
+          <span style={{ fontWeight: 600, color: COLORS.primary }}>Breather</span> v{APP_VERSION} - Small breaks, big impact.
         </div>
       </div>
 

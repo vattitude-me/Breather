@@ -146,7 +146,7 @@ self.addEventListener('push', (event) => {
   if (!event.data) return;
 
   const payload = event.data.json();
-  const title = payload.title || 'Breakly';
+  const title = payload.title || 'Breather';
   const options = {
     body: payload.body || 'Time for a break!',
     icon: payload.icon || '/pwa-192x192.png',

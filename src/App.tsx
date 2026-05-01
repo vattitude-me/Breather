@@ -29,7 +29,7 @@ function App() {
   }, []);
 
   const [showWelcome, setShowWelcome] = useState(
-    () => localStorage.getItem('@breakly_onboarded') !== 'true'
+    () => localStorage.getItem('@breather_onboarded') !== 'true'
   );
 
   return (

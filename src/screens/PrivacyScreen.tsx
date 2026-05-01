@@ -30,7 +30,7 @@ export default function PrivacyScreen() {
             Your data stays on your device
           </h2>
           <p style={{ fontSize: '13px', color: COLORS.textSecondary, lineHeight: 1.6, margin: 0 }}>
-            Breakly stores all your reminders, settings, and progress data locally in your browser. Nothing is sent to any server. If you clear your browser data, your Breakly data will be removed.
+            Breather stores all your reminders, settings, and progress data locally in your browser. Nothing is sent to any server. If you clear your browser data, your Breather data will be removed.
           </p>
         </div>
 
@@ -39,7 +39,7 @@ export default function PrivacyScreen() {
             No account required
           </h2>
           <p style={{ fontSize: '13px', color: COLORS.textSecondary, lineHeight: 1.6, margin: 0 }}>
-            Breakly does not require sign-up, login, or any personal information to use. There are no user accounts and no passwords.
+            Breather does not require sign-up, login, or any personal information to use. There are no user accounts and no passwords.
           </p>
         </div>
 
@@ -57,7 +57,7 @@ export default function PrivacyScreen() {
             Notifications
           </h2>
           <p style={{ fontSize: '13px', color: COLORS.textSecondary, lineHeight: 1.6, margin: 0 }}>
-            Breakly uses browser notifications to remind you to take breaks. This requires your permission and can be disabled at any time from your browser settings or within the app.
+            Breather uses browser notifications to remind you to take breaks. This requires your permission and can be disabled at any time from your browser settings or within the app.
           </p>
         </div>
 
@@ -66,7 +66,7 @@ export default function PrivacyScreen() {
             Third-party services
           </h2>
           <p style={{ fontSize: '13px', color: COLORS.textSecondary, lineHeight: 1.6, margin: 0 }}>
-            Breakly is hosted on Vercel. If analytics are enabled, Google Analytics is used. No other third-party services receive your data.
+            Breather is hosted on Vercel. If analytics are enabled, Google Analytics is used. No other third-party services receive your data.
           </p>
         </div>
 
