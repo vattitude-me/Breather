@@ -1,7 +1,6 @@
 import { useEffect } from 'react';
 import { useRemindersContext } from '../context/RemindersContext';
 import { requestPermissions } from '../services/notifications';
-import { syncSubscriptionWithServer, startHeartbeat, stopHeartbeat } from '../services/pushSubscription';
 
 const ALERTS_SENT_KEY = '@breakly_alerts_sent';
 const COMPLETED_KEY = '@breakly_completed';
@@ -11,7 +10,6 @@ export function useNotifications() {
 
   useEffect(() => {
     requestPermissions();
-    startHeartbeat();
 
     if (!('serviceWorker' in navigator)) return;
     const handler = (event: MessageEvent) => {
@@ -27,7 +25,6 @@ export function useNotifications() {
     };
     navigator.serviceWorker.addEventListener('message', handler);
     return () => {
-      stopHeartbeat();
       navigator.serviceWorker.removeEventListener('message', handler);
     };
   }, []);
@@ -38,7 +35,6 @@ export function useNotifications() {
 
     const activeReminders = reminders.filter((r) => r.isActive && r.notificationId);
 
-    // Sync with local service worker
     if (activeReminders.length > 0) {
       navigator.serviceWorker.ready.then((reg) => {
         if (reg.active) {
@@ -57,16 +53,5 @@ export function useNotifications() {
         }
       });
     }
-
-    // Sync with push server for background notifications
-    syncSubscriptionWithServer(
-      activeReminders.map((r) => ({
-        id: r.id,
-        title: r.title,
-        icon: r.icon,
-        intervalMinutes: r.intervalMinutes,
-        schedule: r.schedule,
-      }))
-    );
   }, [reminders, isLoading]);
 }
