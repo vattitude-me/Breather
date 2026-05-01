@@ -1,17 +1,10 @@
 import type { VercelRequest, VercelResponse } from '@vercel/node';
 import { Redis } from '@upstash/redis';
-import webpush from 'web-push';
 
 const redis = new Redis({
   url: process.env.UPSTASH_REDIS_REST_URL!,
   token: process.env.UPSTASH_REDIS_REST_TOKEN!,
 });
-
-webpush.setVapidDetails(
-  'mailto:breakly-app@example.com',
-  process.env.VAPID_PUBLIC_KEY!,
-  process.env.VAPID_PRIVATE_KEY!
-);
 
 const ACTIVE_THRESHOLD_MS = 2 * 60 * 1000;
 
@@ -39,7 +32,6 @@ interface StoredData {
 function isWithinSchedule(schedule?: StoredData['reminders'][0]['schedule'], tzOffset?: number): boolean {
   if (!schedule) return true;
   const now = new Date();
-  // Apply client timezone offset if available, otherwise assume UTC+10 (AEST)
   const offsetMs = (tzOffset ?? -600) * 60 * 1000;
   const localNow = new Date(now.getTime() - offsetMs);
   const days = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'];
@@ -60,6 +52,14 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
   }
 
   try {
+    // @ts-ignore - dynamic import, no type declarations
+    const webpush = (await import('web-push')).default;
+    webpush.setVapidDetails(
+      'mailto:breakly-app@example.com',
+      process.env.VAPID_PUBLIC_KEY!,
+      process.env.VAPID_PRIVATE_KEY!
+    );
+
     const keys: string[] = [];
     let cursor = 0;
     do {
@@ -68,14 +68,14 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
       keys.push(...(batch as string[]));
     } while (cursor !== 0);
 
+    console.log(`Found ${keys.length} push subscriptions`);
+
     let sent = 0;
     let failed = 0;
     let skippedActive = 0;
-    const pushJobs: Promise<void>[] = [];
-
-    console.log(`Found ${keys.length} push subscriptions`);
 
     const allData = await Promise.all(keys.map((key) => redis.get<string>(key)));
+    const pushJobs: Promise<void>[] = [];
 
     for (let i = 0; i < keys.length; i++) {
       const raw = allData[i];
@@ -100,22 +100,17 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
         data: { reminderId: reminder.id, title: reminder.title },
       });
 
-      const timeoutPromise = (ms: number) => new Promise<never>((_, reject) =>
-        setTimeout(() => reject(new Error('timeout')), ms)
-      );
-
       pushJobs.push(
         Promise.race([
-          webpush.sendNotification(data.subscription, payload),
-          timeoutPromise(5000),
-        ])
-          .then(() => { sent++; })
-          .catch(async (error: any) => {
-            if (error?.statusCode === 410 || error?.statusCode === 404) {
-              await redis.del(key);
-            }
-            failed++;
-          })
+          webpush.sendNotification(data.subscription, payload)
+            .then(() => { sent++; }),
+          new Promise<void>((_, reject) => setTimeout(() => reject(new Error('timeout')), 5000)),
+        ]).catch(async (error: any) => {
+          if (error?.statusCode === 410 || error?.statusCode === 404) {
+            await redis.del(key);
+          }
+          failed++;
+        })
       );
     }
 
