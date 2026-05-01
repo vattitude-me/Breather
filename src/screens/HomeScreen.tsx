@@ -2,7 +2,7 @@ import { useState, useEffect, useCallback } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { nanoid } from 'nanoid';
 import { useRemindersContext } from '../context/RemindersContext';
-import { scheduleReminder, cancelReminder, getNextFireTime, getAlertsSent, isWithinSchedule } from '../services/notifications';
+import { scheduleReminder, cancelReminder, getNextFireTime, getAlertsSent, getCompletedCount, isWithinSchedule } from '../services/notifications';
 import { getInstallPrompt, onInstallPromptChange } from '../services/installPrompt';
 import { COLORS, APP_NAME, PRESET_REMINDERS, DEFAULT_SCHEDULE, WELLNESS_TIPS } from '../constants';
 import { Reminder } from '../types';
@@ -35,6 +35,7 @@ export default function HomeScreen() {
   const [countdown, setCountdown] = useState('--');
   const [currentTime, setCurrentTime] = useState(new Date());
   const [alertsSent, setAlertsSent] = useState(0);
+  const [completedCount, setCompletedCount] = useState(0);
   const [notifPermission, setNotifPermission] = useState(
     () => 'Notification' in window ? Notification.permission : 'denied'
   );
@@ -64,8 +65,10 @@ export default function HomeScreen() {
 
   useEffect(() => {
     getAlertsSent().then(setAlertsSent);
+    getCompletedCount().then(setCompletedCount);
     const poll = setInterval(() => {
       getAlertsSent().then(setAlertsSent);
+      getCompletedCount().then(setCompletedCount);
     }, 10000);
     return () => clearInterval(poll);
   }, []);
@@ -239,11 +242,19 @@ export default function HomeScreen() {
               display: 'flex',
               alignItems: 'center',
               justifyContent: 'center',
-              fontSize: '20px',
-              fontWeight: 800,
-              color: '#FFFFFF',
             }}>
-              B
+              <svg width="24" height="24" viewBox="0 0 64 64" xmlns="http://www.w3.org/2000/svg">
+                <defs>
+                  <clipPath id="hdr-top"><polygon points="0,0 64,0 64,24 0,42"/></clipPath>
+                  <clipPath id="hdr-bottom"><polygon points="0,44 64,26 64,64 0,64"/></clipPath>
+                </defs>
+                <g clipPath="url(#hdr-top)" transform="translate(-1.5, -1.5)">
+                  <path d="M18,8 L18,56 L34,56 C44,56 50,50 50,43 C50,37 46,33 40,32 C45,31 48,27 48,22 C48,15 43,8 33,8 Z M25,15 L33,15 C38,15 41,18 41,22 C41,26 38,29 33,29 L25,29 Z M25,35 L34,35 C40,35 43,38 43,43 C43,48 40,49 34,49 L25,49 Z" fill="white"/>
+                </g>
+                <g clipPath="url(#hdr-bottom)" transform="translate(1.5, 1.5)">
+                  <path d="M18,8 L18,56 L34,56 C44,56 50,50 50,43 C50,37 46,33 40,32 C45,31 48,27 48,22 C48,15 43,8 33,8 Z M25,15 L33,15 C38,15 41,18 41,22 C41,26 38,29 33,29 L25,29 Z M25,35 L34,35 C40,35 43,38 43,43 C43,48 40,49 34,49 L25,49 Z" fill="white"/>
+                </g>
+              </svg>
             </div>
           </div>
         </div>
@@ -265,24 +276,29 @@ export default function HomeScreen() {
             display: 'flex',
             backgroundColor: COLORS.surface,
             borderRadius: '16px',
-            padding: '18px 16px',
+            padding: '18px 12px',
             marginBottom: '28px',
             boxShadow: '0 4px 12px rgba(0,0,0,0.08)',
             alignItems: 'center',
           }}>
             <div style={{ flex: 1, textAlign: 'center' }}>
               <div style={{ fontSize: '18px', fontWeight: 700, color: COLORS.primary }}>{activeReminders.length}</div>
-              <div style={{ fontSize: '11px', color: COLORS.textSecondary, marginTop: '4px', fontWeight: 500, textTransform: 'uppercase' }}>Active</div>
+              <div style={{ fontSize: '10px', color: COLORS.textSecondary, marginTop: '4px', fontWeight: 500, textTransform: 'uppercase' }}>Active</div>
             </div>
             <div style={{ width: '1px', height: '30px', backgroundColor: COLORS.border }} />
             <div style={{ flex: 1, textAlign: 'center' }}>
               <div style={{ fontSize: '18px', fontWeight: 700, color: COLORS.primary }}>{alertsSent}</div>
-              <div style={{ fontSize: '11px', color: COLORS.textSecondary, marginTop: '4px', fontWeight: 500, textTransform: 'uppercase' }}>Alerts Sent</div>
+              <div style={{ fontSize: '10px', color: COLORS.textSecondary, marginTop: '4px', fontWeight: 500, textTransform: 'uppercase' }}>Alerts</div>
+            </div>
+            <div style={{ width: '1px', height: '30px', backgroundColor: COLORS.border }} />
+            <div style={{ flex: 1, textAlign: 'center' }}>
+              <div style={{ fontSize: '18px', fontWeight: 700, color: COLORS.accent }}>{completedCount}</div>
+              <div style={{ fontSize: '10px', color: COLORS.textSecondary, marginTop: '4px', fontWeight: 500, textTransform: 'uppercase' }}>Done</div>
             </div>
             <div style={{ width: '1px', height: '30px', backgroundColor: COLORS.border }} />
             <div style={{ flex: 1, textAlign: 'center' }}>
               <div style={{ fontSize: '18px', fontWeight: 700, color: COLORS.primary }}>{countdown}</div>
-              <div style={{ fontSize: '11px', color: COLORS.textSecondary, marginTop: '4px', fontWeight: 500, textTransform: 'uppercase' }}>Next In</div>
+              <div style={{ fontSize: '10px', color: COLORS.textSecondary, marginTop: '4px', fontWeight: 500, textTransform: 'uppercase' }}>Next In</div>
             </div>
           </div>
         )}

@@ -2,6 +2,9 @@ import { useEffect } from 'react';
 import { useRemindersContext } from '../context/RemindersContext';
 import { requestPermissions } from '../services/notifications';
 
+const ALERTS_SENT_KEY = '@breakly_alerts_sent';
+const COMPLETED_KEY = '@breakly_completed';
+
 export function useNotifications() {
   const { reminders, isLoading } = useRemindersContext();
 
@@ -10,11 +13,15 @@ export function useNotifications() {
 
     if (!('serviceWorker' in navigator)) return;
     const handler = (event: MessageEvent) => {
-      if (event.data?.type === 'NOTIFICATION_FIRED') {
-        // Trigger a storage event so alert count refreshes
-        const key = '@breakly_alerts_sent';
-        const current = parseInt(localStorage.getItem(key) || '0', 10);
-        localStorage.setItem(key, String(current + 1));
+      if (event.data?.type === 'NOTIFICATION_ACTION') {
+        const { action } = event.data;
+        if (action === 'complete') {
+          const current = parseInt(localStorage.getItem(COMPLETED_KEY) || '0', 10);
+          localStorage.setItem(COMPLETED_KEY, String(current + 1));
+        }
+        // Always count as alert sent
+        const alerts = parseInt(localStorage.getItem(ALERTS_SENT_KEY) || '0', 10);
+        localStorage.setItem(ALERTS_SENT_KEY, String(alerts + 1));
       }
     };
     navigator.serviceWorker.addEventListener('message', handler);

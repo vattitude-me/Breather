@@ -2,6 +2,7 @@ import { Reminder, DayOfWeek } from '../types';
 import { loadProgress, saveProgress } from './storage';
 
 const ALERTS_SENT_KEY = '@breakly_alerts_sent';
+const COMPLETED_KEY = '@breakly_completed';
 const DAYS_MAP: DayOfWeek[] = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'] as unknown as DayOfWeek[];
 
 // Track both initial timeouts and recurring intervals separately
@@ -16,6 +17,21 @@ export async function getAlertsSent(): Promise<number> {
   } catch {
     return 0;
   }
+}
+
+export async function getCompletedCount(): Promise<number> {
+  try {
+    const val = localStorage.getItem(COMPLETED_KEY);
+    return val ? parseInt(val, 10) : 0;
+  } catch {
+    return 0;
+  }
+}
+
+export async function incrementCompleted(): Promise<void> {
+  const current = await getCompletedCount();
+  localStorage.setItem(COMPLETED_KEY, String(current + 1));
+  await updateProgressOnAlert();
 }
 
 async function incrementAlertsSent(): Promise<void> {
@@ -131,19 +147,25 @@ export async function scheduleReminder(reminder: Reminder): Promise<string> {
     if (Notification.permission !== 'granted') return;
 
     const title = `${reminder.icon} ${reminder.title}`;
-    const options: NotificationOptions = {
-      body: `${reminder.title} complete — check-in!`,
-      tag: `${reminder.id}_${Date.now()}`,
-      requireInteraction: true,
-      icon: '/pwa-192x192.png',
-    };
+    const body = `Time for your ${reminder.title.toLowerCase()} break!`;
 
     if ('serviceWorker' in navigator && navigator.serviceWorker.controller) {
       navigator.serviceWorker.ready.then((reg) => {
-        reg.showNotification(title, options);
+        reg.showNotification(title, {
+          body,
+          tag: `${reminder.id}_${Date.now()}`,
+          requireInteraction: true,
+          icon: '/pwa-192x192.png',
+          data: { reminderId: reminder.id, title: reminder.title },
+          actions: [
+            { action: 'complete', title: `${reminder.title} complete` },
+            { action: 'snooze', title: 'Snooze' },
+            { action: 'dismiss', title: 'Dismiss' },
+          ],
+        } as NotificationOptions);
       });
     } else {
-      new Notification(title, options);
+      new Notification(title, { body, tag: `${reminder.id}_${Date.now()}`, requireInteraction: true, icon: '/pwa-192x192.png' });
     }
     incrementAlertsSent();
   }

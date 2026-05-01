@@ -63,12 +63,18 @@ function startCheckLoop() {
       if (now >= reminder.nextFireTime) {
         if (isWithinSchedule(reminder.schedule)) {
           self.registration.showNotification(`${reminder.icon} ${reminder.title}`, {
-            body: `${reminder.title} complete — check-in!`,
+            body: `Time for your ${reminder.title.toLowerCase()} break!`,
             tag: `${id}_${now}`,
             requireInteraction: true,
             icon: '/pwa-192x192.png',
-          });
-          notifyClients(id);
+            data: { reminderId: id, title: reminder.title },
+            actions: [
+              { action: 'complete', title: `${reminder.title} complete` },
+              { action: 'snooze', title: 'Snooze' },
+              { action: 'dismiss', title: 'Dismiss' },
+            ],
+          } as unknown as NotificationOptions);
+          notifyClients(id, 'alert');
         }
         reminder.nextFireTime = now + reminder.intervalMs;
       }
@@ -80,10 +86,10 @@ function startCheckLoop() {
   }, 30000);
 }
 
-function notifyClients(reminderId: string) {
+function notifyClients(reminderId: string, action: string) {
   self.clients.matchAll({ type: 'window' }).then((clients) => {
     clients.forEach((client) => {
-      client.postMessage({ type: 'NOTIFICATION_FIRED', reminderId });
+      client.postMessage({ type: 'NOTIFICATION_ACTION', reminderId, action });
     });
   });
 }
@@ -129,7 +135,20 @@ self.addEventListener('message', (event) => {
 });
 
 self.addEventListener('notificationclick', (event) => {
+  const action = event.action;
+  const data = event.notification.data || {};
   event.notification.close();
+
+  if (action === 'complete') {
+    notifyClients(data.reminderId || '', 'complete');
+  } else if (action === 'snooze') {
+    notifyClients(data.reminderId || '', 'snooze');
+  } else if (action === 'dismiss') {
+    notifyClients(data.reminderId || '', 'dismiss');
+  } else {
+    notifyClients(data.reminderId || '', 'complete');
+  }
+
   event.waitUntil(
     self.clients.matchAll({ type: 'window', includeUncontrolled: true }).then((clients) => {
       if (clients.length > 0) {

@@ -1,8 +1,25 @@
 <svg width="1200" height="630" xmlns="http://www.w3.org/2000/svg">
   <rect width="1200" height="630" fill="#FFF9F5"/>
   <rect x="0" y="0" width="1200" height="8" fill="#E8614D"/>
-  <text x="600" y="250" font-family="system-ui, -apple-system, sans-serif" font-size="72" font-weight="800" fill="#E8614D" text-anchor="middle">Breakly</text>
-  <text x="600" y="330" font-family="system-ui, -apple-system, sans-serif" font-size="32" fill="#1A1A2E" text-anchor="middle">Your friendly nudge to take better breaks</text>
-  <text x="600" y="420" font-family="system-ui, -apple-system, sans-serif" font-size="24" fill="#6B7280" text-anchor="middle">🧘 Stretch  •  💧 Hydrate  •  👁️ Rest Eyes  •  🚶 Walk</text>
-  <text x="600" y="540" font-family="system-ui, -apple-system, sans-serif" font-size="20" fill="#2EC4B6" text-anchor="middle">Free • Private • No sign-up needed</text>
+  <!-- Broken B logo -->
+  <defs>
+    <clipPath id="og-top">
+      <polygon points="0,0 200,0 200,75 0,131"/>
+    </clipPath>
+    <clipPath id="og-bottom">
+      <polygon points="0,137 200,81 200,200 0,200"/>
+    </clipPath>
+  </defs>
+  <g transform="translate(530, 120)">
+    <g clip-path="url(#og-top)" transform="translate(-4, -4)">
+      <path d="M25,10 L25,170 L95,170 C130,170 150,150 150,130 C150,110 138,100 120,97 C135,94 144,82 144,67 C144,45 128,10 97,10 Z M50,35 L97,35 C115,35 125,47 125,60 C125,73 115,85 97,85 L50,85 Z M50,105 L100,105 C120,105 130,115 130,130 C130,145 120,150 100,150 L50,150 Z" fill="#E8614D"/>
+    </g>
+    <g clip-path="url(#og-bottom)" transform="translate(4, 4)">
+      <path d="M25,10 L25,170 L95,170 C130,170 150,150 150,130 C150,110 138,100 120,97 C135,94 144,82 144,67 C144,45 128,10 97,10 Z M50,35 L97,35 C115,35 125,47 125,60 C125,73 115,85 97,85 L50,85 Z M50,105 L100,105 C120,105 130,115 130,130 C130,145 120,150 100,150 L50,150 Z" fill="#E8614D"/>
+    </g>
+  </g>
+  <text x="600" y="400" font-family="system-ui, -apple-system, sans-serif" font-size="72" font-weight="800" fill="#E8614D" text-anchor="middle">Breakly</text>
+  <text x="600" y="470" font-family="system-ui, -apple-system, sans-serif" font-size="32" fill="#1A1A2E" text-anchor="middle">Your friendly nudge to take better breaks</text>
+  <text x="600" y="540" font-family="system-ui, -apple-system, sans-serif" font-size="24" fill="#6B7280" text-anchor="middle">🧘 Stretch  •  💧 Hydrate  •  👁️ Rest Eyes  •  🚶 Walk</text>
+  <text x="600" y="590" font-family="system-ui, -apple-system, sans-serif" font-size="20" fill="#2EC4B6" text-anchor="middle">Free • Private • No sign-up needed</text>
 </svg>
