@@ -59,19 +59,28 @@ function checkAndFire() {
   const now = Date.now();
   let nearestMs = Infinity;
 
+  const breakPrompts = [
+    'Your body will thank you!',
+    'A small pause goes a long way.',
+    'Time to stretch and reset.',
+    'Step away for a moment — you have earned it.',
+    'Quick break? Your plant is thirsty too!',
+  ];
+
   for (const [id, reminder] of scheduledReminders) {
     if (now >= reminder.nextFireTime) {
       if (isWithinSchedule(reminder.schedule)) {
-        self.registration.showNotification(`${reminder.icon} ${reminder.title}`, {
-          body: `Time for your ${reminder.title.toLowerCase()} break!`,
+        const body = breakPrompts[Math.floor(Math.random() * breakPrompts.length)];
+        self.registration.showNotification(`${reminder.icon} Time for a ${reminder.title.toLowerCase()} break`, {
+          body,
           tag: `${id}_${now}`,
           requireInteraction: true,
           icon: '/pwa-192x192.png',
+          badge: '/pwa-192x192.png',
           data: { reminderId: id, title: reminder.title },
           actions: [
-            { action: 'complete', title: `${reminder.title} complete` },
-            { action: 'snooze', title: 'Snooze' },
-            { action: 'dismiss', title: 'Dismiss' },
+            { action: 'complete', title: '🌱 Done! Water plant' },
+            { action: 'snooze', title: '💤 Snooze' },
           ],
         } as unknown as NotificationOptions);
         notifyClients(id, 'alert');
@@ -154,16 +163,16 @@ self.addEventListener('push', (event) => {
   if (!event.data) return;
 
   const payload = event.data.json();
-  const title = payload.title || 'Breather';
+  const title = payload.title || '🌱 Time for a break';
   const options = {
-    body: payload.body || 'Time for a break!',
+    body: payload.body || 'Your body will thank you!',
     icon: payload.icon || '/pwa-192x192.png',
+    badge: '/pwa-192x192.png',
     requireInteraction: true,
     data: payload.data || {},
     actions: [
-      { action: 'complete', title: `${payload.data?.title || 'Break'} complete` },
-      { action: 'snooze', title: 'Snooze' },
-      { action: 'dismiss', title: 'Dismiss' },
+      { action: 'complete', title: '🌱 Done! Water plant' },
+      { action: 'snooze', title: '💤 Snooze' },
     ],
   } as unknown as NotificationOptions;
 
@@ -175,22 +184,18 @@ self.addEventListener('notificationclick', (event) => {
   const data = event.notification.data || {};
   event.notification.close();
 
-  if (action === 'complete') {
-    notifyClients(data.reminderId || '', 'complete');
-  } else if (action === 'snooze') {
-    notifyClients(data.reminderId || '', 'snooze');
-  } else if (action === 'dismiss') {
-    notifyClients(data.reminderId || '', 'dismiss');
-  } else {
-    notifyClients(data.reminderId || '', 'complete');
-  }
+  // Snooze just dismisses — the next scheduled fire will handle it
+  // Any other click (body click, "Done" button) counts as complete → water plant
+  const resolvedAction = action === 'snooze' ? 'snooze' : 'complete';
+  notifyClients(data.reminderId || '', resolvedAction);
 
   event.waitUntil(
     self.clients.matchAll({ type: 'window', includeUncontrolled: true }).then((clients) => {
       if (clients.length > 0) {
         clients[0].focus();
       } else {
-        self.clients.openWindow('/');
+        // No open window — open with a flag so the app waters on load
+        self.clients.openWindow('/?action=water');
       }
     })
   );

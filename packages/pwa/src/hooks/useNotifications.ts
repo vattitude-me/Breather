@@ -12,6 +12,15 @@ export function useNotifications() {
   useEffect(() => {
     requestPermissions();
 
+    // If opened from a notification click with no client window open
+    const params = new URLSearchParams(window.location.search);
+    if (params.get('action') === 'water') {
+      waterPlant();
+      const current = parseInt(localStorage.getItem(COMPLETED_KEY) || '0', 10);
+      localStorage.setItem(COMPLETED_KEY, String(current + 1));
+      window.history.replaceState({}, '', window.location.pathname);
+    }
+
     if (!('serviceWorker' in navigator)) return;
     const handler = (event: MessageEvent) => {
       if (event.data?.type === 'NOTIFICATION_ACTION') {

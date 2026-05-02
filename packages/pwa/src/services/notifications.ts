@@ -131,12 +131,20 @@ function getNextClockAlignedTime(intervalMinutes: number): number {
   return nextFireMs;
 }
 
+const BREAK_PROMPTS = [
+  'Your body will thank you!',
+  'A small pause goes a long way.',
+  'Time to stretch and reset.',
+  'Step away for a moment — you have earned it.',
+  'Quick break? Your plant is thirsty too!',
+];
+
 function fireNotificationForReminder(reminder: Reminder): void {
   if (!isWithinSchedule(reminder.schedule)) return;
   if (Notification.permission !== 'granted') return;
 
-  const title = `${reminder.icon} ${reminder.title}`;
-  const body = `Time for your ${reminder.title.toLowerCase()} break!`;
+  const title = `${reminder.icon} Time for a ${reminder.title.toLowerCase()} break`;
+  const body = BREAK_PROMPTS[Math.floor(Math.random() * BREAK_PROMPTS.length)];
 
   if ('serviceWorker' in navigator && navigator.serviceWorker.controller) {
     navigator.serviceWorker.ready.then((reg) => {
@@ -145,16 +153,17 @@ function fireNotificationForReminder(reminder: Reminder): void {
         tag: `${reminder.id}_${Date.now()}`,
         requireInteraction: true,
         icon: '/pwa-192x192.png',
+        badge: '/pwa-192x192.png',
         data: { reminderId: reminder.id, title: reminder.title },
         actions: [
-          { action: 'complete', title: `${reminder.title} complete` },
-          { action: 'snooze', title: 'Snooze' },
-          { action: 'dismiss', title: 'Dismiss' },
+          { action: 'complete', title: '🌱 Done! Water plant' },
+          { action: 'snooze', title: '💤 Snooze' },
         ],
       } as NotificationOptions);
     });
   } else {
     new Notification(title, { body, tag: `${reminder.id}_${Date.now()}`, requireInteraction: true, icon: '/pwa-192x192.png' });
+    waterPlant();
   }
   incrementAlertsSent();
 }
