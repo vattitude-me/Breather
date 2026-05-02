@@ -205,11 +205,14 @@
       </div>
     </div>
 
-    <button class="button" onclick="closeTab()">Got It! Let's Go 🌱</button>
+    <button class="button" onclick="startBreather()">Got It! Let's Go 🌱</button>
   </div>
 
   <script>
-    function closeTab() {
+    async function startBreather() {
+      // Open the extension popup
+      await chrome.action.openPopup();
+      // Close the welcome tab
       window.close();
     }
   </script>
