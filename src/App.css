@@ -101,6 +101,8 @@
   overflow-x: hidden;
   padding: 20px 24px;
   scrollbar-width: none;
+  display: flex;
+  flex-direction: column;
 }
 
 .page-content::-webkit-scrollbar {

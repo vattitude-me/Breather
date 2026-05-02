@@ -1,10 +1,9 @@
 import { useState, useEffect, useCallback } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { nanoid } from 'nanoid';
 import { useRemindersContext } from '../context/RemindersContext';
 import { scheduleReminder, cancelReminder, isWithinSchedule } from '../services/notifications';
 import { getInstallPrompt, onInstallPromptChange } from '../services/installPrompt';
-import { COLORS, APP_NAME, PRESET_REMINDERS, DEFAULT_SCHEDULE, WELLNESS_TIPS } from '../constants';
+import { COLORS, APP_NAME, WELLNESS_TIPS } from '../constants';
 import { Reminder } from '../types';
 import Logo from '../components/Logo';
 import '../screens.css';
@@ -27,7 +26,7 @@ function getFormattedDate(): string {
 }
 
 export default function HomeScreen() {
-  const { reminders, settings, dispatch } = useRemindersContext();
+  const { reminders, dispatch } = useRemindersContext();
   const navigation = useNavigate();
 
   const [notifPermission, setNotifPermission] = useState(
@@ -57,31 +56,6 @@ export default function HomeScreen() {
     setNotifPermission(result);
   }, []);
 
-
-  const handleQuickAdd = async (preset: typeof PRESET_REMINDERS[0]) => {
-    const existing = reminders.find((r) => r.title === preset.title);
-    if (existing) return;
-
-    const reminder: Reminder = {
-      id: nanoid(),
-      title: preset.title,
-      intervalMinutes: preset.defaultInterval,
-      isActive: true,
-      snoozeDurationMinutes: settings.defaultSnoozeDurationMinutes,
-      icon: preset.icon,
-      createdAt: new Date().toISOString(),
-      schedule: settings.defaultSchedule || DEFAULT_SCHEDULE as any,
-    };
-
-    try {
-      const notificationId = await scheduleReminder(reminder);
-      reminder.notificationId = notificationId;
-    } catch (e) {
-      console.error('Failed to schedule reminder:', e);
-    }
-
-    dispatch({ type: 'ADD', payload: reminder });
-  };
 
   const handleToggle = async (reminder: Reminder) => {
     try {
@@ -396,43 +370,9 @@ export default function HomeScreen() {
           )}
         </div>
 
-        {/* Quick Add */}
-        <div style={{ marginBottom: '20px' }}>
-          <h3 style={{ fontSize: '14px', fontWeight: 700, color: COLORS.text, marginBottom: '8px' }}>Quick Add</h3>
-          <div style={{ display: 'flex', gap: '8px', overflowX: 'auto', paddingBottom: '4px', scrollbarWidth: 'none' }}>
-            {PRESET_REMINDERS.slice(0, 4).map((preset) => {
-              const alreadyExists = reminders.some((r) => r.title === preset.title);
-              return (
-                <button
-                  key={preset.title}
-                  onClick={() => !alreadyExists && handleQuickAdd(preset)}
-                  disabled={alreadyExists}
-                  style={{
-                    display: 'flex',
-                    alignItems: 'center',
-                    gap: '6px',
-                    backgroundColor: alreadyExists ? COLORS.border : COLORS.surface,
-                    borderRadius: '20px',
-                    padding: '7px 12px',
-                    border: `1px solid ${COLORS.border}`,
-                    cursor: alreadyExists ? 'default' : 'pointer',
-                    opacity: alreadyExists ? 0.5 : 1,
-                    whiteSpace: 'nowrap',
-                  }}
-                >
-                  <span style={{ fontSize: '14px' }}>{preset.icon}</span>
-                  <span style={{ fontSize: '12px', fontWeight: 600, color: alreadyExists ? COLORS.textSecondary : COLORS.text }}>
-                    {preset.title}
-                  </span>
-                  {alreadyExists && <span style={{ fontSize: '10px', color: COLORS.accent, fontWeight: 700 }}>✓</span>}
-                </button>
-              );
-            })}
-          </div>
-        </div>
-
-        {/* Tip of the Day */}
+        {/* Tip of the Day — pushed to bottom */}
         <div style={{
+          marginTop: 'auto',
           backgroundColor: COLORS.accentLight,
           borderRadius: '12px',
           padding: '14px',
