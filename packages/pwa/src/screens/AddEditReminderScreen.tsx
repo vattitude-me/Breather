@@ -99,7 +99,7 @@ export default function AddEditReminderScreen() {
   const handleSave = async () => {
     const newErrors: typeof errors = {};
     if (!title.trim()) newErrors.title = 'Please enter a reminder title';
-    if (intervalMinutes < 15) newErrors.interval = 'Minimum interval is 15 minutes';
+    if (intervalMinutes < 1) newErrors.interval = 'Minimum interval is 1 minute';
     if (activeDays.length === 0) newErrors.days = 'Select at least one day';
     if (Object.keys(newErrors).length > 0) {
       setErrors(newErrors);

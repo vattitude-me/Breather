@@ -20,7 +20,7 @@ export const COLORS = {
 };
 
 export const APP_NAME = 'Breather';
-export const APP_VERSION = '3.2.1';
+export const APP_VERSION = '3.2.2';
 
 export const CATEGORIES = [
   { title: 'Targeted', icon: '🎯', color: '#FCE4EC' },
@@ -38,7 +38,7 @@ export const PRESET_REMINDERS = [
   { title: 'Deep Breath', icon: '🌬️', defaultInterval: 30 },
 ];
 
-export const INTERVAL_PRESETS = [15, 30, 45, 60, 90, 120];
+export const INTERVAL_PRESETS = [1, 5, 15, 30, 45, 60, 90, 120];
 
 export const SNOOZE_OPTIONS = [5, 10, 15, 30];
 
