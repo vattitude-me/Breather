@@ -273,7 +273,7 @@ export default function HomeScreen({ navigate }: Props) {
                 <div className="water-splash" />
               </div>
             )}
-            <div style={{ fontSize: '48px', marginBottom: '4px' }}>{STAGE_EMOJI[plant.stage]}</div>
+            <div onClick={handleWater} style={{ fontSize: '48px', marginBottom: '4px', cursor: 'pointer' }}>{STAGE_EMOJI[plant.stage]}</div>
             {motivation && (
               <div style={{ fontSize: '13px', fontWeight: 600, color: COLORS.accent, marginTop: '6px', display: 'flex', alignItems: 'center', gap: '4px', animation: 'fadeIn 0.3s ease' }}>
                 <span style={{ fontSize: '16px' }}>{motivation.icon}</span>
@@ -304,13 +304,6 @@ export default function HomeScreen({ navigate }: Props) {
                 <div style={{ width: `${Math.round((plant.waterPoints / PLANT_MAX_POINTS) * 100)}%`, height: '100%', backgroundColor: COLORS.accent, borderRadius: '3px', transition: 'width 0.4s ease' }} />
               </div>
             </div>
-            {/* Water button inside plant card */}
-            <button onClick={handleWater} style={{
-              marginTop: '12px', width: '100%', padding: '12px', borderRadius: '12px', border: 'none',
-              backgroundColor: COLORS.accent, color: '#FFF', fontSize: '14px', fontWeight: 700, cursor: 'pointer',
-            }}>
-              💧 Water Plant
-            </button>
           </div>
         )}
 
@@ -363,6 +356,25 @@ export default function HomeScreen({ navigate }: Props) {
           <p style={{ fontSize: '12px', color: COLORS.text, lineHeight: 1.5, margin: 0 }}>{tip}</p>
         </div>
       </div>
+
+      {/* Bottom Navigation */}
+      <nav style={{
+        display: 'flex', borderTop: `1px solid ${COLORS.border}`, backgroundColor: COLORS.surface,
+        padding: '8px 0 12px', flexShrink: 0,
+      }}>
+        <button style={{ flex: 1, display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '4px', border: 'none', background: 'none', cursor: 'pointer', color: COLORS.primary }}>
+          <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z" /><polyline points="9 22 9 12 15 12 15 22" /></svg>
+          <span style={{ fontSize: '10px', fontWeight: 600 }}>Home</span>
+        </button>
+        <button onClick={() => navigate({ name: 'progress' })} style={{ flex: 1, display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '4px', border: 'none', background: 'none', cursor: 'pointer', color: COLORS.textSecondary }}>
+          <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><line x1="18" y1="20" x2="18" y2="10" /><line x1="12" y1="20" x2="12" y2="4" /><line x1="6" y1="20" x2="6" y2="14" /></svg>
+          <span style={{ fontSize: '10px', fontWeight: 500 }}>Progress</span>
+        </button>
+        <button onClick={() => navigate({ name: 'settings' })} style={{ flex: 1, display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '4px', border: 'none', background: 'none', cursor: 'pointer', color: COLORS.textSecondary }}>
+          <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><circle cx="12" cy="12" r="3" /><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-2 2 2 2 0 0 1-2-2v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83 0 2 2 0 0 1 0-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1-2-2 2 2 0 0 1 2-2h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 0-2.83 2 2 0 0 1 2.83 0l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 2-2 2 2 0 0 1 2 2v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 0 2 2 0 0 1 0 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 2 2 2 2 0 0 1-2 2h-.09a1.65 1.65 0 0 0-1.51 1z" /></svg>
+          <span style={{ fontSize: '10px', fontWeight: 500 }}>Settings</span>
+        </button>
+      </nav>
     </div>
   );
 }

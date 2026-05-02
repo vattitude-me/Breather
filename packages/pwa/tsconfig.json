@@ -27,6 +27,5 @@
       "@breather/shared": ["../shared/src/index.ts"]
     }
   },
-  "include": ["src"],
-  "references": [{ "path": "./tsconfig.node.json" }]
+  "include": ["src"]
 }
