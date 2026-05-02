@@ -7,12 +7,13 @@
 
 .form-label {
   display: block;
-  font-size: 13px;
-  font-weight: 600;
+  font-size: 14px;
+  font-weight: 700;
   color: #5C6370;
   margin-bottom: 10px;
   text-transform: uppercase;
-  letter-spacing: 0.5px;
+  letter-spacing: 0.8px;
+  line-height: 1.4;
 }
 
 .form-input {
@@ -21,9 +22,11 @@
   border: 1px solid #F0E6E0;
   border-radius: 12px;
   font-size: 16px;
+  font-weight: 500;
   color: #1A1A2E;
   background-color: #FFFFFF;
   transition: border-color 0.2s ease;
+  line-height: 1.5;
 }
 
 .form-input:focus {
@@ -58,6 +61,8 @@
   cursor: pointer;
   transition: all 0.2s ease;
   width: 100%;
+  line-height: 1.5;
+  letter-spacing: 0.3px;
 }
 
 .btn-primary {
@@ -91,12 +96,13 @@
   align-items: center;
   padding: 8px 14px;
   border-radius: 18px;
-  font-size: 13px;
+  font-size: 14px;
   font-weight: 600;
   background-color: #FFFFFF;
   border: 1.5px solid #F0E6E0;
   cursor: pointer;
   transition: all 0.2s ease;
+  line-height: 1.4;
 }
 
 .chip:hover {
