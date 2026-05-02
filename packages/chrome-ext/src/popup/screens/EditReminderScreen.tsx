@@ -144,7 +144,7 @@ export default function EditReminderScreen({ navigate, reminderId }: Props) {
           <div style={{ marginTop: '12px' }}>
             <label style={{ fontSize: '12px', fontWeight: 600, color: COLORS.textSecondary, marginBottom: '6px', display: 'block' }}>Icon</label>
             <div className="icon-row">
-              {PRESET_REMINDERS.map((p) => (
+              {PRESET_REMINDERS.slice(0, 4).map((p) => (
                 <button key={p.icon} className={`icon-btn ${icon === p.icon ? 'active' : ''}`} onClick={() => setIcon(p.icon)}>
                   <span className="icon-text">{p.icon}</span>
                 </button>
@@ -156,7 +156,7 @@ export default function EditReminderScreen({ navigate, reminderId }: Props) {
         {/* Interval */}
         <div className="settings-card">
           <label style={{ fontSize: '12px', fontWeight: 600, color: COLORS.textSecondary, marginBottom: '8px', display: 'block' }}>Every</label>
-          <div style={{ display: 'flex', alignItems: 'center', gap: '10px', marginBottom: '10px' }}>
+          <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
             <input className="form-input" value={intervalValue}
               onChange={(e) => { setIntervalValue(e.target.value.replace(/\D/g, '')); setErrors((p) => ({ ...p, interval: undefined })); }}
               placeholder="30" inputMode="numeric"
@@ -167,13 +167,6 @@ export default function EditReminderScreen({ navigate, reminderId }: Props) {
             </div>
           </div>
           {errors.interval && <p style={{ fontSize: '11px', color: COLORS.danger, margin: '0 0 8px' }}>{errors.interval}</p>}
-          <div className="chips-row">
-            {[15, 30, 45, 60, 90, 120].map((m) => (
-              <button key={m} className={`chip ${intervalMinutes === m ? 'active' : ''}`} onClick={() => handleIntervalPreset(m)} style={{ fontSize: '12px', padding: '6px 12px' }}>
-                {m >= 60 ? `${m / 60}h` : `${m}m`}
-              </button>
-            ))}
-          </div>
         </div>
 
         {/* Schedule */}
@@ -200,19 +193,19 @@ export default function EditReminderScreen({ navigate, reminderId }: Props) {
           <label style={{ fontSize: '12px', fontWeight: 600, color: COLORS.textSecondary, marginBottom: '8px', display: 'block' }}>Hours</label>
           <div className="time-range-container">
             <div className="time-picker-group">
-              <div className="time-control">
-                <button className="time-arrow" onClick={() => setStartHour((h) => Math.max(0, h - 1))}>-</button>
-                <span className="time-value">{formatHour(startHour)}</span>
-                <button className="time-arrow" onClick={() => setStartHour((h) => Math.min(endHour - 1, h + 1))}>+</button>
-              </div>
+              <select className="time-select" value={startHour} onChange={(e) => setStartHour(Number(e.target.value))}>
+                {Array.from({ length: 24 }, (_, i) => i).filter((h) => h < endHour).map((h) => (
+                  <option key={h} value={h}>{formatHour(h)}</option>
+                ))}
+              </select>
             </div>
-            <span style={{ fontSize: '14px', color: COLORS.textSecondary }}>to</span>
+            <span className="time-separator">to</span>
             <div className="time-picker-group">
-              <div className="time-control">
-                <button className="time-arrow" onClick={() => setEndHour((h) => Math.max(startHour + 1, h - 1))}>-</button>
-                <span className="time-value">{formatHour(endHour)}</span>
-                <button className="time-arrow" onClick={() => setEndHour((h) => Math.min(23, h + 1))}>+</button>
-              </div>
+              <select className="time-select" value={endHour} onChange={(e) => setEndHour(Number(e.target.value))}>
+                {Array.from({ length: 24 }, (_, i) => i).filter((h) => h > startHour).map((h) => (
+                  <option key={h} value={h}>{formatHour(h)}</option>
+                ))}
+              </select>
             </div>
           </div>
         </div>
