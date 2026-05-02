@@ -26,4 +26,3 @@ yarn-error.*
 *.epub
 .claude/
 .vite/
-scripts/
