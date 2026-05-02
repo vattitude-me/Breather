@@ -108,9 +108,14 @@ export default function HomeScreen({ navigate }: Props) {
 
   const pad = (n: number) => String(n).padStart(2, '0');
 
+  const nextReminder = activeInSchedule[0];
+  const nextReminderInterval = nextReminder?.intervalMinutes ?? 0;
+  const totalMs = nextReminderInterval * 60 * 1000;
+  const countdownProgress = (nextBreakMs !== null && totalMs > 0) ? Math.max(0, Math.min(1, 1 - (nextBreakMs / totalMs))) : 0;
+
   return (
     <div style={{ display: 'flex', flexDirection: 'column', height: '100%' }}>
-      {/* Header — matches PWA page-header */}
+      {/* Header with countdown ring */}
       <div style={{
         backgroundColor: COLORS.background,
         padding: '14px 20px',
@@ -118,11 +123,43 @@ export default function HomeScreen({ navigate }: Props) {
         minHeight: '56px',
         display: 'flex',
         alignItems: 'center',
+        justifyContent: 'space-between',
       }}>
         <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
           <Logo />
           <h1 style={{ color: COLORS.text, fontSize: '20px', fontWeight: 800, margin: 0 }}>{APP_NAME}</h1>
         </div>
+        {/* Countdown ring in header */}
+        {nextBreakMs !== null && nextBreakMs > 0 && activeInSchedule.length > 0 && (() => {
+          const totalSecs = Math.floor(nextBreakMs / 1000);
+          const m = Math.floor(totalSecs / 60);
+          const s = totalSecs % 60;
+          const circumference = 2 * Math.PI * 18;
+          const strokeOffset = circumference * (1 - countdownProgress);
+          return (
+            <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+              <div style={{ position: 'relative', width: '40px', height: '40px' }}>
+                <svg width="40" height="40" viewBox="0 0 40 40" style={{ transform: 'rotate(-90deg)' }}>
+                  <circle cx="20" cy="20" r="18" fill="none" stroke={COLORS.border} strokeWidth="3" />
+                  <circle cx="20" cy="20" r="18" fill="none" stroke={COLORS.primary} strokeWidth="3"
+                    strokeDasharray={circumference} strokeDashoffset={strokeOffset}
+                    strokeLinecap="round" style={{ transition: 'stroke-dashoffset 1s linear' }} />
+                </svg>
+                <div style={{ position: 'absolute', inset: 0, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                  <span style={{ fontSize: '9px', fontWeight: 700, color: COLORS.primary, fontVariantNumeric: 'tabular-nums' }}>
+                    {m}:{pad(s)}
+                  </span>
+                </div>
+              </div>
+            </div>
+          );
+        })()}
+        {hasActiveReminders && hasOutsideHours && !activeInSchedule.length && (
+          <span style={{ fontSize: '11px', color: COLORS.secondary, fontWeight: 600 }}>😴 Outside hours</span>
+        )}
+        {reminders.length > 0 && !hasActiveReminders && (
+          <span style={{ fontSize: '11px', color: COLORS.disabled, fontWeight: 600 }}>⏸️ Paused</span>
+        )}
       </div>
 
       {/* Content — matches PWA page-content */}
@@ -308,45 +345,6 @@ export default function HomeScreen({ navigate }: Props) {
           </div>
         )}
 
-        {/* Countdown Widget — matches PWA */}
-        {reminders.length > 0 && (
-          <>
-            {nextBreakMs !== null && nextBreakMs > 0 && activeInSchedule.length > 0 ? (
-              <div style={{ marginTop: '16px', padding: '16px', backgroundColor: COLORS.primaryLight, borderRadius: '14px', border: `1px solid ${COLORS.border}`, textAlign: 'center' }}>
-                <div style={{ fontSize: '11px', fontWeight: 600, color: COLORS.textSecondary, textTransform: 'uppercase', letterSpacing: '0.5px', marginBottom: '8px' }}>Next Break</div>
-                <div style={{ display: 'flex', justifyContent: 'center', alignItems: 'baseline', gap: '2px', marginBottom: '6px' }}>
-                  {(() => {
-                    const totalSecs = Math.floor(nextBreakMs / 1000);
-                    const h = Math.floor(totalSecs / 3600);
-                    const m = Math.floor((totalSecs % 3600) / 60);
-                    const s = totalSecs % 60;
-                    return (
-                      <>
-                        {h > 0 && (<><span style={{ fontSize: '28px', fontWeight: 800, color: COLORS.primary, fontVariantNumeric: 'tabular-nums' }}>{pad(h)}</span><span style={{ fontSize: '13px', fontWeight: 600, color: COLORS.textSecondary, marginRight: '4px' }}>h</span></>)}
-                        <span style={{ fontSize: '28px', fontWeight: 800, color: COLORS.primary, fontVariantNumeric: 'tabular-nums' }}>{pad(m)}</span>
-                        <span style={{ fontSize: '13px', fontWeight: 600, color: COLORS.textSecondary, marginRight: '4px' }}>m</span>
-                        <span style={{ fontSize: '28px', fontWeight: 800, color: COLORS.primary, fontVariantNumeric: 'tabular-nums' }}>{pad(s)}</span>
-                        <span style={{ fontSize: '13px', fontWeight: 600, color: COLORS.textSecondary }}>s</span>
-                      </>
-                    );
-                  })()}
-                </div>
-              </div>
-            ) : hasActiveReminders && hasOutsideHours ? (
-              <div style={{ marginTop: '16px', padding: '16px 20px', backgroundColor: COLORS.secondaryLight, borderRadius: '14px', border: `1px solid ${COLORS.border}`, textAlign: 'center' }}>
-                <div style={{ fontSize: '20px', marginBottom: '6px' }}>😴</div>
-                <div style={{ fontSize: '13px', fontWeight: 600, color: COLORS.text }}>Breaks paused</div>
-                <div style={{ fontSize: '11px', color: COLORS.textSecondary, marginTop: '4px' }}>Your reminders are outside their scheduled hours. They will resume automatically.</div>
-              </div>
-            ) : !hasActiveReminders ? (
-              <div style={{ marginTop: '16px', padding: '16px 20px', backgroundColor: COLORS.cardMint, borderRadius: '14px', border: `1px solid ${COLORS.border}`, textAlign: 'center' }}>
-                <div style={{ fontSize: '20px', marginBottom: '6px' }}>⏸️</div>
-                <div style={{ fontSize: '13px', fontWeight: 600, color: COLORS.text }}>All reminders paused</div>
-                <div style={{ fontSize: '11px', color: COLORS.textSecondary, marginTop: '4px' }}>Toggle a reminder on to start getting break alerts.</div>
-              </div>
-            ) : null}
-          </>
-        )}
 
         {/* Tip of the Day — pushed to bottom like PWA */}
         <div style={{
