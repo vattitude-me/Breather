@@ -5,214 +5,336 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Welcome to Breather</title>
   <style>
-    * {
-      margin: 0;
-      padding: 0;
-      box-sizing: border-box;
-    }
+    * { margin: 0; padding: 0; box-sizing: border-box; }
 
     body {
-      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, 'Open Sans', 'Helvetica Neue', sans-serif;
-      -webkit-font-smoothing: subpixel-antialiased;
-      -moz-osx-font-smoothing: auto;
-      background: linear-gradient(135deg, #FFF9F5 0%, #FEF3EC 100%);
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
+      -webkit-font-smoothing: antialiased;
       min-height: 100vh;
       display: flex;
       align-items: center;
       justify-content: center;
-      padding: 20px;
+      padding: 24px;
+      background: linear-gradient(160deg, #FFF9F5 0%, #FEF0E8 40%, #F0E8E4 100%);
+      position: relative;
+      overflow: hidden;
+    }
+
+    body::before {
+      content: '';
+      position: fixed;
+      top: -40%;
+      right: -20%;
+      width: 600px;
+      height: 600px;
+      background: radial-gradient(circle, rgba(212,80,60,0.06) 0%, transparent 70%);
+      border-radius: 50%;
+      pointer-events: none;
+    }
+
+    body::after {
+      content: '';
+      position: fixed;
+      bottom: -30%;
+      left: -15%;
+      width: 500px;
+      height: 500px;
+      background: radial-gradient(circle, rgba(14,138,125,0.05) 0%, transparent 70%);
+      border-radius: 50%;
+      pointer-events: none;
     }
 
     .container {
-      max-width: 500px;
+      max-width: 460px;
       width: 100%;
-      background: white;
-      border-radius: 20px;
-      box-shadow: 0 12px 48px rgba(0, 0, 0, 0.15);
-      padding: 40px;
-      text-align: center;
+      position: relative;
+      z-index: 1;
     }
 
-    .logo {
-      width: 80px;
-      height: 80px;
-      margin: 0 auto 24px;
-      background: linear-gradient(135deg, #D4503C 0%, #E8614D 100%);
-      border-radius: 20px;
+    .card {
+      background: rgba(255, 255, 255, 0.65);
+      backdrop-filter: blur(24px);
+      -webkit-backdrop-filter: blur(24px);
+      border: 1px solid rgba(255, 255, 255, 0.5);
+      border-radius: 24px;
+      box-shadow:
+        0 8px 32px rgba(0, 0, 0, 0.06),
+        0 1px 3px rgba(0, 0, 0, 0.04),
+        inset 0 1px 0 rgba(255, 255, 255, 0.6);
+      padding: 40px 36px;
+    }
+
+    .hero {
+      text-align: center;
+      margin-bottom: 36px;
+    }
+
+    .logo-mark {
+      width: 56px;
+      height: 56px;
+      margin: 0 auto 20px;
+      background: linear-gradient(135deg, #D4503C 0%, #E06B58 100%);
+      border-radius: 16px;
       display: flex;
       align-items: center;
       justify-content: center;
-      font-size: 40px;
+      box-shadow: 0 4px 16px rgba(212, 80, 60, 0.2);
+    }
+
+    .logo-mark svg {
+      width: 32px;
+      height: 32px;
     }
 
     h1 {
       color: #1A1A2E;
-      font-size: 28px;
-      font-weight: 800;
-      margin-bottom: 12px;
-      line-height: 1.3;
+      font-size: 26px;
+      font-weight: 700;
+      letter-spacing: -0.5px;
+      margin-bottom: 8px;
     }
 
-    .subtitle {
-      color: #5C6370;
+    .hero p {
+      color: #6B7280;
       font-size: 14px;
-      margin-bottom: 32px;
-      line-height: 1.5;
+      line-height: 1.6;
+    }
+
+    .feature-card {
+      background: rgba(255, 255, 255, 0.5);
+      backdrop-filter: blur(12px);
+      -webkit-backdrop-filter: blur(12px);
+      border: 1px solid rgba(240, 230, 224, 0.6);
+      border-radius: 16px;
+      padding: 24px;
+      margin-bottom: 24px;
+    }
+
+    .feature-card-label {
+      font-size: 10px;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 1.2px;
+      color: #0E8A7D;
+      margin-bottom: 12px;
+    }
+
+    .plant-showcase {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 8px;
+      margin-bottom: 14px;
+    }
+
+    .plant-stage {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 4px;
+    }
+
+    .plant-stage .emoji {
+      font-size: 28px;
+      transition: all 0.3s ease;
+    }
+
+    .plant-stage.dimmed .emoji {
+      filter: grayscale(1);
+      opacity: 0.3;
+      font-size: 22px;
+    }
+
+    .plant-stage.active .emoji {
+      font-size: 32px;
+    }
+
+    .plant-arrow {
+      color: #D4D4D4;
+      font-size: 12px;
+      margin-top: -8px;
+    }
+
+    .plant-stage-label {
+      font-size: 9px;
+      font-weight: 600;
+      color: #9CA3AF;
+    }
+
+    .plant-stage.active .plant-stage-label {
+      color: #0E8A7D;
+    }
+
+    .feature-card p {
+      font-size: 13px;
+      color: #5C6370;
+      line-height: 1.6;
+      text-align: center;
+    }
+
+    .feature-card p strong {
+      color: #1A1A2E;
+      font-weight: 600;
     }
 
     .steps {
-      text-align: left;
-      margin: 32px 0;
+      display: flex;
+      flex-direction: column;
+      gap: 16px;
+      margin-bottom: 32px;
     }
 
     .step {
       display: flex;
-      gap: 16px;
-      margin-bottom: 24px;
+      align-items: flex-start;
+      gap: 14px;
     }
 
-    .step-number {
-      min-width: 36px;
-      width: 36px;
-      height: 36px;
-      background: #D4503C;
-      color: white;
+    .step-dot {
+      width: 28px;
+      height: 28px;
+      min-width: 28px;
       border-radius: 50%;
+      background: rgba(212, 80, 60, 0.08);
+      border: 1.5px solid rgba(212, 80, 60, 0.2);
       display: flex;
       align-items: center;
       justify-content: center;
+      font-size: 11px;
       font-weight: 700;
-      flex-shrink: 0;
-    }
-
-    .step-content h3 {
-      color: #1A1A2E;
-      font-size: 16px;
-      font-weight: 700;
-      margin-bottom: 6px;
-    }
-
-    .step-content p {
-      color: #5C6370;
-      font-size: 14px;
-      line-height: 1.5;
-    }
-
-    .tip {
-      background: #FEF3EC;
-      border-left: 4px solid #D4503C;
-      padding: 16px;
-      border-radius: 8px;
-      margin: 24px 0;
-      text-align: left;
-    }
-
-    .tip-title {
       color: #D4503C;
-      font-size: 13px;
-      font-weight: 700;
-      text-transform: uppercase;
-      letter-spacing: 0.5px;
-      margin-bottom: 6px;
+      margin-top: 1px;
     }
 
-    .tip-text {
-      color: #5C6370;
+    .step-text {
+      flex: 1;
+    }
+
+    .step-text h3 {
       font-size: 14px;
-      line-height: 1.5;
-    }
-
-    .button {
-      display: inline-block;
-      background: #D4503C;
-      color: white;
-      padding: 14px 32px;
-      border-radius: 14px;
-      text-decoration: none;
-      font-weight: 700;
-      font-size: 16px;
-      margin-top: 24px;
-      transition: all 0.2s ease;
-      border: none;
-      cursor: pointer;
-    }
-
-    .button:hover {
-      background: #C23F2F;
-      box-shadow: 0 8px 24px rgba(212, 80, 60, 0.3);
-    }
-
-    .keyboard-key {
-      display: inline-flex;
-      align-items: center;
-      justify-content: center;
-      background: #F0E6E0;
-      border: 1px solid #E8D8D0;
-      border-radius: 6px;
-      padding: 4px 8px;
-      font-family: 'Monaco', 'Courier New', monospace;
-      font-size: 13px;
       font-weight: 600;
       color: #1A1A2E;
+      margin-bottom: 2px;
+    }
+
+    .step-text p {
+      font-size: 12px;
+      color: #6B7280;
+      line-height: 1.5;
+    }
+
+    .cta {
+      display: block;
+      width: 100%;
+      padding: 14px;
+      background: linear-gradient(135deg, #D4503C 0%, #C44535 100%);
+      color: white;
+      border: none;
+      border-radius: 14px;
+      font-size: 15px;
+      font-weight: 600;
+      letter-spacing: -0.2px;
+      cursor: pointer;
+      transition: all 0.2s ease;
+      box-shadow: 0 4px 16px rgba(212, 80, 60, 0.25);
+    }
+
+    .cta:hover {
+      transform: translateY(-1px);
+      box-shadow: 0 6px 24px rgba(212, 80, 60, 0.3);
+    }
+
+    .cta:active {
+      transform: translateY(0);
+    }
+
+    .footer {
+      text-align: center;
+      margin-top: 20px;
+      font-size: 11px;
+      color: #9CA3AF;
     }
   </style>
 </head>
 <body>
   <div class="container">
-    <div class="logo">🌱</div>
-    
-    <h1>Welcome to Breather!</h1>
-    <p class="subtitle">Your gentle break reminder companion is now installed. Let's get you set up.</p>
+    <div class="card">
+      <div class="hero">
+        <div class="logo-mark">
+          <svg viewBox="0 0 64 64" xmlns="http://www.w3.org/2000/svg">
+            <path d="M18,8 L18,56 L34,56 C44,56 50,50 50,43 C50,37 46,33 40,32 C45,31 48,27 48,22 C48,15 43,8 33,8 Z M25,15 L33,15 C38,15 41,18 41,22 C41,26 38,29 33,29 L25,29 Z M25,35 L34,35 C40,35 43,38 43,43 C43,48 40,49 34,49 L25,49 Z" fill="white"/>
+          </svg>
+        </div>
+        <h1>Welcome to Breather</h1>
+        <p>Mindful break reminders that help you build healthier habits — and grow a virtual plant along the way.</p>
+      </div>
 
-    <div class="steps">
-      <div class="step">
-        <div class="step-number">1</div>
-        <div class="step-content">
-          <h3>Pin the Extension</h3>
-          <p>Click the puzzle icon <span style="font-size: 18px;">🧩</span> in your Chrome toolbar (top-right)</p>
+      <div class="feature-card">
+        <div class="feature-card-label">Your plant evolves with you</div>
+        <div class="plant-showcase">
+          <div class="plant-stage active">
+            <span class="emoji">🌰</span>
+            <span class="plant-stage-label">Seed</span>
+          </div>
+          <span class="plant-arrow">›</span>
+          <div class="plant-stage dimmed">
+            <span class="emoji">🌱</span>
+            <span class="plant-stage-label">Sprout</span>
+          </div>
+          <span class="plant-arrow">›</span>
+          <div class="plant-stage dimmed">
+            <span class="emoji">🌿</span>
+            <span class="plant-stage-label">Sapling</span>
+          </div>
+          <span class="plant-arrow">›</span>
+          <div class="plant-stage dimmed">
+            <span class="emoji">🌳</span>
+            <span class="plant-stage-label">Tree</span>
+          </div>
+          <span class="plant-arrow">›</span>
+          <div class="plant-stage dimmed">
+            <span class="emoji">🌸</span>
+            <span class="plant-stage-label">Bloom</span>
+          </div>
+        </div>
+        <p>Every break you take <strong>waters your plant</strong>. Stay consistent and watch it grow from seed to full bloom. Skip too many days and it starts to wilt.</p>
+      </div>
+
+      <div class="steps">
+        <div class="step">
+          <div class="step-dot">1</div>
+          <div class="step-text">
+            <h3>Pin to your toolbar</h3>
+            <p>Click the puzzle icon in Chrome's toolbar, then pin Breather for quick access.</p>
+          </div>
+        </div>
+        <div class="step">
+          <div class="step-dot">2</div>
+          <div class="step-text">
+            <h3>Set your break routines</h3>
+            <p>Choose from presets or create custom reminders — stretching, water, posture checks.</p>
+          </div>
+        </div>
+        <div class="step">
+          <div class="step-dot">3</div>
+          <div class="step-text">
+            <h3>Take breaks, grow your plant</h3>
+            <p>When a reminder fires, complete the break to water your plant and build your streak.</p>
+          </div>
         </div>
       </div>
 
-      <div class="step">
-        <div class="step-number">2</div>
-        <div class="step-content">
-          <h3>Find Breather</h3>
-          <p>Look for "Breather - Break Reminders" in the list</p>
-        </div>
-      </div>
-
-      <div class="step">
-        <div class="step-number">3</div>
-        <div class="step-content">
-          <h3>Click Pin</h3>
-          <p>Click the pin icon next to Breather to pin it to your toolbar</p>
-        </div>
-      </div>
-
-      <div class="step">
-        <div class="step-number">4</div>
-        <div class="step-content">
-          <h3>Start Reminding</h3>
-          <p>Click the Breather icon to set up your first break routine</p>
-        </div>
-      </div>
+      <button class="cta" onclick="startBreather()">Get Started</button>
     </div>
 
-    <div class="tip">
-      <div class="tip-title">💡 Pro Tip</div>
-      <div class="tip-text">
-        Once pinned, you can quickly access Breather by clicking its icon in your toolbar, or use the keyboard shortcut shown in your extensions menu.
-      </div>
-    </div>
-
-    <button class="button" onclick="startBreather()">Got It! Let's Go 🌱</button>
+    <div class="footer">Breather — Small breaks, big impact.</div>
   </div>
 
   <script>
     async function startBreather() {
-      // Open the extension popup
-      await chrome.action.openPopup();
-      // Close the welcome tab
+      try {
+        await chrome.action.openPopup();
+      } catch {}
       window.close();
     }
   </script>
