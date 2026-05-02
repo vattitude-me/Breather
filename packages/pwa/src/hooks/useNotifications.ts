@@ -1,6 +1,6 @@
 import { useEffect } from 'react';
 import { useRemindersContext } from '../context/RemindersContext';
-import { requestPermissions, resyncAllTimers } from '../services/notifications';
+import { requestPermissions, resyncAllTimers, scheduleReminder } from '../services/notifications';
 import { waterPlant } from '@breather/shared';
 
 const ALERTS_SENT_KEY = '@breather_alerts_sent';
@@ -47,20 +47,24 @@ export function useNotifications() {
     };
   }, []);
 
+  // On load and when reminders change: set up page-side timers AND sync to SW
   useEffect(() => {
     if (isLoading) return;
-    if (!('serviceWorker' in navigator)) return;
 
-    const activeReminders = reminders.filter((r) => r.isActive && r.notificationId);
+    const activeReminders = reminders.filter((r) => r.isActive);
 
-    if (activeReminders.length > 0) {
+    for (const r of activeReminders) {
+      scheduleReminder(r).catch(console.error);
+    }
+
+    if ('serviceWorker' in navigator && activeReminders.length > 0) {
       navigator.serviceWorker.ready.then((reg) => {
         if (reg.active) {
           reg.active.postMessage({
             type: 'SYNC_REMINDERS',
             payload: {
               reminders: activeReminders.map((r) => ({
-                id: r.notificationId,
+                id: r.notificationId || `web_${r.id}`,
                 title: r.title,
                 icon: r.icon,
                 intervalMs: r.intervalMinutes * 60 * 1000,
