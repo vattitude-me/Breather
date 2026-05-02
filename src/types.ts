@@ -40,6 +40,15 @@ export interface ProgressData {
   totalMinutes: number;
 }
 
+export type PlantStage = 'seed' | 'sprout' | 'sapling' | 'tree' | 'flowering';
+
+export interface PlantState {
+  waterPoints: number;
+  stage: PlantStage;
+  lastWateredDate: string;
+  lastDecayCheckDate: string;
+}
+
 export type ReminderAction =
   | { type: 'LOAD'; payload: Reminder[] }
   | { type: 'ADD'; payload: Reminder }

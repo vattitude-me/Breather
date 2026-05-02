@@ -1,6 +1,7 @@
 import { useEffect } from 'react';
 import { useRemindersContext } from '../context/RemindersContext';
 import { requestPermissions } from '../services/notifications';
+import { waterPlant } from '../services/plantService';
 
 const ALERTS_SENT_KEY = '@breather_alerts_sent';
 const COMPLETED_KEY = '@breather_completed';
@@ -18,6 +19,7 @@ export function useNotifications() {
         if (action === 'complete') {
           const current = parseInt(localStorage.getItem(COMPLETED_KEY) || '0', 10);
           localStorage.setItem(COMPLETED_KEY, String(current + 1));
+          waterPlant();
         }
         const alerts = parseInt(localStorage.getItem(ALERTS_SENT_KEY) || '0', 10);
         localStorage.setItem(ALERTS_SENT_KEY, String(alerts + 1));

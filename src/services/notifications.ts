@@ -1,5 +1,6 @@
 import { Reminder, DayOfWeek } from '../types';
 import { loadProgress, saveProgress } from './storage';
+import { waterPlant } from './plantService';
 
 const ALERTS_SENT_KEY = '@breather_alerts_sent';
 const COMPLETED_KEY = '@breather_completed';
@@ -31,6 +32,7 @@ export async function getCompletedCount(): Promise<number> {
 export async function incrementCompleted(): Promise<void> {
   const current = await getCompletedCount();
   localStorage.setItem(COMPLETED_KEY, String(current + 1));
+  waterPlant();
   await updateProgressOnAlert();
 }
 

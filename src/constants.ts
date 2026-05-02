@@ -20,7 +20,7 @@ export const COLORS = {
 };
 
 export const APP_NAME = 'Breather';
-export const APP_VERSION = '3.0.0';
+export const APP_VERSION = '3.1.0';
 
 export const CATEGORIES = [
   { title: 'Targeted', icon: '🎯', color: '#FCE4EC' },
@@ -55,7 +55,30 @@ export const STORAGE_KEYS = {
   SETTINGS: '@breather_settings',
   PROGRESS: '@breather_progress',
   PROGRESS_SECTIONS: '@breather_progress_sections',
+  PLANT: '@breather_plant',
+  DEV_MODE: '@breather_dev_mode',
 };
+
+export const PLANT_STAGES = [
+  { stage: 'seed' as const, minPoints: 0 },
+  { stage: 'sprout' as const, minPoints: 2 },
+  { stage: 'sapling' as const, minPoints: 4 },
+  { stage: 'tree' as const, minPoints: 6 },
+  { stage: 'flowering' as const, minPoints: 8 },
+];
+
+export const PLANT_MAX_POINTS = 10;
+export const PLANT_DECAY_PER_DAY = 2;
+
+export const PLANT_DAILY_COLORS = [
+  { leaf: '#43A047', leafDark: '#2E7D32', stem: '#2E7D32' },
+  { leaf: '#26A69A', leafDark: '#00897B', stem: '#00897B' },
+  { leaf: '#66BB6A', leafDark: '#388E3C', stem: '#388E3C' },
+  { leaf: '#4DB6AC', leafDark: '#00796B', stem: '#00796B' },
+  { leaf: '#81C784', leafDark: '#4CAF50', stem: '#4CAF50' },
+  { leaf: '#009688', leafDark: '#00695C', stem: '#00695C' },
+  { leaf: '#8BC34A', leafDark: '#558B2F', stem: '#558B2F' },
+];
 
 export const DEFAULT_SETTINGS = {
   defaultSnoozeDurationMinutes: 10,
@@ -63,6 +86,24 @@ export const DEFAULT_SETTINGS = {
   notificationsEnabled: true,
   defaultSchedule: DEFAULT_SCHEDULE,
 };
+
+export const PLANT_MOTIVATIONS = [
+  { icon: '💧', text: 'Nice! Your plant says thanks!' },
+  { icon: '🌱', text: 'Growing stronger!' },
+  { icon: '✨', text: 'You are doing amazing!' },
+  { icon: '🌿', text: 'Fresh vibes!' },
+  { icon: '☀️', text: 'Sunshine for your plant!' },
+  { icon: '🌸', text: 'Beauty takes patience!' },
+  { icon: '💪', text: 'Keep it up, plant hero!' },
+  { icon: '🎉', text: 'Another drop of love!' },
+  { icon: '🍃', text: 'Feel that breeze?' },
+  { icon: '🌻', text: 'Blooming with joy!' },
+  { icon: '💚', text: 'Your plant loves you!' },
+  { icon: '🦋', text: 'A butterfly noticed!' },
+  { icon: '🌈', text: 'Colourful progress!' },
+  { icon: '⭐', text: 'Star gardener!' },
+  { icon: '🐝', text: 'The bees approve!' },
+];
 
 export const WELLNESS_TIPS = [
   'Taking a 5-minute stretch break every hour can reduce back pain by up to 40% and boost focus.',

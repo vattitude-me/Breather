@@ -4,7 +4,7 @@ import { useRemindersContext } from '../context/RemindersContext';
 import { cancelAllReminders, scheduleReminder } from '../services/notifications';
 import { getInstallPrompt, onInstallPromptChange } from '../services/installPrompt';
 import { hasAnalyticsConsent, setAnalyticsConsent } from '../services/analytics';
-import { COLORS, APP_VERSION } from '../constants';
+import { COLORS, APP_VERSION, STORAGE_KEYS } from '../constants';
 import Logo from '../components/Logo';
 import '../screens.css';
 
@@ -42,6 +42,10 @@ export default function SettingsScreen() {
   const [installPrompt, setInstallPrompt] = useState<any>(getInstallPrompt);
   const [isInstalled, setIsInstalled] = useState(
     () => window.matchMedia('(display-mode: standalone)').matches
+  );
+  const [tapCount, setTapCount] = useState(0);
+  const [devMode, setDevMode] = useState(
+    () => localStorage.getItem(STORAGE_KEYS.DEV_MODE) === 'true'
   );
 
   useEffect(() => {
@@ -259,9 +263,33 @@ export default function SettingsScreen() {
           </button>
         </div>
 
-        {/* About */}
-        <div style={{ textAlign: 'center', padding: '16px 0 8px', color: '#6B7280', fontSize: '12px' }}>
+        {/* About — tap version 5 times to toggle dev mode */}
+        <div
+          style={{ textAlign: 'center', padding: '16px 0 8px', color: '#6B7280', fontSize: '12px', cursor: 'default', userSelect: 'none' }}
+          onClick={() => {
+            const next = tapCount + 1;
+            if (next >= 5) {
+              const newMode = !devMode;
+              setDevMode(newMode);
+              localStorage.setItem(STORAGE_KEYS.DEV_MODE, String(newMode));
+              setTapCount(0);
+            } else {
+              setTapCount(next);
+              setTimeout(() => setTapCount(0), 2000);
+            }
+          }}
+        >
           <span style={{ fontWeight: 600, color: COLORS.primary }}>Breather</span> v{APP_VERSION} - Small breaks, big impact.
+          {tapCount > 0 && tapCount < 5 && (
+            <div style={{ fontSize: '10px', color: COLORS.disabled, marginTop: '4px' }}>
+              {5 - tapCount} more {5 - tapCount === 1 ? 'tap' : 'taps'}...
+            </div>
+          )}
+          {devMode && (
+            <div style={{ fontSize: '10px', color: COLORS.accent, marginTop: '4px', fontWeight: 600 }}>
+              Dev mode enabled
+            </div>
+          )}
         </div>
       </div>
 

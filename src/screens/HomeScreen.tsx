@@ -1,11 +1,15 @@
-import { useState, useEffect, useCallback } from 'react';
+import { useState, useEffect, useCallback, useMemo } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useRemindersContext } from '../context/RemindersContext';
-import { scheduleReminder, cancelReminder, isWithinSchedule } from '../services/notifications';
+import { scheduleReminder, cancelReminder, isWithinSchedule, getNextFireTime } from '../services/notifications';
 import { getInstallPrompt, onInstallPromptChange } from '../services/installPrompt';
-import { COLORS, APP_NAME, WELLNESS_TIPS } from '../constants';
+import { COLORS, APP_NAME, WELLNESS_TIPS, PLANT_MOTIVATIONS, PLANT_DAILY_COLORS } from '../constants';
 import { Reminder } from '../types';
 import Logo from '../components/Logo';
+import Plant from '../components/Plant';
+import { usePlantState } from '../hooks/usePlantState';
+import { loadPlantState, savePlantState, stageFromPoints } from '../services/plantService';
+import { PLANT_DECAY_PER_DAY, PLANT_MAX_POINTS, STORAGE_KEYS } from '../constants';
 import '../screens.css';
 
 function getGreeting(): string {
@@ -25,9 +29,110 @@ function getFormattedDate(): string {
   });
 }
 
+function CountdownWidget({ reminders }: { reminders: Reminder[] }) {
+  const [now, setNow] = useState(Date.now());
+
+  useEffect(() => {
+    const id = window.setInterval(() => setNow(Date.now()), 1000);
+    return () => window.clearInterval(id);
+  }, []);
+
+  const nextBreak = useMemo(() => {
+    let earliest: { time: Date; reminder: Reminder } | null = null;
+    for (const r of reminders) {
+      const fire = getNextFireTime(r);
+      if (!fire) continue;
+      if (!earliest || fire.getTime() < earliest.time.getTime()) {
+        earliest = { time: fire, reminder: r };
+      }
+    }
+    return earliest;
+  }, [reminders, now]);
+
+  if (!nextBreak) return null;
+
+  const diffMs = Math.max(0, nextBreak.time.getTime() - now);
+  const totalSecs = Math.floor(diffMs / 1000);
+  const hours = Math.floor(totalSecs / 3600);
+  const minutes = Math.floor((totalSecs % 3600) / 60);
+  const seconds = totalSecs % 60;
+
+  const pad = (n: number) => String(n).padStart(2, '0');
+
+  const activeCount = reminders.filter((r) => r.isActive).length;
+
+  return (
+    <div style={{
+      marginTop: '16px',
+      padding: '16px',
+      backgroundColor: COLORS.primaryLight,
+      borderRadius: '14px',
+      border: `1px solid ${COLORS.border}`,
+      textAlign: 'center',
+    }}>
+      <div style={{ fontSize: '11px', fontWeight: 600, color: COLORS.textSecondary, textTransform: 'uppercase', letterSpacing: '0.5px', marginBottom: '8px' }}>
+        Next Break
+      </div>
+      <div style={{ display: 'flex', justifyContent: 'center', alignItems: 'baseline', gap: '2px', marginBottom: '6px' }}>
+        {hours > 0 && (
+          <>
+            <span style={{ fontSize: '28px', fontWeight: 800, color: COLORS.primary, fontVariantNumeric: 'tabular-nums' }}>{pad(hours)}</span>
+            <span style={{ fontSize: '13px', fontWeight: 600, color: COLORS.textSecondary, marginRight: '4px' }}>h</span>
+          </>
+        )}
+        <span style={{ fontSize: '28px', fontWeight: 800, color: COLORS.primary, fontVariantNumeric: 'tabular-nums' }}>{pad(minutes)}</span>
+        <span style={{ fontSize: '13px', fontWeight: 600, color: COLORS.textSecondary, marginRight: '4px' }}>m</span>
+        <span style={{ fontSize: '28px', fontWeight: 800, color: COLORS.primary, fontVariantNumeric: 'tabular-nums' }}>{pad(seconds)}</span>
+        <span style={{ fontSize: '13px', fontWeight: 600, color: COLORS.textSecondary }}>s</span>
+      </div>
+      <div style={{ fontSize: '12px', color: COLORS.textSecondary }}>
+        {nextBreak.reminder.icon} {nextBreak.reminder.title}
+        {activeCount > 1 && (
+          <span style={{ marginLeft: '6px', fontSize: '11px', color: COLORS.disabled }}>
+            +{activeCount - 1} more
+          </span>
+        )}
+      </div>
+    </div>
+  );
+}
+
 export default function HomeScreen() {
   const { reminders, dispatch } = useRemindersContext();
   const navigation = useNavigate();
+  const { plantState, stageLabel, progress, water } = usePlantState();
+  const [motivation, setMotivation] = useState<{ icon: string; text: string } | null>(null);
+  const [devColorIndex, setDevColorIndex] = useState<number | undefined>(undefined);
+  const [devMode, setDevMode] = useState(
+    () => localStorage.getItem(STORAGE_KEYS.DEV_MODE) === 'true'
+  );
+
+  useEffect(() => {
+    const checkDevMode = () => setDevMode(localStorage.getItem(STORAGE_KEYS.DEV_MODE) === 'true');
+    window.addEventListener('storage', checkDevMode);
+    window.addEventListener('focus', checkDevMode);
+    return () => {
+      window.removeEventListener('storage', checkDevMode);
+      window.removeEventListener('focus', checkDevMode);
+    };
+  }, []);
+
+  const showMotivation = useCallback(() => {
+    const msg = PLANT_MOTIVATIONS[Math.floor(Math.random() * PLANT_MOTIVATIONS.length)];
+    setMotivation(msg);
+    setTimeout(() => setMotivation(null), 2000);
+  }, []);
+
+  const handleWater = () => {
+    water();
+    showMotivation();
+  };
+
+  useEffect(() => {
+    const handler = () => showMotivation();
+    window.addEventListener('plant-updated', handler);
+    return () => window.removeEventListener('plant-updated', handler);
+  }, [showMotivation]);
 
   const [notifPermission, setNotifPermission] = useState(
     () => 'Notification' in window ? Notification.permission : 'denied'
@@ -369,6 +474,108 @@ export default function HomeScreen() {
             </div>
           )}
         </div>
+
+        {/* Virtual Plant */}
+        <div style={{
+          display: 'flex',
+          flexDirection: 'column',
+          alignItems: 'center',
+          padding: '16px',
+          backgroundColor: COLORS.surface,
+          borderRadius: '14px',
+          border: `1px solid ${COLORS.border}`,
+        }}>
+          <Plant stage={plantState.stage} progress={progress} colorIndex={devColorIndex} />
+          {motivation && (
+            <div style={{
+              fontSize: '13px',
+              fontWeight: 600,
+              color: COLORS.accent,
+              marginTop: '6px',
+              display: 'flex',
+              alignItems: 'center',
+              gap: '4px',
+              animation: 'fadeIn 0.3s ease',
+            }}>
+              <span style={{ fontSize: '16px' }}>{motivation.icon}</span>
+              {motivation.text}
+            </div>
+          )}
+          <div style={{ fontSize: '14px', fontWeight: 700, color: COLORS.text, marginTop: motivation ? '2px' : '4px' }}>
+            {stageLabel}
+          </div>
+          <div style={{ fontSize: '11px', color: COLORS.textSecondary, marginTop: '2px' }}>
+            {plantState.waterPoints} / {PLANT_MAX_POINTS} waters
+          </div>
+          {/* Progress bar within stage */}
+          <div style={{
+            width: '80%',
+            height: '6px',
+            backgroundColor: COLORS.border,
+            borderRadius: '3px',
+            marginTop: '8px',
+            overflow: 'hidden',
+          }}>
+            <div style={{
+              width: `${progress}%`,
+              height: '100%',
+              backgroundColor: COLORS.accent,
+              borderRadius: '3px',
+              transition: 'width 0.4s ease',
+            }} />
+          </div>
+        </div>
+
+        {/* Dev-only plant testing panel */}
+        {devMode && (
+          <div style={{
+            marginTop: '8px',
+            padding: '10px 14px',
+            backgroundColor: '#FFF3E0',
+            borderRadius: '10px',
+            border: '1px dashed #C47A30',
+          }}>
+            <div style={{ fontSize: '11px', fontWeight: 700, color: '#C47A30', marginBottom: '8px' }}>DEV: Plant Controls</div>
+            <div style={{ display: 'flex', gap: '6px', flexWrap: 'wrap' }}>
+              <button
+                onClick={handleWater}
+                style={{ padding: '6px 12px', borderRadius: '8px', border: '1px solid #C47A30', background: '#FFF', fontSize: '11px', cursor: 'pointer', fontWeight: 600 }}
+              >
+                Water +1
+              </button>
+              <button
+                onClick={() => setDevColorIndex((prev) => ((prev ?? 0) + 1) % PLANT_DAILY_COLORS.length)}
+                style={{ padding: '6px 12px', borderRadius: '8px', border: '1px solid #0E8A7D', background: '#FFF', fontSize: '11px', cursor: 'pointer', fontWeight: 600, color: '#0E8A7D' }}
+              >
+                Next Colour
+              </button>
+              <button
+                onClick={() => {
+                  const state = loadPlantState();
+                  const newPoints = Math.max(0, state.waterPoints - PLANT_DECAY_PER_DAY);
+                  savePlantState({ ...state, waterPoints: newPoints, stage: stageFromPoints(newPoints) });
+                }}
+                style={{ padding: '6px 12px', borderRadius: '8px', border: '1px solid #DC2626', background: '#FFF', fontSize: '11px', cursor: 'pointer', fontWeight: 600, color: '#DC2626' }}
+              >
+                Decay -2
+              </button>
+              <button
+                onClick={() => {
+                  savePlantState({ waterPoints: 0, stage: 'seed', lastWateredDate: '', lastDecayCheckDate: '' });
+                }}
+                style={{ padding: '6px 12px', borderRadius: '8px', border: '1px solid #DC2626', background: '#FFF', fontSize: '11px', cursor: 'pointer', fontWeight: 600, color: '#DC2626' }}
+              >
+                Reset
+              </button>
+            </div>
+            <div style={{ fontSize: '10px', color: '#856404', marginTop: '6px' }}>
+              Points: {plantState.waterPoints} | Stage: {plantState.stage} | Last watered: {plantState.lastWateredDate || 'never'}
+            </div>
+          </div>
+        )}
+
+        {/* Next Break Countdown */}
+        <CountdownWidget reminders={reminders} />
 
         {/* Tip of the Day — pushed to bottom */}
         <div style={{
