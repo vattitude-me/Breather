@@ -162,7 +162,7 @@ export default function HomeScreen({ navigate }: Props) {
         )}
       </div>
 
-      {/* Content — matches PWA page-content */}
+      {/* Content */}
       <div style={{
         flex: 1, minHeight: 0, overflowY: 'auto', overflowX: 'hidden',
         padding: '16px 20px', display: 'flex', flexDirection: 'column',
@@ -172,7 +172,58 @@ export default function HomeScreen({ navigate }: Props) {
           {getGreeting()} · {getFormattedDate()}
         </p>
 
-        {/* My Routines — SAME order as PWA: routines first */}
+        {/* Virtual Plant — above routines for visibility */}
+        {plant && (
+          <div
+            className={isWatering ? 'water-animation' : ''}
+            style={{
+              position: 'relative', display: 'flex', flexDirection: 'column', alignItems: 'center',
+              padding: '16px', backgroundColor: COLORS.surface, borderRadius: '14px', border: `1px solid ${COLORS.border}`,
+              marginBottom: '20px',
+            }}
+          >
+            {isWatering && (
+              <div className="water-drops">
+                {WATER_DROPS.map((drop, i) => (
+                  <span key={i} className="water-drop" style={{ left: drop.left, top: '5%', animationDelay: drop.delay }}>💧</span>
+                ))}
+                <div className="water-splash" />
+              </div>
+            )}
+            <div onClick={handleWater} style={{ fontSize: '48px', marginBottom: '4px', cursor: 'pointer' }}>{STAGE_EMOJI[plant.stage]}</div>
+            {motivation && (
+              <div style={{ fontSize: '13px', fontWeight: 600, color: COLORS.accent, marginTop: '6px', display: 'flex', alignItems: 'center', gap: '4px', animation: 'fadeIn 0.3s ease' }}>
+                <span style={{ fontSize: '16px' }}>{motivation.icon}</span>
+                {motivation.text}
+              </div>
+            )}
+            <div style={{ fontSize: '14px', fontWeight: 700, color: COLORS.text, marginTop: motivation ? '2px' : '4px' }}>{STAGE_LABELS[plant.stage]}</div>
+            <div style={{ fontSize: '11px', color: COLORS.textSecondary, marginTop: '2px' }}>{plant.waterPoints} / {PLANT_MAX_POINTS} waters</div>
+            <div style={{ width: '92%', marginTop: '12px' }}>
+              <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '6px', padding: '0 4px' }}>
+                {PLANT_STAGES.map((s) => {
+                  const reached = plant.waterPoints >= s.minPoints;
+                  const isCurrent = plant.stage === s.stage;
+                  return (
+                    <div key={s.stage} style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '2px', flex: 1 }}>
+                      <span style={{ fontSize: isCurrent ? '20px' : '16px', filter: reached ? 'none' : 'grayscale(1)', opacity: reached ? 1 : 0.35, transition: 'all 0.3s ease' }}>
+                        {STAGE_EMOJI[s.stage]}
+                      </span>
+                      <span style={{ fontSize: '9px', color: isCurrent ? COLORS.accent : reached ? COLORS.textSecondary : COLORS.disabled, fontWeight: isCurrent ? 700 : 500 }}>
+                        {STAGE_LABELS[s.stage]}
+                      </span>
+                    </div>
+                  );
+                })}
+              </div>
+              <div style={{ height: '6px', backgroundColor: COLORS.border, borderRadius: '3px', overflow: 'hidden' }}>
+                <div style={{ width: `${Math.round((plant.waterPoints / PLANT_MAX_POINTS) * 100)}%`, height: '100%', backgroundColor: COLORS.accent, borderRadius: '3px', transition: 'width 0.4s ease' }} />
+              </div>
+            </div>
+          </div>
+        )}
+
+        {/* My Routines — always list layout */}
         <div style={{ marginBottom: '20px' }}>
           <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '12px' }}>
             <h2 style={{ fontSize: '16px', fontWeight: 700, color: COLORS.text, margin: 0 }}>My Break Routines</h2>
@@ -197,18 +248,12 @@ export default function HomeScreen({ navigate }: Props) {
               <span style={{ fontSize: '13px', color: COLORS.textSecondary }}>Set reminders to stretch, move, and rest</span>
             </button>
           ) : (
-            <div style={{
-              display: 'flex',
-              flexDirection: reminders.length <= 2 ? 'column' : 'row',
-              flexWrap: reminders.length <= 2 ? 'nowrap' : 'wrap',
-              gap: '10px',
-            }}>
+            <div style={{ display: 'flex', flexDirection: 'column', gap: '10px' }}>
               {reminders.map((item, index) => {
-                const useListLayout = reminders.length <= 2;
                 const statusColor = !item.isActive ? COLORS.disabled : isWithinSchedule(item.schedule) ? '#4CAF50' : COLORS.secondary;
                 const statusText = !item.isActive ? 'Paused' : isWithinSchedule(item.schedule) ? 'Active' : 'Outside hours';
 
-                return useListLayout ? (
+                return (
                   <div key={item.id} style={{
                     display: 'flex', alignItems: 'center', gap: '12px',
                     backgroundColor: CARD_COLORS[index % CARD_COLORS.length],
@@ -249,104 +294,13 @@ export default function HomeScreen({ navigate }: Props) {
                       </label>
                     </div>
                   </div>
-                ) : (
-                  <div key={item.id} style={{ width: 'calc(50% - 5px)' }}>
-                    <div style={{
-                      borderRadius: '14px', padding: '14px',
-                      backgroundColor: CARD_COLORS[index % CARD_COLORS.length],
-                      boxShadow: '0 1px 4px rgba(0,0,0,0.04)',
-                    }}>
-                      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '12px' }}>
-                        <button onClick={() => navigate({ name: 'edit-reminder', reminderId: item.id })} style={{
-                          width: '40px', height: '40px', borderRadius: '12px', backgroundColor: 'rgba(255,255,255,0.7)',
-                          display: 'flex', alignItems: 'center', justifyContent: 'center', border: 'none', cursor: 'pointer',
-                        }}>
-                          <span style={{ fontSize: '20px' }}>{item.icon}</span>
-                        </button>
-                        <label style={{ position: 'relative', display: 'inline-block', width: '44px', height: '26px' }}>
-                          <input type="checkbox" checked={item.isActive} onChange={() => handleToggle(item.id)} style={{ opacity: 0, width: 0, height: 0 }} />
-                          <span style={{ position: 'absolute', cursor: 'pointer', inset: 0, backgroundColor: item.isActive ? COLORS.primary : COLORS.disabled, borderRadius: '26px', transition: '0.3s' }}>
-                            <span style={{ position: 'absolute', left: item.isActive ? '20px' : '3px', top: '3px', width: '20px', height: '20px', backgroundColor: '#FFFFFF', borderRadius: '50%', transition: '0.3s' }} />
-                          </span>
-                        </label>
-                      </div>
-                      <button onClick={() => navigate({ name: 'edit-reminder', reminderId: item.id })} style={{ background: 'none', border: 'none', padding: 0, cursor: 'pointer', textAlign: 'left', width: '100%' }}>
-                        <div style={{ fontSize: '14px', fontWeight: 700, color: COLORS.text }}>{item.title}</div>
-                        <div style={{ fontSize: '11px', color: COLORS.textSecondary, marginTop: '2px' }}>Every {formatInterval(item.intervalMinutes)}</div>
-                      </button>
-                      <div style={{ display: 'flex', alignItems: 'center', marginTop: '8px', gap: '6px' }}>
-                        <div style={{ width: '6px', height: '6px', borderRadius: '3px', backgroundColor: statusColor }} />
-                        <span style={{ fontSize: '11px', color: COLORS.textSecondary, fontWeight: 500, flex: 1 }}>{statusText}</span>
-                        <button onClick={() => handleDelete(item.id, item.title)} style={{
-                          width: '28px', height: '28px', borderRadius: '8px', backgroundColor: 'rgba(239, 68, 68, 0.08)',
-                          display: 'flex', alignItems: 'center', justifyContent: 'center', border: 'none', cursor: 'pointer',
-                        }}>
-                          <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke={COLORS.danger} strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-                            <polyline points="3 6 5 6 21 6" /><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2" />
-                          </svg>
-                        </button>
-                      </div>
-                    </div>
-                  </div>
                 );
               })}
             </div>
           )}
         </div>
 
-        {/* Virtual Plant — matches PWA exactly */}
-        {plant && (
-          <div
-            className={isWatering ? 'water-animation' : ''}
-            style={{
-              position: 'relative', display: 'flex', flexDirection: 'column', alignItems: 'center',
-              padding: '16px', backgroundColor: COLORS.surface, borderRadius: '14px', border: `1px solid ${COLORS.border}`,
-            }}
-          >
-            {isWatering && (
-              <div className="water-drops">
-                {WATER_DROPS.map((drop, i) => (
-                  <span key={i} className="water-drop" style={{ left: drop.left, top: '5%', animationDelay: drop.delay }}>💧</span>
-                ))}
-                <div className="water-splash" />
-              </div>
-            )}
-            <div onClick={handleWater} style={{ fontSize: '48px', marginBottom: '4px', cursor: 'pointer' }}>{STAGE_EMOJI[plant.stage]}</div>
-            {motivation && (
-              <div style={{ fontSize: '13px', fontWeight: 600, color: COLORS.accent, marginTop: '6px', display: 'flex', alignItems: 'center', gap: '4px', animation: 'fadeIn 0.3s ease' }}>
-                <span style={{ fontSize: '16px' }}>{motivation.icon}</span>
-                {motivation.text}
-              </div>
-            )}
-            <div style={{ fontSize: '14px', fontWeight: 700, color: COLORS.text, marginTop: motivation ? '2px' : '4px' }}>{STAGE_LABELS[plant.stage]}</div>
-            <div style={{ fontSize: '11px', color: COLORS.textSecondary, marginTop: '2px' }}>{plant.waterPoints} / {PLANT_MAX_POINTS} waters</div>
-            {/* Stage progress bar — matches PWA */}
-            <div style={{ width: '92%', marginTop: '12px' }}>
-              <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '6px', padding: '0 4px' }}>
-                {PLANT_STAGES.map((s) => {
-                  const reached = plant.waterPoints >= s.minPoints;
-                  const isCurrent = plant.stage === s.stage;
-                  return (
-                    <div key={s.stage} style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '2px', flex: 1 }}>
-                      <span style={{ fontSize: isCurrent ? '20px' : '16px', filter: reached ? 'none' : 'grayscale(1)', opacity: reached ? 1 : 0.35, transition: 'all 0.3s ease' }}>
-                        {STAGE_EMOJI[s.stage]}
-                      </span>
-                      <span style={{ fontSize: '9px', color: isCurrent ? COLORS.accent : reached ? COLORS.textSecondary : COLORS.disabled, fontWeight: isCurrent ? 700 : 500 }}>
-                        {STAGE_LABELS[s.stage]}
-                      </span>
-                    </div>
-                  );
-                })}
-              </div>
-              <div style={{ height: '6px', backgroundColor: COLORS.border, borderRadius: '3px', overflow: 'hidden' }}>
-                <div style={{ width: `${Math.round((plant.waterPoints / PLANT_MAX_POINTS) * 100)}%`, height: '100%', backgroundColor: COLORS.accent, borderRadius: '3px', transition: 'width 0.4s ease' }} />
-              </div>
-            </div>
-          </div>
-        )}
-
-
-        {/* Tip of the Day — pushed to bottom like PWA */}
+        {/* Tip of the Day — pushed to bottom */}
         <div style={{
           marginTop: 'auto', backgroundColor: COLORS.accentLight, borderRadius: '12px',
           padding: '14px', borderLeft: `3px solid ${COLORS.accent}`,
