@@ -6,7 +6,7 @@ import { getInstallPrompt, onInstallPromptChange } from '../services/installProm
 import {
   COLORS, APP_NAME, WELLNESS_TIPS, PLANT_MOTIVATIONS, PLANT_DAILY_COLORS,
   Reminder, loadPlantState, savePlantState, stageFromPoints,
-  PLANT_DECAY_PER_DAY, PLANT_MAX_POINTS, STORAGE_KEYS,
+  PLANT_DECAY_PER_DAY, PLANT_MAX_POINTS, PLANT_STAGES, STORAGE_KEYS,
 } from '@breather/shared';
 import Logo from '../components/Logo';
 import Plant from '../components/Plant';
@@ -104,6 +104,7 @@ export default function HomeScreen() {
   const navigation = useNavigate();
   const { plantState, stageLabel, progress, water } = usePlantState();
   const [motivation, setMotivation] = useState<{ icon: string; text: string } | null>(null);
+  const [isWatering, setIsWatering] = useState(false);
   const [devColorIndex, setDevColorIndex] = useState<number | undefined>(undefined);
   const [devMode, setDevMode] = useState(
     () => localStorage.getItem(STORAGE_KEYS.DEV_MODE) === 'true'
@@ -119,6 +120,11 @@ export default function HomeScreen() {
     };
   }, []);
 
+  const triggerWatering = useCallback(() => {
+    setIsWatering(true);
+    setTimeout(() => setIsWatering(false), 1500);
+  }, []);
+
   const showMotivation = useCallback(() => {
     const msg = PLANT_MOTIVATIONS[Math.floor(Math.random() * PLANT_MOTIVATIONS.length)];
     setMotivation(msg);
@@ -128,13 +134,17 @@ export default function HomeScreen() {
   const handleWater = () => {
     water();
     showMotivation();
+    triggerWatering();
   };
 
   useEffect(() => {
-    const handler = () => showMotivation();
+    const handler = () => {
+      showMotivation();
+      triggerWatering();
+    };
     window.addEventListener('plant-updated', handler);
     return () => window.removeEventListener('plant-updated', handler);
-  }, [showMotivation]);
+  }, [showMotivation, triggerWatering]);
 
   const [notifPermission, setNotifPermission] = useState(
     () => 'Notification' in window ? Notification.permission : 'denied'
@@ -478,15 +488,41 @@ export default function HomeScreen() {
         </div>
 
         {/* Virtual Plant */}
-        <div style={{
-          display: 'flex',
-          flexDirection: 'column',
-          alignItems: 'center',
-          padding: '16px',
-          backgroundColor: COLORS.surface,
-          borderRadius: '14px',
-          border: `1px solid ${COLORS.border}`,
-        }}>
+        <div
+          className={isWatering ? 'water-animation' : ''}
+          style={{
+            position: 'relative',
+            display: 'flex',
+            flexDirection: 'column',
+            alignItems: 'center',
+            padding: '16px',
+            backgroundColor: COLORS.surface,
+            borderRadius: '14px',
+            border: `1px solid ${COLORS.border}`,
+          }}
+        >
+          {isWatering && (
+            <div className="water-drops">
+              {[
+                { left: '25%', delay: '0s' },
+                { left: '45%', delay: '0.15s' },
+                { left: '65%', delay: '0.3s' },
+                { left: '35%', delay: '0.1s' },
+                { left: '55%', delay: '0.25s' },
+                { left: '75%', delay: '0.05s' },
+                { left: '20%', delay: '0.2s' },
+              ].map((drop, i) => (
+                <span
+                  key={i}
+                  className="water-drop"
+                  style={{ left: drop.left, top: '5%', animationDelay: drop.delay }}
+                >
+                  💧
+                </span>
+              ))}
+              <div className="water-splash" />
+            </div>
+          )}
           <Plant stage={plantState.stage} progress={progress} colorIndex={devColorIndex} />
           {motivation && (
             <div style={{
@@ -509,22 +545,60 @@ export default function HomeScreen() {
           <div style={{ fontSize: '11px', color: COLORS.textSecondary, marginTop: '2px' }}>
             {plantState.waterPoints} / {PLANT_MAX_POINTS} waters
           </div>
-          {/* Progress bar within stage */}
-          <div style={{
-            width: '80%',
-            height: '6px',
-            backgroundColor: COLORS.border,
-            borderRadius: '3px',
-            marginTop: '8px',
-            overflow: 'hidden',
-          }}>
+          {/* Stage progress bar */}
+          <div style={{ width: '90%', marginTop: '10px', position: 'relative' }}>
             <div style={{
-              width: `${progress}%`,
-              height: '100%',
-              backgroundColor: COLORS.accent,
+              height: '6px',
+              backgroundColor: COLORS.border,
               borderRadius: '3px',
-              transition: 'width 0.4s ease',
-            }} />
+              overflow: 'hidden',
+            }}>
+              <div style={{
+                width: `${Math.round((plantState.waterPoints / PLANT_MAX_POINTS) * 100)}%`,
+                height: '100%',
+                backgroundColor: COLORS.accent,
+                borderRadius: '3px',
+                transition: 'width 0.4s ease',
+              }} />
+            </div>
+            <div style={{
+              display: 'flex',
+              justifyContent: 'space-between',
+              marginTop: '4px',
+              padding: '0 2px',
+            }}>
+              {PLANT_STAGES.map((s) => {
+                const reached = plantState.waterPoints >= s.minPoints;
+                return (
+                  <div key={s.stage} style={{
+                    display: 'flex',
+                    flexDirection: 'column',
+                    alignItems: 'center',
+                    gap: '1px',
+                  }}>
+                    <span style={{
+                      fontSize: '12px',
+                      filter: reached ? 'none' : 'grayscale(1)',
+                      opacity: reached ? 1 : 0.4,
+                      transition: 'all 0.3s ease',
+                    }}>
+                      {s.stage === 'seed' && '🌰'}
+                      {s.stage === 'sprout' && '🌱'}
+                      {s.stage === 'sapling' && '🌿'}
+                      {s.stage === 'tree' && '🌳'}
+                      {s.stage === 'flowering' && '🌸'}
+                    </span>
+                    <span style={{
+                      fontSize: '8px',
+                      color: reached ? COLORS.accent : COLORS.disabled,
+                      fontWeight: plantState.stage === s.stage ? 700 : 500,
+                    }}>
+                      {s.minPoints}
+                    </span>
+                  </div>
+                );
+              })}
+            </div>
           </div>
         </div>
 
