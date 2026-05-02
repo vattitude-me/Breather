@@ -14,10 +14,9 @@ export default function AddEditReminderScreen() {
   const location = useLocation();
   const { reminders, settings, dispatch } = useRemindersContext();
 
-  // Determine mode from URL path
   const isEditing = location.pathname.startsWith('/edit-reminder');
-  const existingReminder = isEditing && reminderId 
-    ? reminders.find((r) => r.id === reminderId) 
+  const existingReminder = isEditing && reminderId
+    ? reminders.find((r) => r.id === reminderId)
     : undefined;
 
   const [title, setTitle] = useState(existingReminder?.title || '');
@@ -45,6 +44,7 @@ export default function AddEditReminderScreen() {
   const [endHour, setEndHour] = useState(
     existingReminder?.schedule?.endHour ?? settings.defaultSchedule?.endHour ?? DEFAULT_SCHEDULE.endHour
   );
+  const [errors, setErrors] = useState<{ title?: string; interval?: string; days?: string }>({});
 
   useEffect(() => {
     const numValue = parseInt(intervalValue) || 0;
@@ -98,18 +98,15 @@ export default function AddEditReminderScreen() {
   };
 
   const handleSave = async () => {
-    if (!title.trim()) {
-      alert('Please enter a reminder title.');
+    const newErrors: typeof errors = {};
+    if (!title.trim()) newErrors.title = 'Please enter a reminder title';
+    if (intervalMinutes < 15) newErrors.interval = 'Minimum interval is 15 minutes';
+    if (activeDays.length === 0) newErrors.days = 'Select at least one day';
+    if (Object.keys(newErrors).length > 0) {
+      setErrors(newErrors);
       return;
     }
-    if (intervalMinutes < 15) {
-      alert('Interval must be at least 15 minutes.');
-      return;
-    }
-    if (activeDays.length === 0) {
-      alert('Please select at least one active day.');
-      return;
-    }
+    setErrors({});
 
     const reminder: Reminder = {
       id: existingReminder?.id || nanoid(),
@@ -178,12 +175,23 @@ export default function AddEditReminderScreen() {
               {isEditing ? 'Edit Reminder' : 'Add Reminder'}
             </h1>
           </div>
-          <div style={{ display: 'flex', gap: '8px' }}>
+          <div style={{ display: 'flex', gap: '16px', alignItems: 'center' }}>
             {isEditing && (
               <button
                 onClick={handleDelete}
-                className="page-header-back"
-                title="Delete Reminder"
+                aria-label="Delete Reminder"
+                style={{
+                  width: '36px',
+                  height: '36px',
+                  borderRadius: '10px',
+                  backgroundColor: '#FEE2E2',
+                  border: 'none',
+                  cursor: 'pointer',
+                  display: 'flex',
+                  alignItems: 'center',
+                  justifyContent: 'center',
+                  flexShrink: 0,
+                }}
               >
                 <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#DC2626" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
                   <polyline points="3 6 5 6 21 6" />
@@ -193,10 +201,21 @@ export default function AddEditReminderScreen() {
             )}
             <button
               onClick={handleSave}
-              className="page-header-back"
-              title={isEditing ? 'Update Reminder' : 'Create Reminder'}
+              aria-label={isEditing ? 'Update Reminder' : 'Create Reminder'}
+              style={{
+                width: '36px',
+                height: '36px',
+                borderRadius: '10px',
+                backgroundColor: '#D4503C',
+                border: 'none',
+                cursor: 'pointer',
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'center',
+                flexShrink: 0,
+              }}
             >
-              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#D4503C" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#FFFFFF" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
                 <polyline points="20 6 9 17 4 12" />
               </svg>
             </button>
@@ -266,15 +285,18 @@ export default function AddEditReminderScreen() {
             {/* Title */}
             <div className="settings-card">
               <div className="settings-card-header">
-                <span className="settings-card-label">Title</span>
+                <label className="settings-card-label" htmlFor="reminder-title">Title</label>
               </div>
               <input
+                id="reminder-title"
                 type="text"
                 className="form-input"
                 value={title}
-                onChange={(e) => setTitle(e.target.value)}
+                onChange={(e) => { setTitle(e.target.value); setErrors((prev) => ({ ...prev, title: undefined })); }}
                 placeholder="What do you want to be reminded about?"
+                style={errors.title ? { borderColor: '#DC2626' } : undefined}
               />
+              {errors.title && <p style={{ fontSize: '12px', color: '#DC2626', margin: '6px 0 0', fontWeight: 500 }}>{errors.title}</p>}
             </div>
 
             {/* Icon */}
@@ -282,12 +304,14 @@ export default function AddEditReminderScreen() {
               <div className="settings-card-header">
                 <span className="settings-card-label">Icon</span>
               </div>
-              <div className="icon-row">
+              <div className="icon-row" role="group" aria-label="Choose an icon">
                 {PRESET_REMINDERS.map((p) => (
                   <button
                     key={p.icon}
                     className={`icon-btn ${icon === p.icon ? 'active' : ''}`}
                     onClick={() => setIcon(p.icon)}
+                    aria-label={p.title}
+                    aria-pressed={icon === p.icon}
                   >
                     <span className="icon-text">{p.icon}</span>
                   </button>
@@ -298,22 +322,25 @@ export default function AddEditReminderScreen() {
             {/* Interval */}
             <div className="settings-card">
               <div className="settings-card-header">
-                <span className="settings-card-label">Remind me every</span>
+                <label className="settings-card-label" htmlFor="reminder-interval">Remind me every</label>
               </div>
               <div style={{ display: 'flex', alignItems: 'center', gap: '12px', marginBottom: '14px' }}>
                 <input
+                  id="reminder-interval"
                   type="text"
+                  inputMode="numeric"
                   className="form-input"
                   value={intervalValue}
-                  onChange={(e) => setIntervalValue(e.target.value.replace(/\D/g, ''))}
+                  onChange={(e) => { setIntervalValue(e.target.value.replace(/\D/g, '')); setErrors((prev) => ({ ...prev, interval: undefined })); }}
                   placeholder="30"
-                  style={{ flex: 1 }}
+                  style={{ flex: 1, ...(errors.interval ? { borderColor: '#DC2626' } : {}) }}
                 />
-                <div style={{ display: 'flex', borderRadius: '12px', overflow: 'hidden', border: '1px solid #F0E6E0' }}>
+                <div style={{ display: 'flex', borderRadius: '12px', overflow: 'hidden', border: '1px solid #F0E6E0' }} role="group" aria-label="Interval unit">
                   <button
                     className={`chip ${intervalUnit === 'minutes' ? 'active' : ''}`}
                     onClick={() => setIntervalUnit('minutes')}
                     style={{ borderRadius: 0, padding: '10px 18px' }}
+                    aria-pressed={intervalUnit === 'minutes'}
                   >
                     Min
                   </button>
@@ -321,11 +348,13 @@ export default function AddEditReminderScreen() {
                     className={`chip ${intervalUnit === 'hours' ? 'active' : ''}`}
                     onClick={() => setIntervalUnit('hours')}
                     style={{ borderRadius: 0, padding: '10px 18px' }}
+                    aria-pressed={intervalUnit === 'hours'}
                   >
                     Hours
                   </button>
                 </div>
               </div>
+              {errors.interval && <p style={{ fontSize: '12px', color: '#DC2626', margin: '0 0 10px', fontWeight: 500 }}>{errors.interval}</p>}
               <div className="chips-row">
                 {[30, 45, 60, 90, 120].map((minutes) => (
                   <button
@@ -344,33 +373,36 @@ export default function AddEditReminderScreen() {
               <div className="settings-card-header">
                 <span className="settings-card-label">Active Days</span>
               </div>
-              <div className="days-row" style={{ marginBottom: '12px' }}>
+              <div className="days-row" style={{ marginBottom: '12px' }} role="group" aria-label="Select active days">
                 {DAYS_OF_WEEK.map((day) => (
                   <button
                     key={day}
                     className={`day-chip ${activeDays.includes(day as DayOfWeek) ? 'active' : ''}`}
-                    onClick={() => toggleDay(day as DayOfWeek)}
+                    onClick={() => { toggleDay(day as DayOfWeek); setErrors((prev) => ({ ...prev, days: undefined })); }}
+                    aria-pressed={activeDays.includes(day as DayOfWeek)}
+                    aria-label={day}
                   >
                     {day}
                   </button>
                 ))}
               </div>
+              {errors.days && <p style={{ fontSize: '12px', color: '#DC2626', margin: '0 0 10px', fontWeight: 500 }}>{errors.days}</p>}
               <div className="day-shortcuts">
                 <button
                   className="shortcut-btn"
-                  onClick={() => setActiveDays(['Mon', 'Tue', 'Wed', 'Thu', 'Fri'] as DayOfWeek[])}
+                  onClick={() => { setActiveDays(['Mon', 'Tue', 'Wed', 'Thu', 'Fri'] as DayOfWeek[]); setErrors((prev) => ({ ...prev, days: undefined })); }}
                 >
                   Weekdays
                 </button>
                 <button
                   className="shortcut-btn"
-                  onClick={() => setActiveDays(['Sat', 'Sun'] as DayOfWeek[])}
+                  onClick={() => { setActiveDays(['Sat', 'Sun'] as DayOfWeek[]); setErrors((prev) => ({ ...prev, days: undefined })); }}
                 >
                   Weekends
                 </button>
                 <button
                   className="shortcut-btn"
-                  onClick={() => setActiveDays(['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'] as DayOfWeek[])}
+                  onClick={() => { setActiveDays(['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'] as DayOfWeek[]); setErrors((prev) => ({ ...prev, days: undefined })); }}
                 >
                   Every Day
                 </button>
@@ -378,7 +410,7 @@ export default function AddEditReminderScreen() {
             </div>
 
             {/* Schedule - Time Range */}
-            <div className="settings-card">
+            <div className="settings-card" style={{ marginBottom: '16px' }}>
               <div className="settings-card-header">
                 <span className="settings-card-label">Active Hours</span>
               </div>
@@ -388,7 +420,8 @@ export default function AddEditReminderScreen() {
                   <div className="time-control">
                     <button
                       className="time-arrow"
-                      onClick={() => setStartHour((h) => Math.max(7, h - 1))}
+                      onClick={() => setStartHour((h) => Math.max(0, h - 1))}
+                      aria-label="Decrease start hour"
                     >
                       −
                     </button>
@@ -396,6 +429,7 @@ export default function AddEditReminderScreen() {
                     <button
                       className="time-arrow"
                       onClick={() => setStartHour((h) => Math.min(endHour - 1, h + 1))}
+                      aria-label="Increase start hour"
                     >
                       +
                     </button>
@@ -410,13 +444,15 @@ export default function AddEditReminderScreen() {
                     <button
                       className="time-arrow"
                       onClick={() => setEndHour((h) => Math.max(startHour + 1, h - 1))}
+                      aria-label="Decrease end hour"
                     >
                       −
                     </button>
                     <span className="time-value">{formatHour(endHour)}</span>
                     <button
                       className="time-arrow"
-                      onClick={() => setEndHour((h) => Math.min(19, h + 1))}
+                      onClick={() => setEndHour((h) => Math.min(23, h + 1))}
+                      aria-label="Increase end hour"
                     >
                       +
                     </button>
@@ -428,6 +464,14 @@ export default function AddEditReminderScreen() {
               </p>
             </div>
 
+            {/* Save Button */}
+            <button
+              onClick={handleSave}
+              className="btn btn-primary"
+              style={{ marginTop: '8px' }}
+            >
+              {isEditing ? 'Update Reminder' : 'Create Reminder'}
+            </button>
           </>
         )}
       </div>

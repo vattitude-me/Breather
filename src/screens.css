@@ -106,7 +106,7 @@
 .chip.active {
   background-color: #FDE8E4;
   border-color: #D4503C;
-  color: #D4503C;
+  color: #B8432F;
 }
 
 /* Day selector */
@@ -592,7 +592,7 @@
 .interval-chip.active {
   background-color: #FDE8E4;
   border-color: #D4503C;
-  color: #D4503C;
+  color: #B8432F;
 }
 
 /* Day shortcuts */

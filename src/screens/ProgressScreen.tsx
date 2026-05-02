@@ -1,6 +1,6 @@
-import { useState, useCallback, useEffect } from 'react';
+import { useCallback, useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { STORAGE_KEYS } from '../constants';
+import { COLORS, STORAGE_KEYS } from '../constants';
 import { ProgressData, ProgressEntry } from '../types';
 import Logo from '../components/Logo';
 import '../screens.css';
@@ -45,10 +45,40 @@ function calculateStreak(entries: ProgressEntry[]): number {
   return streak;
 }
 
+type SectionKey = 'weekly' | 'monthly' | 'milestones';
+
+const SECTION_LABELS: Record<SectionKey, string> = {
+  weekly: 'This Week',
+  monthly: 'This Month',
+  milestones: 'Milestones',
+};
+
+const DEFAULT_SECTIONS: Record<SectionKey, boolean> = {
+  weekly: true,
+  monthly: true,
+  milestones: true,
+};
+
 export default function ProgressScreen() {
   const navigation = useNavigate();
   const [progress, setProgress] = useState<ProgressData>(DEFAULT_PROGRESS);
-  const [activeTab, setActiveTab] = useState<'overview' | 'charts'>('overview');
+  const [sections, setSections] = useState<Record<SectionKey, boolean>>(DEFAULT_SECTIONS);
+  const [showCustomize, setShowCustomize] = useState(false);
+
+  useEffect(() => {
+    try {
+      const saved = localStorage.getItem(STORAGE_KEYS.PROGRESS_SECTIONS);
+      if (saved) setSections(JSON.parse(saved));
+    } catch { /* use defaults */ }
+  }, []);
+
+  const toggleSection = (key: SectionKey) => {
+    setSections((prev) => {
+      const updated = { ...prev, [key]: !prev[key] };
+      localStorage.setItem(STORAGE_KEYS.PROGRESS_SECTIONS, JSON.stringify(updated));
+      return updated;
+    });
+  };
 
   const loadProgress = useCallback(async () => {
     try {
@@ -90,188 +120,247 @@ export default function ProgressScreen() {
   const monthBreaks = thisMonthEntries.reduce((sum, e) => sum + e.completedCount, 0);
   const monthMinutes = thisMonthEntries.reduce((sum, e) => sum + e.totalMinutes, 0);
 
-  const streakMessage = progress.currentStreak >= 7
-    ? "You're unstoppable!"
-    : progress.currentStreak >= 3
-      ? "Great momentum! Keep going!"
-      : "Keep it up! You're on fire!";
 
   return (
     <div className="page">
       <div className="page-header">
-        <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
-          <Logo />
-          <h1>Progress</h1>
+        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', width: '100%' }}>
+          <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
+            <Logo />
+            <h1>Progress</h1>
+          </div>
+          <button
+            onClick={() => setShowCustomize((v) => !v)}
+            aria-label="Customize sections"
+            style={{
+              background: 'none',
+              border: 'none',
+              cursor: 'pointer',
+              padding: '6px',
+              color: COLORS.primary,
+              display: 'flex',
+              alignItems: 'center',
+            }}
+          >
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+              <line x1="4" y1="21" x2="4" y2="14" />
+              <line x1="4" y1="10" x2="4" y2="3" />
+              <line x1="12" y1="21" x2="12" y2="12" />
+              <line x1="12" y1="8" x2="12" y2="3" />
+              <line x1="20" y1="21" x2="20" y2="16" />
+              <line x1="20" y1="12" x2="20" y2="3" />
+              <line x1="1" y1="14" x2="7" y2="14" />
+              <line x1="9" y1="8" x2="15" y2="8" />
+              <line x1="17" y1="16" x2="23" y2="16" />
+            </svg>
+          </button>
         </div>
       </div>
 
-      {/* Tabs */}
-      <div className="tab-row">
-        <button
-          className={`tab ${activeTab === 'overview' ? 'active' : ''}`}
-          onClick={() => setActiveTab('overview')}
-        >
-          Overview
-        </button>
-        <button
-          className={`tab ${activeTab === 'charts' ? 'active' : ''}`}
-          onClick={() => setActiveTab('charts')}
-        >
-          Charts
-        </button>
-      </div>
-
-      <div className="page-content">
-        {activeTab === 'overview' ? (
-          <>
-            {/* Streak Card */}
-            <div className="streak-card">
-              <div className="streak-fire">🔥</div>
-              <div className="streak-number">{progress.currentStreak}</div>
-              <div className="streak-label">Day Streak</div>
-              <div className="streak-message">{streakMessage}</div>
+      <div className="page-content" style={{ padding: '16px 20px' }}>
+        {/* Customize Panel */}
+        {showCustomize && (
+          <div style={{
+            backgroundColor: COLORS.surface,
+            borderRadius: '14px',
+            padding: '14px 16px',
+            marginBottom: '16px',
+            border: `1px solid ${COLORS.border}`,
+          }}>
+            <div style={{ fontSize: '13px', fontWeight: 700, color: COLORS.text, marginBottom: '10px' }}>Show sections</div>
+            <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
+              {(Object.keys(SECTION_LABELS) as SectionKey[]).map((key) => (
+                <label key={key} style={{ display: 'flex', alignItems: 'center', gap: '10px', cursor: 'pointer' }}>
+                  <input
+                    type="checkbox"
+                    className="toggle"
+                    checked={sections[key]}
+                    onChange={() => toggleSection(key)}
+                    aria-label={`Show ${SECTION_LABELS[key]}`}
+                  />
+                  <span style={{ fontSize: '14px', fontWeight: 500, color: COLORS.text }}>{SECTION_LABELS[key]}</span>
+                </label>
+              ))}
             </div>
+          </div>
+        )}
 
-            {/* Today's Stats */}
-            <div className="today-row">
-              <div className="today-card">
-                <div className="today-card-icon">📋</div>
-                <div className="today-card-number">{todayEntry?.sessions ?? 0}</div>
-                <div className="today-card-label">Total Sessions</div>
-              </div>
-              <div className="today-card">
-                <div className="today-card-icon">🎯</div>
-                <div className="today-card-number">{todayEntry?.completedCount ?? 0}</div>
-                <div className="today-card-label">Today's Focus</div>
-              </div>
-            </div>
+        {/* Streak + Today */}
+        <div style={{
+          display: 'flex',
+          gap: '12px',
+          marginBottom: '16px',
+        }}>
+          {/* Streak */}
+          <div style={{
+            flex: 1,
+            backgroundColor: COLORS.secondaryLight,
+            borderRadius: '16px',
+            padding: '20px 12px',
+            textAlign: 'center',
+            border: `1px solid ${COLORS.secondary}`,
+          }}>
+            <div style={{ fontSize: '28px', marginBottom: '4px' }}>🔥</div>
+            <div style={{ fontSize: '32px', fontWeight: 800, color: COLORS.text }}>{progress.currentStreak}</div>
+            <div style={{ fontSize: '12px', fontWeight: 600, color: COLORS.textSecondary, marginTop: '2px' }}>Day Streak</div>
+          </div>
 
-            {/* This Week */}
-            <div className="period-card">
-              <div className="period-header">
-                <span className="period-icon">📅</span>
-                <span className="period-title">This Week</span>
-              </div>
-              <div className="period-stats-row">
-                <div className="period-stat">
-                  <div className="period-stat-number">{weekSessions}</div>
-                  <div className="period-stat-label">Sessions</div>
-                </div>
-                <div className="period-stat">
-                  <div className="period-stat-number">{weekBreaks}</div>
-                  <div className="period-stat-label">Breaks</div>
-                </div>
-                <div className="period-stat">
-                  <div className="period-stat-number">{weekMinutes}</div>
-                  <div className="period-stat-label">Minutes</div>
-                </div>
-              </div>
+          {/* Today */}
+          <div style={{ flex: 1, display: 'flex', flexDirection: 'column', gap: '10px' }}>
+            <div style={{
+              flex: 1,
+              backgroundColor: COLORS.surface,
+              borderRadius: '12px',
+              padding: '12px',
+              textAlign: 'center',
+              border: `1px solid ${COLORS.border}`,
+            }}>
+              <div style={{ fontSize: '22px', fontWeight: 700, color: COLORS.primary }}>{todayEntry?.completedCount ?? 0}</div>
+              <div style={{ fontSize: '10px', fontWeight: 600, color: COLORS.textSecondary, textTransform: 'uppercase' }}>Breaks today</div>
             </div>
+            <div style={{
+              flex: 1,
+              backgroundColor: COLORS.surface,
+              borderRadius: '12px',
+              padding: '12px',
+              textAlign: 'center',
+              border: `1px solid ${COLORS.border}`,
+            }}>
+              <div style={{ fontSize: '22px', fontWeight: 700, color: COLORS.accent }}>{todayEntry?.totalMinutes ?? 0}<span style={{ fontSize: '12px', fontWeight: 500 }}>m</span></div>
+              <div style={{ fontSize: '10px', fontWeight: 600, color: COLORS.textSecondary, textTransform: 'uppercase' }}>Focus time</div>
+            </div>
+          </div>
+        </div>
 
-            {/* This Month */}
-            <div className="period-card">
-              <div className="period-header">
-                <span className="period-icon">📆</span>
-                <span className="period-title">This Month</span>
-              </div>
-              <div className="period-stats-row">
-                <div className="period-stat">
-                  <div className="period-stat-number">{monthSessions}</div>
-                  <div className="period-stat-label">Sessions</div>
-                </div>
-                <div className="period-stat">
-                  <div className="period-stat-number">{monthBreaks}</div>
-                  <div className="period-stat-label">Breaks</div>
-                </div>
-                <div className="period-stat">
-                  <div className="period-stat-number">{monthMinutes}</div>
-                  <div className="period-stat-label">Minutes</div>
-                </div>
-              </div>
-            </div>
+        {/* Weekly Activity Chart */}
+        {sections.weekly && (
+        <div style={{
+          backgroundColor: COLORS.surface,
+          borderRadius: '14px',
+          padding: '16px',
+          marginBottom: '16px',
+          border: `1px solid ${COLORS.border}`,
+        }}>
+          <div style={{ fontSize: '14px', fontWeight: 700, color: COLORS.text, marginBottom: '14px' }}>This Week</div>
+          <div className="bar-chart">
+            {['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'].map((day, i) => {
+              const dayDate = new Date();
+              const currentDay = dayDate.getDay();
+              const diff = i - ((currentDay + 6) % 7);
+              const targetDate = new Date(dayDate.getTime() + diff * 86400000);
+              const dateStr = targetDate.toISOString().split('T')[0];
+              const entry = progress.entries.find((e) => e.date === dateStr);
+              const height = entry ? Math.min(entry.completedCount * 20, 80) : 4;
+              const isToday = dateStr === getToday();
 
-            {/* Achievements */}
-            <div className="period-card">
-              <div className="period-header">
-                <span className="period-icon">🏆</span>
-                <span className="period-title">Achievements</span>
-              </div>
-              <div className="achievements-list">
-                <div className="achievement-item">
-                  <span className="achievement-badge">{progress.currentStreak >= 1 ? '✅' : '⬜'}</span>
-                  <span className="achievement-text">First Day</span>
+              return (
+                <div key={day} className="bar-col">
+                  <div className="bar-track">
+                    <div
+                      className={`bar ${entry && entry.completedCount > 0 ? 'filled' : ''}`}
+                      style={{ height }}
+                    />
+                  </div>
+                  <div className="bar-label" style={isToday ? { color: COLORS.primary, fontWeight: 700 } : undefined}>{day.charAt(0)}</div>
                 </div>
-                <div className="achievement-item">
-                  <span className="achievement-badge">{progress.currentStreak >= 3 ? '✅' : '⬜'}</span>
-                  <span className="achievement-text">3-Day Streak</span>
-                </div>
-                <div className="achievement-item">
-                  <span className="achievement-badge">{progress.currentStreak >= 7 ? '✅' : '⬜'}</span>
-                  <span className="achievement-text">Week Warrior</span>
-                </div>
-                <div className="achievement-item">
-                  <span className="achievement-badge">{progress.totalSessions >= 10 ? '✅' : '⬜'}</span>
-                  <span className="achievement-text">10 Sessions</span>
-                </div>
-                <div className="achievement-item">
-                  <span className="achievement-badge">{progress.currentStreak >= 30 ? '✅' : '⬜'}</span>
-                  <span className="achievement-text">Monthly Master</span>
-                </div>
-              </div>
+              );
+            })}
+          </div>
+          {/* Week summary row */}
+          <div style={{ display: 'flex', justifyContent: 'space-around', marginTop: '14px', paddingTop: '12px', borderTop: `1px solid ${COLORS.border}` }}>
+            <div style={{ textAlign: 'center' }}>
+              <div style={{ fontSize: '16px', fontWeight: 700, color: COLORS.primary }}>{weekBreaks}</div>
+              <div style={{ fontSize: '10px', color: COLORS.textSecondary, fontWeight: 500 }}>Breaks</div>
             </div>
-          </>
-        ) : (
-          <>
-            {/* Weekly Activity Chart */}
-            <div className="chart-card">
-              <div className="chart-title">Weekly Activity</div>
-              <div className="bar-chart">
-                {['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'].map((day, i) => {
-                  const dayDate = new Date();
-                  const currentDay = dayDate.getDay();
-                  const diff = i - ((currentDay + 6) % 7);
-                  const targetDate = new Date(dayDate.getTime() + diff * 86400000);
-                  const dateStr = targetDate.toISOString().split('T')[0];
-                  const entry = progress.entries.find((e) => e.date === dateStr);
-                  const height = entry ? Math.min(entry.completedCount * 20, 80) : 4;
+            <div style={{ textAlign: 'center' }}>
+              <div style={{ fontSize: '16px', fontWeight: 700, color: COLORS.primary }}>{weekSessions}</div>
+              <div style={{ fontSize: '10px', color: COLORS.textSecondary, fontWeight: 500 }}>Sessions</div>
+            </div>
+            <div style={{ textAlign: 'center' }}>
+              <div style={{ fontSize: '16px', fontWeight: 700, color: COLORS.primary }}>{weekMinutes}<span style={{ fontSize: '10px', fontWeight: 500 }}>m</span></div>
+              <div style={{ fontSize: '10px', color: COLORS.textSecondary, fontWeight: 500 }}>Time</div>
+            </div>
+          </div>
+        </div>
+        )}
 
-                  return (
-                    <div key={day} className="bar-col">
-                      <div className="bar-track">
-                        <div
-                          className={`bar ${entry && entry.completedCount > 0 ? 'filled' : ''}`}
-                          style={{ height }}
-                        />
-                      </div>
-                      <div className="bar-label">{day.charAt(0)}</div>
-                    </div>
-                  );
-                })}
-              </div>
+        {/* Monthly Summary */}
+        {sections.monthly && (
+        <div style={{
+          backgroundColor: COLORS.surface,
+          borderRadius: '14px',
+          padding: '16px',
+          marginBottom: '16px',
+          border: `1px solid ${COLORS.border}`,
+        }}>
+          <div style={{ fontSize: '14px', fontWeight: 700, color: COLORS.text, marginBottom: '12px' }}>This Month</div>
+          <div style={{ display: 'flex', justifyContent: 'space-around' }}>
+            <div style={{ textAlign: 'center' }}>
+              <div style={{ fontSize: '20px', fontWeight: 700, color: COLORS.primary }}>{monthBreaks}</div>
+              <div style={{ fontSize: '10px', color: COLORS.textSecondary, fontWeight: 500 }}>Breaks</div>
             </div>
+            <div style={{ textAlign: 'center' }}>
+              <div style={{ fontSize: '20px', fontWeight: 700, color: COLORS.primary }}>{monthSessions}</div>
+              <div style={{ fontSize: '10px', color: COLORS.textSecondary, fontWeight: 500 }}>Sessions</div>
+            </div>
+            <div style={{ textAlign: 'center' }}>
+              <div style={{ fontSize: '20px', fontWeight: 700, color: COLORS.primary }}>{monthMinutes}<span style={{ fontSize: '12px', fontWeight: 500 }}>m</span></div>
+              <div style={{ fontSize: '10px', color: COLORS.textSecondary, fontWeight: 500 }}>Time</div>
+            </div>
+          </div>
+        </div>
+        )}
 
-            {/* Best Streak */}
-            <div className="period-card">
-              <div className="period-header">
-                <span className="period-icon">⭐</span>
-                <span className="period-title">Personal Best</span>
+        {/* Personal Best + Achievements */}
+        {sections.milestones && (
+        <div style={{
+          backgroundColor: COLORS.surface,
+          borderRadius: '14px',
+          padding: '16px',
+          border: `1px solid ${COLORS.border}`,
+        }}>
+          <div style={{ fontSize: '14px', fontWeight: 700, color: COLORS.text, marginBottom: '12px' }}>Milestones</div>
+          <div style={{ display: 'flex', flexDirection: 'column', gap: '10px' }}>
+            {[
+              { label: 'First Day', earned: progress.currentStreak >= 1 },
+              { label: '3-Day Streak', earned: progress.currentStreak >= 3 },
+              { label: 'Week Warrior', earned: progress.currentStreak >= 7 },
+              { label: '10 Sessions', earned: progress.totalSessions >= 10 },
+              { label: 'Monthly Master', earned: progress.currentStreak >= 30 },
+            ].map((m) => (
+              <div key={m.label} style={{
+                display: 'flex',
+                alignItems: 'center',
+                gap: '10px',
+                padding: '8px 10px',
+                borderRadius: '10px',
+                backgroundColor: m.earned ? COLORS.accentLight : '#F9F9F9',
+              }}>
+                <span style={{ fontSize: '16px' }}>{m.earned ? '🏆' : '🔒'}</span>
+                <span style={{
+                  fontSize: '13px',
+                  fontWeight: m.earned ? 600 : 500,
+                  color: m.earned ? COLORS.text : COLORS.disabled,
+                }}>{m.label}</span>
               </div>
-              <div className="period-stats-row">
-                <div className="period-stat">
-                  <div className="period-stat-number">{progress.longestStreak}</div>
-                  <div className="period-stat-label">Best Streak</div>
-                </div>
-                <div className="period-stat">
-                  <div className="period-stat-number">{progress.totalSessions}</div>
-                  <div className="period-stat-label">All Sessions</div>
-                </div>
-                <div className="period-stat">
-                  <div className="period-stat-number">{progress.totalMinutes}</div>
-                  <div className="period-stat-label">All Minutes</div>
-                </div>
-              </div>
+            ))}
+          </div>
+          {/* Personal best row */}
+          <div style={{ display: 'flex', justifyContent: 'space-around', marginTop: '14px', paddingTop: '12px', borderTop: `1px solid ${COLORS.border}` }}>
+            <div style={{ textAlign: 'center' }}>
+              <div style={{ fontSize: '16px', fontWeight: 700, color: COLORS.secondary }}>{progress.longestStreak}</div>
+              <div style={{ fontSize: '10px', color: COLORS.textSecondary, fontWeight: 500 }}>Best streak</div>
             </div>
-          </>
+            <div style={{ textAlign: 'center' }}>
+              <div style={{ fontSize: '16px', fontWeight: 700, color: COLORS.secondary }}>{progress.totalSessions}</div>
+              <div style={{ fontSize: '10px', color: COLORS.textSecondary, fontWeight: 500 }}>All sessions</div>
+            </div>
+            <div style={{ textAlign: 'center' }}>
+              <div style={{ fontSize: '16px', fontWeight: 700, color: COLORS.secondary }}>{progress.totalMinutes}<span style={{ fontSize: '10px', fontWeight: 500 }}>m</span></div>
+              <div style={{ fontSize: '10px', color: COLORS.textSecondary, fontWeight: 500 }}>All time</div>
+            </div>
+          </div>
+        </div>
         )}
       </div>
 

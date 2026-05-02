@@ -20,7 +20,7 @@ export const COLORS = {
 };
 
 export const APP_NAME = 'Breather';
-export const APP_VERSION = '2.3.0';
+export const APP_VERSION = '3.0.0';
 
 export const CATEGORIES = [
   { title: 'Targeted', icon: '🎯', color: '#FCE4EC' },
@@ -54,6 +54,7 @@ export const STORAGE_KEYS = {
   REMINDERS: '@breather_reminders',
   SETTINGS: '@breather_settings',
   PROGRESS: '@breather_progress',
+  PROGRESS_SECTIONS: '@breather_progress_sections',
 };
 
 export const DEFAULT_SETTINGS = {
