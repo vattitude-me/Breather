@@ -1,9 +1,9 @@
 {
   "manifest_version": 3,
   "name": "Breather - Break Reminders",
-  "version": "1.1.0",
+  "version": "1.0.0",
   "description": "Gentle break reminders with a virtual plant companion. Take better breaks.",
-  "permissions": ["alarms", "storage", "notifications", "tabs"],
+  "permissions": ["alarms", "storage", "notifications"],
   "action": {
     "default_popup": "popup.html",
     "default_icon": {
@@ -20,11 +20,5 @@
     "16": "icons/icon-16.png",
     "48": "icons/icon-48.png",
     "128": "icons/icon-128.png"
-  },
-  "web_accessible_resources": [
-    {
-      "resources": ["welcome.html"],
-      "matches": ["<all_urls>"]
-    }
-  ]
+  }
 }

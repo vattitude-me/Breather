@@ -178,7 +178,14 @@ chrome.runtime.onMessage.addListener((message, _sender, sendResponse) => {
   }
 });
 
-chrome.runtime.onInstalled.addListener(async () => {
+chrome.runtime.onInstalled.addListener(async (details) => {
+  // On first install, open welcome page with pinning instructions
+  if (details.reason === 'install') {
+    chrome.tabs.create({
+      url: chrome.runtime.getURL('welcome.html'),
+    });
+  }
+
   const reminders = await getReminders();
   for (const r of reminders) {
     if (r.isActive) scheduleAlarm(r);

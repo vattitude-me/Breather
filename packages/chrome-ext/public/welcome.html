@@ -1,0 +1,217 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Welcome to Breather</title>
+  <style>
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, 'Open Sans', 'Helvetica Neue', sans-serif;
+      -webkit-font-smoothing: subpixel-antialiased;
+      -moz-osx-font-smoothing: auto;
+      background: linear-gradient(135deg, #FFF9F5 0%, #FEF3EC 100%);
+      min-height: 100vh;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 20px;
+    }
+
+    .container {
+      max-width: 500px;
+      width: 100%;
+      background: white;
+      border-radius: 20px;
+      box-shadow: 0 12px 48px rgba(0, 0, 0, 0.15);
+      padding: 40px;
+      text-align: center;
+    }
+
+    .logo {
+      width: 80px;
+      height: 80px;
+      margin: 0 auto 24px;
+      background: linear-gradient(135deg, #D4503C 0%, #E8614D 100%);
+      border-radius: 20px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 40px;
+    }
+
+    h1 {
+      color: #1A1A2E;
+      font-size: 28px;
+      font-weight: 800;
+      margin-bottom: 12px;
+      line-height: 1.3;
+    }
+
+    .subtitle {
+      color: #5C6370;
+      font-size: 14px;
+      margin-bottom: 32px;
+      line-height: 1.5;
+    }
+
+    .steps {
+      text-align: left;
+      margin: 32px 0;
+    }
+
+    .step {
+      display: flex;
+      gap: 16px;
+      margin-bottom: 24px;
+    }
+
+    .step-number {
+      min-width: 36px;
+      width: 36px;
+      height: 36px;
+      background: #D4503C;
+      color: white;
+      border-radius: 50%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-weight: 700;
+      flex-shrink: 0;
+    }
+
+    .step-content h3 {
+      color: #1A1A2E;
+      font-size: 16px;
+      font-weight: 700;
+      margin-bottom: 6px;
+    }
+
+    .step-content p {
+      color: #5C6370;
+      font-size: 14px;
+      line-height: 1.5;
+    }
+
+    .tip {
+      background: #FEF3EC;
+      border-left: 4px solid #D4503C;
+      padding: 16px;
+      border-radius: 8px;
+      margin: 24px 0;
+      text-align: left;
+    }
+
+    .tip-title {
+      color: #D4503C;
+      font-size: 13px;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+      margin-bottom: 6px;
+    }
+
+    .tip-text {
+      color: #5C6370;
+      font-size: 14px;
+      line-height: 1.5;
+    }
+
+    .button {
+      display: inline-block;
+      background: #D4503C;
+      color: white;
+      padding: 14px 32px;
+      border-radius: 14px;
+      text-decoration: none;
+      font-weight: 700;
+      font-size: 16px;
+      margin-top: 24px;
+      transition: all 0.2s ease;
+      border: none;
+      cursor: pointer;
+    }
+
+    .button:hover {
+      background: #C23F2F;
+      box-shadow: 0 8px 24px rgba(212, 80, 60, 0.3);
+    }
+
+    .keyboard-key {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      background: #F0E6E0;
+      border: 1px solid #E8D8D0;
+      border-radius: 6px;
+      padding: 4px 8px;
+      font-family: 'Monaco', 'Courier New', monospace;
+      font-size: 13px;
+      font-weight: 600;
+      color: #1A1A2E;
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <div class="logo">🌱</div>
+    
+    <h1>Welcome to Breather!</h1>
+    <p class="subtitle">Your gentle break reminder companion is now installed. Let's get you set up.</p>
+
+    <div class="steps">
+      <div class="step">
+        <div class="step-number">1</div>
+        <div class="step-content">
+          <h3>Pin the Extension</h3>
+          <p>Click the puzzle icon <span style="font-size: 18px;">🧩</span> in your Chrome toolbar (top-right)</p>
+        </div>
+      </div>
+
+      <div class="step">
+        <div class="step-number">2</div>
+        <div class="step-content">
+          <h3>Find Breather</h3>
+          <p>Look for "Breather - Break Reminders" in the list</p>
+        </div>
+      </div>
+
+      <div class="step">
+        <div class="step-number">3</div>
+        <div class="step-content">
+          <h3>Click Pin</h3>
+          <p>Click the pin icon next to Breather to pin it to your toolbar</p>
+        </div>
+      </div>
+
+      <div class="step">
+        <div class="step-number">4</div>
+        <div class="step-content">
+          <h3>Start Reminding</h3>
+          <p>Click the Breather icon to set up your first break routine</p>
+        </div>
+      </div>
+    </div>
+
+    <div class="tip">
+      <div class="tip-title">💡 Pro Tip</div>
+      <div class="tip-text">
+        Once pinned, you can quickly access Breather by clicking its icon in your toolbar, or use the keyboard shortcut shown in your extensions menu.
+      </div>
+    </div>
+
+    <button class="button" onclick="closeTab()">Got It! Let's Go 🌱</button>
+  </div>
+
+  <script>
+    function closeTab() {
+      window.close();
+    }
+  </script>
+</body>
+</html>
