@@ -38,6 +38,9 @@ function CountdownWidget({ reminders }: { reminders: Reminder[] }) {
     return () => window.clearInterval(id);
   }, []);
 
+  const hasActiveReminders = reminders.some((r) => r.isActive);
+  const hasOutsideHours = reminders.some((r) => r.isActive && !isWithinSchedule(r.schedule));
+
   const nextBreak = useMemo(() => {
     let earliest: { time: Date; reminder: Reminder } | null = null;
     for (const r of reminders) {
@@ -50,6 +53,53 @@ function CountdownWidget({ reminders }: { reminders: Reminder[] }) {
     }
     return earliest;
   }, [reminders, now]);
+
+  // No reminders at all — don't show anything
+  if (reminders.length === 0) return null;
+
+  // Paused state: active reminders exist but all are outside schedule
+  if (!nextBreak && hasActiveReminders && hasOutsideHours) {
+    return (
+      <div style={{
+        marginTop: '16px',
+        padding: '16px 20px',
+        backgroundColor: COLORS.secondaryLight,
+        borderRadius: '14px',
+        border: `1px solid ${COLORS.border}`,
+        textAlign: 'center',
+      }}>
+        <div style={{ fontSize: '20px', marginBottom: '6px' }}>😴</div>
+        <div style={{ fontSize: '13px', fontWeight: 600, color: COLORS.text }}>
+          Breaks paused
+        </div>
+        <div style={{ fontSize: '11px', color: COLORS.textSecondary, marginTop: '4px' }}>
+          Your reminders are outside their scheduled hours. They will resume automatically.
+        </div>
+      </div>
+    );
+  }
+
+  // No active reminders
+  if (!nextBreak && !hasActiveReminders && reminders.length > 0) {
+    return (
+      <div style={{
+        marginTop: '16px',
+        padding: '16px 20px',
+        backgroundColor: COLORS.cardMint,
+        borderRadius: '14px',
+        border: `1px solid ${COLORS.border}`,
+        textAlign: 'center',
+      }}>
+        <div style={{ fontSize: '20px', marginBottom: '6px' }}>⏸️</div>
+        <div style={{ fontSize: '13px', fontWeight: 600, color: COLORS.text }}>
+          All reminders paused
+        </div>
+        <div style={{ fontSize: '11px', color: COLORS.textSecondary, marginTop: '4px' }}>
+          Toggle a reminder on to start getting break alerts.
+        </div>
+      </div>
+    );
+  }
 
   if (!nextBreak) return null;
 
@@ -546,7 +596,53 @@ export default function HomeScreen() {
             {plantState.waterPoints} / {PLANT_MAX_POINTS} waters
           </div>
           {/* Stage progress bar */}
-          <div style={{ width: '90%', marginTop: '10px', position: 'relative' }}>
+          <div style={{ width: '92%', marginTop: '12px' }}>
+            {/* Stage icons above the bar */}
+            <div style={{
+              display: 'flex',
+              justifyContent: 'space-between',
+              marginBottom: '6px',
+              padding: '0 4px',
+            }}>
+              {PLANT_STAGES.map((s) => {
+                const reached = plantState.waterPoints >= s.minPoints;
+                const isCurrent = plantState.stage === s.stage;
+                const emoji = s.stage === 'seed' ? '🌰'
+                  : s.stage === 'sprout' ? '🌱'
+                  : s.stage === 'sapling' ? '🌿'
+                  : s.stage === 'tree' ? '🌳' : '🌸';
+                const label = s.stage === 'seed' ? 'Seed'
+                  : s.stage === 'sprout' ? 'Sprout'
+                  : s.stage === 'sapling' ? 'Sapling'
+                  : s.stage === 'tree' ? 'Tree' : 'Bloom';
+                return (
+                  <div key={s.stage} style={{
+                    display: 'flex',
+                    flexDirection: 'column',
+                    alignItems: 'center',
+                    gap: '2px',
+                    flex: 1,
+                  }}>
+                    <span style={{
+                      fontSize: isCurrent ? '20px' : '16px',
+                      filter: reached ? 'none' : 'grayscale(1)',
+                      opacity: reached ? 1 : 0.35,
+                      transition: 'all 0.3s ease',
+                    }}>
+                      {emoji}
+                    </span>
+                    <span style={{
+                      fontSize: '9px',
+                      color: isCurrent ? COLORS.accent : reached ? COLORS.textSecondary : COLORS.disabled,
+                      fontWeight: isCurrent ? 700 : 500,
+                    }}>
+                      {label}
+                    </span>
+                  </div>
+                );
+              })}
+            </div>
+            {/* Bar */}
             <div style={{
               height: '6px',
               backgroundColor: COLORS.border,
@@ -560,44 +656,6 @@ export default function HomeScreen() {
                 borderRadius: '3px',
                 transition: 'width 0.4s ease',
               }} />
-            </div>
-            <div style={{
-              display: 'flex',
-              justifyContent: 'space-between',
-              marginTop: '4px',
-              padding: '0 2px',
-            }}>
-              {PLANT_STAGES.map((s) => {
-                const reached = plantState.waterPoints >= s.minPoints;
-                return (
-                  <div key={s.stage} style={{
-                    display: 'flex',
-                    flexDirection: 'column',
-                    alignItems: 'center',
-                    gap: '1px',
-                  }}>
-                    <span style={{
-                      fontSize: '12px',
-                      filter: reached ? 'none' : 'grayscale(1)',
-                      opacity: reached ? 1 : 0.4,
-                      transition: 'all 0.3s ease',
-                    }}>
-                      {s.stage === 'seed' && '🌰'}
-                      {s.stage === 'sprout' && '🌱'}
-                      {s.stage === 'sapling' && '🌿'}
-                      {s.stage === 'tree' && '🌳'}
-                      {s.stage === 'flowering' && '🌸'}
-                    </span>
-                    <span style={{
-                      fontSize: '8px',
-                      color: reached ? COLORS.accent : COLORS.disabled,
-                      fontWeight: plantState.stage === s.stage ? 700 : 500,
-                    }}>
-                      {s.minPoints}
-                    </span>
-                  </div>
-                );
-              })}
             </div>
           </div>
         </div>
