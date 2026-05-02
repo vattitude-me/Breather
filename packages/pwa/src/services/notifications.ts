@@ -145,12 +145,14 @@ function fireNotificationForReminder(reminder: Reminder): void {
 
   const title = `${reminder.icon} Time for a ${reminder.title.toLowerCase()} break`;
   const body = BREAK_PROMPTS[Math.floor(Math.random() * BREAK_PROMPTS.length)];
+  // Stable tag per reminder — deduplicates if both page and SW fire close together
+  const tag = `breather_${reminder.id}`;
 
   if ('serviceWorker' in navigator && navigator.serviceWorker.controller) {
     navigator.serviceWorker.ready.then((reg) => {
       reg.showNotification(title, {
         body,
-        tag: `${reminder.id}_${Date.now()}`,
+        tag,
         requireInteraction: true,
         icon: '/pwa-192x192.png',
         badge: '/pwa-192x192.png',
@@ -162,7 +164,7 @@ function fireNotificationForReminder(reminder: Reminder): void {
       } as NotificationOptions);
     });
   } else {
-    new Notification(title, { body, tag: `${reminder.id}_${Date.now()}`, requireInteraction: true, icon: '/pwa-192x192.png' });
+    new Notification(title, { body, tag, requireInteraction: true, icon: '/pwa-192x192.png' });
     waterPlant();
   }
   incrementAlertsSent();

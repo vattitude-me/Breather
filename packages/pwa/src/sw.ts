@@ -73,7 +73,7 @@ function checkAndFire() {
         const body = breakPrompts[Math.floor(Math.random() * breakPrompts.length)];
         self.registration.showNotification(`${reminder.icon} Time for a ${reminder.title.toLowerCase()} break`, {
           body,
-          tag: `${id}_${now}`,
+          tag: `breather_${id}`,
           requireInteraction: true,
           icon: '/pwa-192x192.png',
           badge: '/pwa-192x192.png',
