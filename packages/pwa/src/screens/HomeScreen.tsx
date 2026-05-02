@@ -41,6 +41,7 @@ function CountdownWidget({ reminders }: { reminders: Reminder[] }) {
   const nextBreak = useMemo(() => {
     let earliest: { time: Date; reminder: Reminder } | null = null;
     for (const r of reminders) {
+      if (!isWithinSchedule(r.schedule)) continue;
       const fire = getNextFireTime(r);
       if (!fire) continue;
       if (!earliest || fire.getTime() < earliest.time.getTime()) {
@@ -60,7 +61,7 @@ function CountdownWidget({ reminders }: { reminders: Reminder[] }) {
 
   const pad = (n: number) => String(n).padStart(2, '0');
 
-  const activeCount = reminders.filter((r) => r.isActive).length;
+  const activeCount = reminders.filter((r) => r.isActive && isWithinSchedule(r.schedule)).length;
 
   return (
     <div style={{
