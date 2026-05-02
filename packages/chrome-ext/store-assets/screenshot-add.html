@@ -1,0 +1,62 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<title>Breather - Add Reminder</title>
+<style>
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  body { background: #1a1a2e; display: flex; align-items: center; justify-content: center; min-height: 100vh; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; }
+  .wrapper { display: flex; align-items: center; gap: 60px; }
+  .phone { width: 380px; height: 580px; background: #FFF9F5; border-radius: 20px; overflow: hidden; box-shadow: 0 20px 60px rgba(0,0,0,0.4); }
+  .content { padding: 14px; display: flex; flex-direction: column; gap: 10px; }
+  .text-panel { max-width: 380px; color: #FFF; }
+  .text-panel h1 { font-size: 42px; font-weight: 800; line-height: 1.15; margin-bottom: 16px; }
+  .text-panel h1 span { color: #0E8A7D; }
+  .text-panel p { font-size: 18px; line-height: 1.6; color: #aaa; margin-bottom: 12px; }
+  .feature { display: flex; align-items: center; gap: 12px; margin-bottom: 10px; }
+  .feature .icon { width: 40px; height: 40px; border-radius: 10px; background: rgba(14,138,125,0.15); display: flex; align-items: center; justify-content: center; font-size: 20px; }
+  .feature .text { font-size: 15px; color: #ccc; }
+  .feature .text strong { color: #FFF; }
+
+  .header { display: flex; align-items: center; gap: 8px; }
+  .back { background: #F0E6E0; border: none; border-radius: 8px; width: 28px; height: 28px; font-size: 14px; display: flex; align-items: center; justify-content: center; }
+  .header h2 { font-size: 16px; font-weight: 800; color: #1A1A2E; }
+  .section-label { font-size: 11px; font-weight: 600; color: #5C6370; }
+  .preset-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 6px; }
+  .preset { display: flex; align-items: center; gap: 8px; padding: 10px; border-radius: 10px; border: 1px solid #F0E6E0; background: #FFF; }
+  .preset .emoji { font-size: 20px; }
+  .preset .name { font-size: 11px; font-weight: 700; color: #1A1A2E; }
+  .preset .time { font-size: 9px; color: #5C6370; }
+  .custom-btn { width: 100%; padding: 10px; border-radius: 10px; border: 1px dashed #D4503C; background: #FDE8E4; font-size: 12px; font-weight: 600; color: #D4503C; text-align: center; }
+</style>
+</head>
+<body>
+<div class="wrapper">
+  <div class="text-panel">
+    <h1>Set up in <span>seconds</span>.</h1>
+    <p>Pick from ready-made presets or create your own custom routine.</p>
+    <div class="feature"><div class="icon">⚡</div><div class="text"><strong>One-tap presets</strong> — start instantly</div></div>
+    <div class="feature"><div class="icon">🎯</div><div class="text"><strong>Custom intervals</strong> — 1m to 2h</div></div>
+    <div class="feature"><div class="icon">📅</div><div class="text"><strong>Smart scheduling</strong> — pick days & hours</div></div>
+  </div>
+  <div class="phone">
+    <div class="content">
+      <div class="header">
+        <div class="back">←</div>
+        <h2>Add Reminder</h2>
+      </div>
+      <div class="section-label">Quick Start</div>
+      <div class="preset-grid">
+        <div class="preset"><span class="emoji">🧘</span><div><div class="name">Stretch</div><div class="time">Every 60m</div></div></div>
+        <div class="preset"><span class="emoji">💧</span><div><div class="name">Drink Water</div><div class="time">Every 60m</div></div></div>
+        <div class="preset"><span class="emoji">🚶</span><div><div class="name">Walk</div><div class="time">Every 60m</div></div></div>
+        <div class="preset"><span class="emoji">👁️</span><div><div class="name">Eye Break</div><div class="time">Every 20m</div></div></div>
+        <div class="preset"><span class="emoji">🧍</span><div><div class="name">Posture Check</div><div class="time">Every 45m</div></div></div>
+        <div class="preset"><span class="emoji">🌬️</span><div><div class="name">Deep Breath</div><div class="time">Every 30m</div></div></div>
+      </div>
+      <div class="custom-btn">✏️ Create Custom Reminder</div>
+    </div>
+  </div>
+</div>
+</body>
+</html>
