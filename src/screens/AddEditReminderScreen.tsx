@@ -5,6 +5,7 @@ import { useRemindersContext } from '../context/RemindersContext';
 import { scheduleReminder, cancelReminder } from '../services/notifications';
 import { PRESET_REMINDERS, DAYS_OF_WEEK, DEFAULT_SCHEDULE } from '../constants';
 import { Reminder, DayOfWeek } from '../types';
+import Logo from '../components/Logo';
 import '../screens.css';
 
 export default function AddEditReminderScreen() {
@@ -161,19 +162,19 @@ export default function AddEditReminderScreen() {
 
   return (
     <div className="page">
-      <div className="page-header" style={{ padding: '14px 24px' }}>
-        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
-          <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
+      <div className="page-header">
+        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', width: '100%' }}>
+          <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
             <button
               onClick={() => navigation(-1)}
               className="page-header-back"
-              style={{ marginBottom: 0 }}
             >
               <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#1A1A2E" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
                 <polyline points="15 18 9 12 15 6" />
               </svg>
             </button>
-            <h1 style={{ fontSize: '18px', fontWeight: 700, color: '#1A1A2E', margin: 0 }}>
+            <Logo />
+            <h1>
               {isEditing ? 'Edit Reminder' : 'Add Reminder'}
             </h1>
           </div>
@@ -182,7 +183,6 @@ export default function AddEditReminderScreen() {
               <button
                 onClick={handleDelete}
                 className="page-header-back"
-                style={{ marginBottom: 0 }}
                 title="Delete Reminder"
               >
                 <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#DC2626" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
@@ -194,7 +194,6 @@ export default function AddEditReminderScreen() {
             <button
               onClick={handleSave}
               className="page-header-back"
-              style={{ marginBottom: 0 }}
               title={isEditing ? 'Update Reminder' : 'Create Reminder'}
             >
               <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#D4503C" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">

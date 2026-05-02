@@ -1,5 +1,6 @@
 import { useNavigate } from 'react-router-dom';
 import { COLORS } from '../constants';
+import Logo from '../components/Logo';
 import '../screens.css';
 
 export default function PrivacyScreen() {
@@ -7,20 +8,18 @@ export default function PrivacyScreen() {
 
   return (
     <div className="page">
-      <div className="page-header" style={{ padding: '14px 24px' }}>
-        <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
+      <div className="page-header">
+        <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
           <button
             onClick={() => navigation(-1)}
             className="page-header-back"
-            style={{ marginBottom: 0 }}
           >
             <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#1A1A2E" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
               <polyline points="15 18 9 12 15 6" />
             </svg>
           </button>
-          <h1 style={{ fontSize: '18px', fontWeight: 700, color: '#1A1A2E', margin: 0 }}>
-            Privacy Policy
-          </h1>
+          <Logo />
+          <h1>Privacy Policy</h1>
         </div>
       </div>
 

@@ -2,6 +2,7 @@ import { useState, useCallback, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { STORAGE_KEYS } from '../constants';
 import { ProgressData, ProgressEntry } from '../types';
+import Logo from '../components/Logo';
 import '../screens.css';
 
 const DEFAULT_PROGRESS: ProgressData = {
@@ -97,13 +98,11 @@ export default function ProgressScreen() {
 
   return (
     <div className="page">
-      <div className="page-header" style={{ padding: '16px 24px' }}>
-        <h1 style={{ fontSize: '20px', fontWeight: 700, color: '#1A1A2E', margin: 0 }}>
-          Progress
-        </h1>
-        <p style={{ fontSize: '13px', color: 'rgba(255,255,255,0.8)', margin: '4px 0 0' }}>
-          Track your wellness journey
-        </p>
+      <div className="page-header">
+        <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
+          <Logo />
+          <h1>Progress</h1>
+        </div>
       </div>
 
       {/* Tabs */}

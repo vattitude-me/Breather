@@ -5,6 +5,7 @@ import { cancelAllReminders, scheduleReminder } from '../services/notifications'
 import { getInstallPrompt, onInstallPromptChange } from '../services/installPrompt';
 import { hasAnalyticsConsent, setAnalyticsConsent } from '../services/analytics';
 import { COLORS, APP_VERSION } from '../constants';
+import Logo from '../components/Logo';
 import '../screens.css';
 
 function InfoTooltip({ text }: { text: string }) {
@@ -97,10 +98,11 @@ export default function SettingsScreen() {
 
   return (
     <div className="page">
-      <div className="page-header" style={{ padding: '16px 24px' }}>
-        <h1 style={{ fontSize: '20px', fontWeight: 700, color: '#1A1A2E', margin: 0 }}>
-          Settings
-        </h1>
+      <div className="page-header">
+        <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
+          <Logo />
+          <h1>Settings</h1>
+        </div>
       </div>
 
       <div className="page-content" style={{ padding: '16px 20px' }}>

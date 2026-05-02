@@ -2,10 +2,11 @@ import { useState, useEffect, useCallback } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { nanoid } from 'nanoid';
 import { useRemindersContext } from '../context/RemindersContext';
-import { scheduleReminder, cancelReminder, getNextFireTime, getAlertsSent, getCompletedCount, isWithinSchedule } from '../services/notifications';
+import { scheduleReminder, cancelReminder, isWithinSchedule } from '../services/notifications';
 import { getInstallPrompt, onInstallPromptChange } from '../services/installPrompt';
 import { COLORS, APP_NAME, PRESET_REMINDERS, DEFAULT_SCHEDULE, WELLNESS_TIPS } from '../constants';
 import { Reminder } from '../types';
+import Logo from '../components/Logo';
 import '../screens.css';
 
 function getGreeting(): string {
@@ -29,13 +30,6 @@ export default function HomeScreen() {
   const { reminders, settings, dispatch } = useRemindersContext();
   const navigation = useNavigate();
 
-  const activeReminders = reminders.filter((r) => r.isActive);
-  const totalReminders = reminders.length;
-
-  const [countdown, setCountdown] = useState('--');
-  const [currentTime, setCurrentTime] = useState(new Date());
-  const [alertsSent, setAlertsSent] = useState(0);
-  const [completedCount, setCompletedCount] = useState(0);
   const [notifPermission, setNotifPermission] = useState(
     () => 'Notification' in window ? Notification.permission : 'denied'
   );
@@ -63,67 +57,6 @@ export default function HomeScreen() {
     setNotifPermission(result);
   }, []);
 
-  useEffect(() => {
-    getAlertsSent().then(setAlertsSent);
-    getCompletedCount().then(setCompletedCount);
-    const poll = setInterval(() => {
-      getAlertsSent().then(setAlertsSent);
-      getCompletedCount().then(setCompletedCount);
-    }, 10000);
-    return () => clearInterval(poll);
-  }, []);
-
-  useEffect(() => {
-    function updateCountdown() {
-      if (activeReminders.length === 0) {
-        setCountdown('--');
-        return;
-      }
-
-      // Check if any active reminder is within schedule
-      const scheduledReminders = activeReminders.filter(r => isWithinSchedule(r.schedule));
-      if (scheduledReminders.length === 0) {
-        setCountdown('Paused');
-        return;
-      }
-
-      const now = Date.now();
-      let soonest = Infinity;
-
-      for (const r of scheduledReminders) {
-        const next = getNextFireTime(r);
-        if (next) {
-          const diff = next.getTime() - now;
-          if (diff > 0 && diff < soonest) soonest = diff;
-        }
-      }
-
-      if (soonest === Infinity) {
-        setCountdown('--');
-        return;
-      }
-
-      const totalSec = Math.floor(soonest / 1000);
-      if (totalSec >= 3600) {
-        const h = Math.floor(totalSec / 3600);
-        const m = Math.floor((totalSec % 3600) / 60);
-        setCountdown(`${h}h ${m}m`);
-      } else if (totalSec >= 60) {
-        const m = Math.floor(totalSec / 60);
-        const s = totalSec % 60;
-        setCountdown(`${m}:${s.toString().padStart(2, '0')}`);
-      } else {
-        setCountdown(`${totalSec}s`);
-      }
-    }
-
-    updateCountdown();
-    const interval = setInterval(() => {
-      updateCountdown();
-      setCurrentTime(new Date());
-    }, 1000);
-    return () => clearInterval(interval);
-  }, [activeReminders]);
 
   const handleQuickAdd = async (preset: typeof PRESET_REMINDERS[0]) => {
     const existing = reminders.find((r) => r.title === preset.title);
@@ -199,76 +132,34 @@ export default function HomeScreen() {
 
   return (
     <div className="page">
-      {/* Welcome Header */}
+      {/* Header */}
       <div className="page-header">
-        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-          <div>
-            <p style={{ fontSize: '13px', color: '#5C6370', fontWeight: 500, margin: 0 }}>
-              {getGreeting()} · {getFormattedDate()}
-            </p>
-            <h1 style={{ fontSize: '22px', fontWeight: 800, color: '#1A1A2E', marginTop: '2px', margin: 0 }}>
-              {APP_NAME}
-            </h1>
-          </div>
-          <div style={{ display: 'flex', gap: '8px', alignItems: 'center' }}>
+        <div style={{ display: 'flex', alignItems: 'center', gap: '10px', width: '100%' }}>
+          <Logo />
+          <h1>{APP_NAME}</h1>
+          <div style={{ marginLeft: 'auto', display: 'flex', gap: '8px', alignItems: 'center' }}>
             {!isInstalled && installPrompt && (
               <button
                 onClick={handleInstall}
-                style={{
-                  width: '38px',
-                  height: '38px',
-                  borderRadius: '12px',
-                  backgroundColor: '#F0E6E0',
-                  display: 'flex',
-                  alignItems: 'center',
-                  justifyContent: 'center',
-                  border: 'none',
-                  cursor: 'pointer',
-                }}
+                className="page-header-back"
                 title="Install Breather"
               >
-                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#D4503C" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke={COLORS.primary} strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
                   <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4" />
                   <polyline points="7 10 12 15 17 10" />
                   <line x1="12" y1="15" x2="12" y2="3" />
                 </svg>
               </button>
             )}
-            <span style={{ fontSize: '13px', color: '#1A1A2E', fontWeight: 600 }}>
-              {currentTime.toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit' })}
-            </span>
           </div>
         </div>
       </div>
 
       <div className="page-content" style={{ padding: '16px 20px' }}>
-        {/* Inline Stats Row */}
-        {totalReminders > 0 && (
-          <div style={{
-            display: 'flex',
-            gap: '8px',
-            marginBottom: '20px',
-          }}>
-            {[
-              { value: activeReminders.length, label: 'Active', color: COLORS.primary },
-              { value: alertsSent, label: 'Alerts', color: COLORS.primary },
-              { value: completedCount, label: 'Done', color: COLORS.accent },
-              { value: countdown, label: 'Next in', color: COLORS.primary },
-            ].map((stat) => (
-              <div key={stat.label} style={{
-                flex: 1,
-                backgroundColor: COLORS.surface,
-                borderRadius: '12px',
-                padding: '10px 4px',
-                textAlign: 'center',
-                border: `1px solid ${COLORS.border}`,
-              }}>
-                <div style={{ fontSize: '16px', fontWeight: 700, color: stat.color }}>{stat.value}</div>
-                <div style={{ fontSize: '9px', color: COLORS.textSecondary, marginTop: '2px', fontWeight: 600, textTransform: 'uppercase', letterSpacing: '0.3px' }}>{stat.label}</div>
-              </div>
-            ))}
-          </div>
-        )}
+        {/* Greeting */}
+        <p style={{ fontSize: '13px', color: COLORS.textSecondary, margin: '0 0 14px', fontWeight: 500 }}>
+          {getGreeting()} · {getFormattedDate()}
+        </p>
 
         {/* My Routines */}
         <div style={{ marginBottom: '20px' }}>
