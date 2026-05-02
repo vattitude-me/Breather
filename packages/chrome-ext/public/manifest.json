@@ -23,7 +23,7 @@
   },
   "web_accessible_resources": [
     {
-      "resources": ["welcome.html"],
+      "resources": ["welcome.html", "welcome.js"],
       "matches": ["<all_urls>"]
     }
   ]

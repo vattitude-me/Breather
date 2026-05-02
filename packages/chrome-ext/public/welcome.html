@@ -96,7 +96,7 @@
 
     .hero p {
       color: #6B7280;
-      font-size: 14px;
+      font-size: 16px;
       line-height: 1.6;
     }
 
@@ -111,7 +111,7 @@
     }
 
     .feature-card-label {
-      font-size: 10px;
+      font-size: 12px;
       font-weight: 700;
       text-transform: uppercase;
       letter-spacing: 1.2px;
@@ -135,18 +135,18 @@
     }
 
     .plant-stage .emoji {
-      font-size: 28px;
+      font-size: 32px;
       transition: all 0.3s ease;
     }
 
     .plant-stage.dimmed .emoji {
       filter: grayscale(1);
       opacity: 0.3;
-      font-size: 22px;
+      font-size: 26px;
     }
 
     .plant-stage.active .emoji {
-      font-size: 32px;
+      font-size: 36px;
     }
 
     .plant-arrow {
@@ -156,7 +156,7 @@
     }
 
     .plant-stage-label {
-      font-size: 9px;
+      font-size: 12px;
       font-weight: 600;
       color: #9CA3AF;
     }
@@ -166,7 +166,7 @@
     }
 
     .feature-card p {
-      font-size: 13px;
+      font-size: 15px;
       color: #5C6370;
       line-height: 1.6;
       text-align: center;
@@ -211,14 +211,14 @@
     }
 
     .step-text h3 {
-      font-size: 14px;
+      font-size: 16px;
       font-weight: 600;
       color: #1A1A2E;
-      margin-bottom: 2px;
+      margin-bottom: 3px;
     }
 
     .step-text p {
-      font-size: 12px;
+      font-size: 14px;
       color: #6B7280;
       line-height: 1.5;
     }
@@ -251,7 +251,7 @@
     .footer {
       text-align: center;
       margin-top: 20px;
-      font-size: 11px;
+      font-size: 13px;
       color: #9CA3AF;
     }
   </style>
@@ -324,19 +324,12 @@
         </div>
       </div>
 
-      <button class="cta" onclick="startBreather()">Get Started</button>
+      <button class="cta" id="cta-btn">Get Started</button>
     </div>
 
     <div class="footer">Breather — Small breaks, big impact.</div>
   </div>
 
-  <script>
-    async function startBreather() {
-      try {
-        await chrome.action.openPopup();
-      } catch {}
-      window.close();
-    }
-  </script>
+  <script src="welcome.js"></script>
 </body>
 </html>
