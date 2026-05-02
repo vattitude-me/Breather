@@ -3,6 +3,7 @@ import {
   COLORS, APP_VERSION, STORAGE_KEYS, AppSettings, Reminder,
 } from '@breather/shared';
 import { loadReminders, saveReminders, loadSettings, saveSettings } from '../../lib/storage';
+import Logo from '../components/Logo';
 import type { Screen } from '../App';
 
 interface Props { navigate: (s: Screen) => void; }
@@ -57,7 +58,7 @@ export default function SettingsScreen({ navigate }: Props) {
         alignItems: 'center',
       }}>
         <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
-          <span style={{ fontSize: '20px' }}>🌱</span>
+          <Logo />
           <h1 style={{ color: COLORS.text, fontSize: '20px', fontWeight: 800, margin: 0 }}>Settings</h1>
         </div>
       </div>

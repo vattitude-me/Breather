@@ -4,6 +4,7 @@ import {
   COLORS, APP_NAME, PLANT_STAGES, PLANT_MAX_POINTS, PLANT_MOTIVATIONS, WELLNESS_TIPS,
 } from '@breather/shared';
 import { loadReminders, saveReminders, loadPlant, checkDecay, waterPlant } from '../../lib/storage';
+import Logo from '../components/Logo';
 import type { Screen } from '../App';
 
 const STAGE_EMOJI: Record<PlantStage, string> = { seed: '🌰', sprout: '🌱', sapling: '🌿', tree: '🌳', flowering: '🌸' };
@@ -119,7 +120,7 @@ export default function HomeScreen({ navigate }: Props) {
         alignItems: 'center',
       }}>
         <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
-          <span style={{ fontSize: '20px' }}>🌱</span>
+          <Logo />
           <h1 style={{ color: COLORS.text, fontSize: '20px', fontWeight: 800, margin: 0 }}>{APP_NAME}</h1>
         </div>
       </div>

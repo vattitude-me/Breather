@@ -3,6 +3,7 @@ import {
   COLORS, STORAGE_KEYS, ProgressEntry,
 } from '@breather/shared';
 import { loadProgress, computeStreak } from '../../lib/storage';
+import Logo from '../components/Logo';
 import type { Screen } from '../App';
 
 interface ProgressData {
@@ -85,7 +86,7 @@ export default function ProgressScreen({ navigate }: Props) {
         alignItems: 'center',
       }}>
         <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
-          <span style={{ fontSize: '20px' }}>🌱</span>
+          <Logo />
           <h1 style={{ color: COLORS.text, fontSize: '20px', fontWeight: 800, margin: 0 }}>Progress</h1>
         </div>
       </div>
