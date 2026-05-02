@@ -7,6 +7,14 @@ import {
 const ALARM_NAME = 'breather-reminder';
 const DEFAULT_INTERVAL_MINUTES = 30;
 
+const BREAK_PROMPTS = [
+  'Your body will thank you!',
+  'A small pause goes a long way.',
+  'Time to stretch and reset.',
+  'Step away for a moment — you have earned it.',
+  'Quick break? Your plant is thirsty too!',
+];
+
 const DEFAULT_PLANT: PlantState = {
   waterPoints: 0,
   stage: 'seed',
@@ -71,14 +79,15 @@ async function waterPlant(): Promise<PlantState> {
 // Alarm-based reminders
 chrome.alarms.onAlarm.addListener(async (alarm) => {
   if (alarm.name === ALARM_NAME) {
+    const body = BREAK_PROMPTS[Math.floor(Math.random() * BREAK_PROMPTS.length)];
     chrome.notifications.create({
       type: 'basic',
       iconUrl: 'icons/icon-128.png',
       title: '🌱 Time for a break!',
-      message: 'Stand up, stretch, and give your plant some water.',
+      message: body,
       buttons: [
-        { title: 'Water Plant' },
-        { title: 'Dismiss' },
+        { title: '🌱 Done! Water plant' },
+        { title: '💤 Snooze' },
       ],
       requireInteraction: true,
     });
