@@ -42,7 +42,7 @@ interface ScheduledReminder {
 }
 
 const scheduledReminders = new Map<string, ScheduledReminder>();
-let checkInterval: ReturnType<typeof setInterval> | null = null;
+let checkTimer: ReturnType<typeof setTimeout> | null = null;
 
 function isWithinSchedule(schedule?: ScheduledReminder['schedule']): boolean {
   if (!schedule) return true;
@@ -55,35 +55,43 @@ function isWithinSchedule(schedule?: ScheduledReminder['schedule']): boolean {
   return true;
 }
 
-function startCheckLoop() {
-  if (checkInterval) return;
-  checkInterval = setInterval(() => {
-    const now = Date.now();
-    for (const [id, reminder] of scheduledReminders) {
-      if (now >= reminder.nextFireTime) {
-        if (isWithinSchedule(reminder.schedule)) {
-          self.registration.showNotification(`${reminder.icon} ${reminder.title}`, {
-            body: `Time for your ${reminder.title.toLowerCase()} break!`,
-            tag: `${id}_${now}`,
-            requireInteraction: true,
-            icon: '/pwa-192x192.png',
-            data: { reminderId: id, title: reminder.title },
-            actions: [
-              { action: 'complete', title: `${reminder.title} complete` },
-              { action: 'snooze', title: 'Snooze' },
-              { action: 'dismiss', title: 'Dismiss' },
-            ],
-          } as unknown as NotificationOptions);
-          notifyClients(id, 'alert');
-        }
-        reminder.nextFireTime = now + reminder.intervalMs;
+function checkAndFire() {
+  const now = Date.now();
+  let nearestMs = Infinity;
+
+  for (const [id, reminder] of scheduledReminders) {
+    if (now >= reminder.nextFireTime) {
+      if (isWithinSchedule(reminder.schedule)) {
+        self.registration.showNotification(`${reminder.icon} ${reminder.title}`, {
+          body: `Time for your ${reminder.title.toLowerCase()} break!`,
+          tag: `${id}_${now}`,
+          requireInteraction: true,
+          icon: '/pwa-192x192.png',
+          data: { reminderId: id, title: reminder.title },
+          actions: [
+            { action: 'complete', title: `${reminder.title} complete` },
+            { action: 'snooze', title: 'Snooze' },
+            { action: 'dismiss', title: 'Dismiss' },
+          ],
+        } as unknown as NotificationOptions);
+        notifyClients(id, 'alert');
+      }
+      while (reminder.nextFireTime <= now) {
+        reminder.nextFireTime += reminder.intervalMs;
       }
     }
-    if (scheduledReminders.size === 0) {
-      clearInterval(checkInterval!);
-      checkInterval = null;
-    }
-  }, 30000);
+    const timeUntil = reminder.nextFireTime - now;
+    if (timeUntil < nearestMs) nearestMs = timeUntil;
+  }
+
+  scheduleNextCheck(nearestMs);
+}
+
+function scheduleNextCheck(nearestMs: number = 30000) {
+  if (checkTimer) clearTimeout(checkTimer);
+  if (scheduledReminders.size === 0) { checkTimer = null; return; }
+  const delay = Math.min(nearestMs, 30000);
+  checkTimer = setTimeout(() => checkAndFire(), delay);
 }
 
 function notifyClients(reminderId: string, action: string) {
@@ -107,7 +115,7 @@ self.addEventListener('message', (event) => {
       nextFireTime: nextFireTime || (Date.now() + intervalMs),
       schedule,
     });
-    startCheckLoop();
+    checkAndFire();
   }
 
   if (type === 'CANCEL_REMINDER') {
@@ -138,7 +146,7 @@ self.addEventListener('message', (event) => {
         schedule: r.schedule,
       });
     }
-    if (scheduledReminders.size > 0) startCheckLoop();
+    if (scheduledReminders.size > 0) checkAndFire();
   }
 });
 

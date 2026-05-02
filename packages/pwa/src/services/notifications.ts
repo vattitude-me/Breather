@@ -4,10 +4,10 @@ const ALERTS_SENT_KEY = '@breather_alerts_sent';
 const COMPLETED_KEY = '@breather_completed';
 const DAYS_MAP: DayOfWeek[] = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'] as unknown as DayOfWeek[];
 
-// Track both initial timeouts and recurring intervals separately
-const initialTimers: Map<string, number> = new Map();
-const recurringTimers: Map<string, number> = new Map();
-const webScheduledAt: Map<string, number> = new Map();
+// Track scheduled next-fire times and active timer IDs
+const scheduledTimers: Map<string, number> = new Map();
+const scheduledFireTimes: Map<string, number> = new Map();
+const reminderConfigs: Map<string, { reminder: Reminder; intervalMs: number }> = new Map();
 
 export async function getAlertsSent(): Promise<number> {
   try {
@@ -131,19 +131,66 @@ function getNextClockAlignedTime(intervalMinutes: number): number {
   return nextFireMs;
 }
 
+function fireNotificationForReminder(reminder: Reminder): void {
+  if (!isWithinSchedule(reminder.schedule)) return;
+  if (Notification.permission !== 'granted') return;
+
+  const title = `${reminder.icon} ${reminder.title}`;
+  const body = `Time for your ${reminder.title.toLowerCase()} break!`;
+
+  if ('serviceWorker' in navigator && navigator.serviceWorker.controller) {
+    navigator.serviceWorker.ready.then((reg) => {
+      reg.showNotification(title, {
+        body,
+        tag: `${reminder.id}_${Date.now()}`,
+        requireInteraction: true,
+        icon: '/pwa-192x192.png',
+        data: { reminderId: reminder.id, title: reminder.title },
+        actions: [
+          { action: 'complete', title: `${reminder.title} complete` },
+          { action: 'snooze', title: 'Snooze' },
+          { action: 'dismiss', title: 'Dismiss' },
+        ],
+      } as NotificationOptions);
+    });
+  } else {
+    new Notification(title, { body, tag: `${reminder.id}_${Date.now()}`, requireInteraction: true, icon: '/pwa-192x192.png' });
+  }
+  incrementAlertsSent();
+}
+
+function scheduleNextTick(id: string): void {
+  const config = reminderConfigs.get(id);
+  const nextFire = scheduledFireTimes.get(id);
+  if (!config || !nextFire) return;
+
+  const existing = scheduledTimers.get(id);
+  if (existing) window.clearTimeout(existing);
+
+  const delayMs = Math.max(0, nextFire - Date.now());
+
+  const timer = window.setTimeout(() => {
+    scheduledTimers.delete(id);
+    fireNotificationForReminder(config.reminder);
+    scheduledFireTimes.set(id, nextFire + config.intervalMs);
+    scheduleNextTick(id);
+  }, delayMs);
+
+  scheduledTimers.set(id, timer);
+}
+
 export async function scheduleReminder(reminder: Reminder): Promise<string> {
   const id = `web_${reminder.id}`;
 
-  // Cancel any existing timers for this reminder
   cancelWebTimer(id);
-
   await requestPermissions();
 
   const intervalMs = reminder.intervalMinutes * 60 * 1000;
   const nextFireTime = getNextClockAlignedTime(reminder.intervalMinutes);
-  const delayMs = nextFireTime - Date.now();
 
-  // Register with service worker for background notifications
+  reminderConfigs.set(id, { reminder, intervalMs });
+  scheduledFireTimes.set(id, nextFireTime);
+
   postToServiceWorker({
     type: 'SCHEDULE_REMINDER',
     payload: {
@@ -156,61 +203,16 @@ export async function scheduleReminder(reminder: Reminder): Promise<string> {
     },
   });
 
-  function fireNotification() {
-    if (!isWithinSchedule(reminder.schedule)) return;
-    if (Notification.permission !== 'granted') return;
-
-    const title = `${reminder.icon} ${reminder.title}`;
-    const body = `Time for your ${reminder.title.toLowerCase()} break!`;
-
-    if ('serviceWorker' in navigator && navigator.serviceWorker.controller) {
-      navigator.serviceWorker.ready.then((reg) => {
-        reg.showNotification(title, {
-          body,
-          tag: `${reminder.id}_${Date.now()}`,
-          requireInteraction: true,
-          icon: '/pwa-192x192.png',
-          data: { reminderId: reminder.id, title: reminder.title },
-          actions: [
-            { action: 'complete', title: `${reminder.title} complete` },
-            { action: 'snooze', title: 'Snooze' },
-            { action: 'dismiss', title: 'Dismiss' },
-          ],
-        } as NotificationOptions);
-      });
-    } else {
-      new Notification(title, { body, tag: `${reminder.id}_${Date.now()}`, requireInteraction: true, icon: '/pwa-192x192.png' });
-    }
-    incrementAlertsSent();
-  }
-
-  // First fire at the next clock-aligned time, then repeat on interval
-  const initialTimer = window.setTimeout(() => {
-    initialTimers.delete(id);
-    fireNotification();
-    const recurringTimer = window.setInterval(fireNotification, intervalMs);
-    recurringTimers.set(id, recurringTimer);
-  }, delayMs);
-
-  initialTimers.set(id, initialTimer);
-  webScheduledAt.set(id, nextFireTime);
-
+  scheduleNextTick(id);
   return id;
 }
 
 function cancelWebTimer(id: string): void {
-  // Clear initial timeout if still pending
-  const initial = initialTimers.get(id);
-  if (initial) {
-    window.clearTimeout(initial);
-    initialTimers.delete(id);
-  }
-  // Clear recurring interval
-  const recurring = recurringTimers.get(id);
-  if (recurring) {
-    window.clearInterval(recurring);
-    recurringTimers.delete(id);
-  }
+  const timer = scheduledTimers.get(id);
+  if (timer) window.clearTimeout(timer);
+  scheduledTimers.delete(id);
+  scheduledFireTimes.delete(id);
+  reminderConfigs.delete(id);
 }
 
 export async function cancelReminder(notificationId: string): Promise<void> {
@@ -219,15 +221,33 @@ export async function cancelReminder(notificationId: string): Promise<void> {
 }
 
 export async function cancelAllReminders(): Promise<void> {
-  initialTimers.forEach((timer) => window.clearTimeout(timer));
-  initialTimers.clear();
-  recurringTimers.forEach((timer) => window.clearInterval(timer));
-  recurringTimers.clear();
-  webScheduledAt.clear();
+  scheduledTimers.forEach((timer) => window.clearTimeout(timer));
+  scheduledTimers.clear();
+  scheduledFireTimes.clear();
+  reminderConfigs.clear();
   postToServiceWorker({ type: 'CANCEL_ALL' });
+}
+
+export function resyncAllTimers(): void {
+  const now = Date.now();
+  for (const [id, nextFire] of scheduledFireTimes) {
+    const config = reminderConfigs.get(id);
+    if (!config) continue;
+
+    if (now >= nextFire) {
+      fireNotificationForReminder(config.reminder);
+      let next = nextFire;
+      while (next <= now) next += config.intervalMs;
+      scheduledFireTimes.set(id, next);
+    }
+    scheduleNextTick(id);
+  }
 }
 
 export function getNextFireTime(reminder: Reminder): Date | null {
   if (!reminder.isActive || !reminder.notificationId) return null;
+  const id = `web_${reminder.id}`;
+  const stored = scheduledFireTimes.get(id);
+  if (stored) return new Date(stored);
   return new Date(getNextClockAlignedTime(reminder.intervalMinutes));
 }

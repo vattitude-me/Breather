@@ -1,6 +1,6 @@
 import { useEffect } from 'react';
 import { useRemindersContext } from '../context/RemindersContext';
-import { requestPermissions } from '../services/notifications';
+import { requestPermissions, resyncAllTimers } from '../services/notifications';
 import { waterPlant } from '@breather/shared';
 
 const ALERTS_SENT_KEY = '@breather_alerts_sent';
@@ -28,6 +28,22 @@ export function useNotifications() {
     navigator.serviceWorker.addEventListener('message', handler);
     return () => {
       navigator.serviceWorker.removeEventListener('message', handler);
+    };
+  }, []);
+
+  // Resync timers when the page regains focus or becomes visible
+  // This catches missed notifications from browser throttling background tabs/windows
+  useEffect(() => {
+    const handleVisibility = () => {
+      if (document.visibilityState === 'visible') resyncAllTimers();
+    };
+    const handleFocus = () => resyncAllTimers();
+
+    document.addEventListener('visibilitychange', handleVisibility);
+    window.addEventListener('focus', handleFocus);
+    return () => {
+      document.removeEventListener('visibilitychange', handleVisibility);
+      window.removeEventListener('focus', handleFocus);
     };
   }, []);
 
