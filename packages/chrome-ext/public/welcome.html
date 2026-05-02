@@ -254,9 +254,90 @@
       font-size: 13px;
       color: #9CA3AF;
     }
+
+    /* Pin arrow pointing to extensions icon */
+    .pin-arrow {
+      position: fixed;
+      top: 16px;
+      right: 72px;
+      display: flex;
+      align-items: flex-start;
+      gap: 10px;
+      z-index: 10;
+      animation: pinFadeIn 0.6s ease 0.8s both;
+    }
+
+    .pin-arrow-label {
+      background: rgba(255, 255, 255, 0.75);
+      backdrop-filter: blur(16px);
+      -webkit-backdrop-filter: blur(16px);
+      border: 1px solid rgba(212, 80, 60, 0.15);
+      border-radius: 12px;
+      padding: 8px 14px;
+      font-size: 13px;
+      font-weight: 600;
+      color: #D4503C;
+      white-space: nowrap;
+      box-shadow: 0 4px 20px rgba(0, 0, 0, 0.06);
+      margin-top: 4px;
+    }
+
+    .pin-arrow-line {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      animation: pinBounce 2s ease-in-out infinite;
+    }
+
+    .pin-arrow-line svg {
+      width: 28px;
+      height: 28px;
+      filter: drop-shadow(0 2px 4px rgba(212, 80, 60, 0.2));
+    }
+
+    .pin-arrow-dot {
+      width: 6px;
+      height: 6px;
+      border-radius: 50%;
+      background: #D4503C;
+      margin-top: -2px;
+      animation: pinPulse 2s ease-in-out infinite;
+    }
+
+    @keyframes pinFadeIn {
+      from { opacity: 0; transform: translateY(8px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+
+    @keyframes pinBounce {
+      0%, 100% { transform: translateY(0); }
+      50% { transform: translateY(-6px); }
+    }
+
+    @keyframes pinPulse {
+      0%, 100% { opacity: 1; transform: scale(1); }
+      50% { opacity: 0.5; transform: scale(1.4); }
+    }
+
+    @media (max-width: 600px) {
+      .pin-arrow { right: 48px; }
+      .pin-arrow-label { font-size: 12px; padding: 6px 12px; }
+    }
   </style>
 </head>
 <body>
+  <!-- Pin arrow pointing to Chrome extensions puzzle icon -->
+  <div class="pin-arrow" id="pin-arrow">
+    <div class="pin-arrow-label">Pin Breather here</div>
+    <div class="pin-arrow-line">
+      <svg viewBox="0 0 28 28" fill="none" xmlns="http://www.w3.org/2000/svg">
+        <path d="M14 4L14 20" stroke="#D4503C" stroke-width="2.5" stroke-linecap="round"/>
+        <path d="M8 10L14 4L20 10" stroke="#D4503C" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"/>
+      </svg>
+      <div class="pin-arrow-dot"></div>
+    </div>
+  </div>
+
   <div class="container">
     <div class="card">
       <div class="hero">
@@ -266,7 +347,7 @@
           </svg>
         </div>
         <h1>Welcome to Breather</h1>
-        <p>Mindful break reminders that help you build healthier habits — and grow a virtual plant along the way.</p>
+        <p>Mindful break reminders that help you build healthier habits - and grow a virtual plant along the way.</p>
       </div>
 
       <div class="feature-card">
@@ -312,7 +393,7 @@
           <div class="step-dot">2</div>
           <div class="step-text">
             <h3>Set your break routines</h3>
-            <p>Choose from presets or create custom reminders — stretching, water, posture checks.</p>
+            <p>Choose from presets or create custom reminders - stretching, water, posture checks.</p>
           </div>
         </div>
         <div class="step">
@@ -327,7 +408,7 @@
       <button class="cta" id="cta-btn">Get Started</button>
     </div>
 
-    <div class="footer">Breather — Small breaks, big impact.</div>
+    <div class="footer">Breather - Small breaks, big impact.</div>
   </div>
 
   <script src="welcome.js"></script>
