@@ -48,6 +48,8 @@ export interface PlantState {
   stage: PlantStage;
   lastWateredDate: string;
   lastDecayCheckDate: string;
+  dailyLeavesGrown: number;
+  dailyDate: string;
 }
 
 export interface Pot {

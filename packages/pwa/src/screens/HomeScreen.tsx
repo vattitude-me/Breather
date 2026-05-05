@@ -6,7 +6,7 @@ import { getInstallPrompt, onInstallPromptChange } from '../services/installProm
 import {
   COLORS, APP_NAME, WELLNESS_TIPS, PLANT_MOTIVATIONS, PLANT_DAILY_COLORS,
   Reminder, loadPlantState, savePlantState, stageFromPoints,
-  PLANT_DECAY_PER_DAY, PLANT_MAX_POINTS, PLANT_STAGES, STORAGE_KEYS,
+  PLANT_DECAY_PER_DAY, STORAGE_KEYS,
 } from '@breather/shared';
 import Logo from '../components/Logo';
 import Plant from '../components/Plant';
@@ -129,7 +129,7 @@ function HeaderCountdown({ reminders }: { reminders: Reminder[] }) {
 export default function HomeScreen() {
   const { reminders, dispatch } = useRemindersContext();
   const navigation = useNavigate();
-  const { plantState, stageLabel, progress, water } = usePlantState();
+  const { plantState, progress, water, dailyLeaves, leafDrop, triggerLeafDrop } = usePlantState();
   const { activePot, nextUnlock, newUnlockId, equip, completeBreak, dismissUnlock, catalog, state: potState } = usePotCollection();
   const [motivation, setMotivation] = useState<{ icon: string; text: string } | null>(null);
   const [isWatering, setIsWatering] = useState(false);
@@ -615,7 +615,7 @@ export default function HomeScreen() {
 
           {/* Plant + Swap button wrapper */}
           <div style={{ position: 'relative', cursor: 'pointer' }} onClick={() => setShowPotsDrawer(true)}>
-            <Plant stage={plantState.stage} progress={progress} colorIndex={devColorIndex} pot={activePot} />
+            <Plant stage={plantState.stage} progress={progress} colorIndex={devColorIndex} pot={activePot} dailyLeaves={dailyLeaves} leafDrop={leafDrop} />
             {/* Swap icon */}
             <button
               onClick={(e) => { e.stopPropagation(); setShowPotsDrawer(true); }}
@@ -661,71 +661,10 @@ export default function HomeScreen() {
             </div>
           )}
           <div style={{ fontSize: '14px', fontWeight: 700, color: COLORS.text, marginTop: motivation ? '2px' : '4px' }}>
-            {stageLabel}
+            Today's Growth
           </div>
           <div style={{ fontSize: '11px', color: COLORS.textSecondary, marginTop: '2px' }}>
-            {plantState.waterPoints} / {PLANT_MAX_POINTS} waters
-          </div>
-          {/* Stage progress bar */}
-          <div style={{ width: '92%', marginTop: '12px' }}>
-            <div style={{
-              display: 'flex',
-              justifyContent: 'space-between',
-              marginBottom: '6px',
-              padding: '0 4px',
-            }}>
-              {PLANT_STAGES.map((s) => {
-                const reached = plantState.waterPoints >= s.minPoints;
-                const isCurrent = plantState.stage === s.stage;
-                const emoji = s.stage === 'seed' ? '🌰'
-                  : s.stage === 'sprout' ? '🌱'
-                  : s.stage === 'sapling' ? '🌿'
-                  : s.stage === 'tree' ? '🌳' : '🌸';
-                const label = s.stage === 'seed' ? 'Seed'
-                  : s.stage === 'sprout' ? 'Sprout'
-                  : s.stage === 'sapling' ? 'Sapling'
-                  : s.stage === 'tree' ? 'Tree' : 'Bloom';
-                return (
-                  <div key={s.stage} style={{
-                    display: 'flex',
-                    flexDirection: 'column',
-                    alignItems: 'center',
-                    gap: '2px',
-                    flex: 1,
-                  }}>
-                    <span style={{
-                      fontSize: isCurrent ? '20px' : '16px',
-                      filter: reached ? 'none' : 'grayscale(1)',
-                      opacity: reached ? 1 : 0.35,
-                      transition: 'all 0.3s ease',
-                    }}>
-                      {emoji}
-                    </span>
-                    <span style={{
-                      fontSize: '9px',
-                      color: isCurrent ? COLORS.accent : reached ? COLORS.textSecondary : COLORS.disabled,
-                      fontWeight: isCurrent ? 700 : 500,
-                    }}>
-                      {label}
-                    </span>
-                  </div>
-                );
-              })}
-            </div>
-            <div style={{
-              height: '6px',
-              backgroundColor: COLORS.border,
-              borderRadius: '3px',
-              overflow: 'hidden',
-            }}>
-              <div style={{
-                width: `${Math.round((plantState.waterPoints / PLANT_MAX_POINTS) * 100)}%`,
-                height: '100%',
-                backgroundColor: COLORS.accent,
-                borderRadius: '3px',
-                transition: 'width 0.4s ease',
-              }} />
-            </div>
+            {dailyLeaves} {dailyLeaves === 1 ? 'break' : 'breaks'} today
           </div>
         </div>
 
@@ -772,15 +711,21 @@ export default function HomeScreen() {
               </button>
               <button
                 onClick={() => {
-                  savePlantState({ waterPoints: 0, stage: 'seed', lastWateredDate: '', lastDecayCheckDate: '' });
+                  savePlantState({ waterPoints: 0, stage: 'seed', lastWateredDate: '', lastDecayCheckDate: '', dailyLeavesGrown: 0, dailyDate: '' });
                 }}
                 style={{ padding: '6px 12px', borderRadius: '8px', border: '1px solid #DC2626', background: '#FFF', fontSize: '11px', cursor: 'pointer', fontWeight: 600, color: '#DC2626' }}
               >
                 Reset
               </button>
+              <button
+                onClick={triggerLeafDrop}
+                style={{ padding: '6px 12px', borderRadius: '8px', border: '1px solid #C47A30', background: '#FFF', fontSize: '11px', cursor: 'pointer', fontWeight: 600, color: '#C47A30' }}
+              >
+                Leaf Drop
+              </button>
             </div>
             <div style={{ fontSize: '10px', color: '#856404', marginTop: '6px' }}>
-              Points: {plantState.waterPoints} | Stage: {plantState.stage} | Last watered: {plantState.lastWateredDate || 'never'}
+              Points: {plantState.waterPoints} | Leaves today: {dailyLeaves} | Last watered: {plantState.lastWateredDate || 'never'}
             </div>
           </div>
         )}

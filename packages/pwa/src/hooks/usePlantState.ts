@@ -1,5 +1,5 @@
 import { useState, useEffect, useCallback } from 'react';
-import { PlantState, loadPlantState, checkDecay, waterPlant, progressInStage } from '@breather/shared';
+import { PlantState, loadPlantState, checkDecay, checkDailyReset, waterPlant, progressInStage } from '@breather/shared';
 
 const STAGE_LABELS: Record<string, string> = {
   seed: 'Seed',
@@ -34,20 +34,25 @@ export function usePlantState() {
   const [plantState, setPlantState] = useState<PlantState>(() => {
     const state = loadPlantState();
     const result = checkDecay(state);
-    return result.state;
+    return checkDailyReset(result.state);
   });
+  const [leafDrop, setLeafDrop] = useState(false);
 
   useEffect(() => {
     const state = loadPlantState();
     const result = checkDecay(state);
-    setPlantState(result.state);
+    const resetState = checkDailyReset(result.state);
+    setPlantState(resetState);
     if (result.decayed && result.pointsLost > 0) {
       sendDecayNotification(result.missedDays, result.pointsLost);
     }
   }, []);
 
   useEffect(() => {
-    const handler = () => setPlantState(loadPlantState());
+    const handler = () => {
+      const loaded = loadPlantState();
+      setPlantState(checkDailyReset(loaded));
+    };
     window.addEventListener('plant-updated', handler);
     return () => window.removeEventListener('plant-updated', handler);
   }, []);
@@ -58,10 +63,20 @@ export function usePlantState() {
     return updated;
   }, []);
 
+  const triggerLeafDrop = useCallback(() => {
+    setLeafDrop(true);
+    setTimeout(() => {
+      setLeafDrop(false);
+    }, 3000);
+  }, []);
+
   return {
     plantState,
     water,
     stageLabel: STAGE_LABELS[plantState.stage] || 'Seed',
     progress: progressInStage(plantState.waterPoints),
+    dailyLeaves: plantState.dailyLeavesGrown,
+    leafDrop,
+    triggerLeafDrop,
   };
 }

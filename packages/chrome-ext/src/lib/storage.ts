@@ -18,7 +18,7 @@ function stageFromPoints(points: number) {
   return 'seed' as const;
 }
 
-const DEFAULT_PLANT: PlantState = { waterPoints: 0, stage: 'seed', lastWateredDate: '', lastDecayCheckDate: '' };
+const DEFAULT_PLANT: PlantState = { waterPoints: 0, stage: 'seed', lastWateredDate: '', lastDecayCheckDate: '', dailyLeavesGrown: 0, dailyDate: '' };
 
 async function get<T>(key: string, fallback: T): Promise<T> {
   const result = await chrome.storage.local.get(key);
@@ -77,12 +77,16 @@ export async function waterPlant(): Promise<PlantState> {
   let state = await loadPlant();
   state = await checkDecay(state);
 
+  const today = getToday();
   const newPoints = Math.min(PLANT_MAX_POINTS, state.waterPoints + 1);
+  const dailyLeavesGrown = (state.dailyDate === today ? state.dailyLeavesGrown : 0) + 1;
   const updated: PlantState = {
     waterPoints: newPoints,
     stage: stageFromPoints(newPoints),
-    lastWateredDate: getToday(),
+    lastWateredDate: today,
     lastDecayCheckDate: state.lastDecayCheckDate,
+    dailyLeavesGrown,
+    dailyDate: today,
   };
   await savePlant(updated);
   return updated;

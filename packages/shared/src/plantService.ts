@@ -6,6 +6,8 @@ const DEFAULT_PLANT: PlantState = {
   stage: 'seed',
   lastWateredDate: '',
   lastDecayCheckDate: '',
+  dailyLeavesGrown: 0,
+  dailyDate: '',
 };
 
 function getToday(): string {
@@ -28,7 +30,10 @@ export function stageFromPoints(points: number): PlantStage {
 export function loadPlantState(): PlantState {
   try {
     const data = localStorage.getItem(STORAGE_KEYS.PLANT);
-    if (data) return JSON.parse(data);
+    if (data) {
+      const parsed = JSON.parse(data);
+      return { ...DEFAULT_PLANT, ...parsed };
+    }
   } catch { /* use default */ }
   return { ...DEFAULT_PLANT };
 }
@@ -71,16 +76,34 @@ export function checkDecay(state: PlantState): DecayResult {
   return { state: updated, decayed: true, missedDays: missed, pointsLost };
 }
 
+export function checkDailyReset(state: PlantState): PlantState {
+  const today = getToday();
+  if (state.dailyDate && state.dailyDate !== today) {
+    const updated = { ...state, dailyLeavesGrown: 0, dailyDate: today };
+    savePlantState(updated);
+    return updated;
+  }
+  if (!state.dailyDate) {
+    return { ...state, dailyDate: today };
+  }
+  return state;
+}
+
 export function waterPlant(): PlantState {
   const loaded = loadPlantState();
-  const { state } = checkDecay(loaded);
+  const { state: decayed } = checkDecay(loaded);
+  const state = checkDailyReset(decayed);
 
   const newPoints = Math.min(PLANT_MAX_POINTS, state.waterPoints + 1);
+  const newLeaves = state.dailyLeavesGrown + 1;
+  const today = getToday();
   const updated: PlantState = {
     waterPoints: newPoints,
     stage: stageFromPoints(newPoints),
-    lastWateredDate: getToday(),
+    lastWateredDate: today,
     lastDecayCheckDate: state.lastDecayCheckDate,
+    dailyLeavesGrown: newLeaves,
+    dailyDate: today,
   };
   savePlantState(updated);
   return updated;
