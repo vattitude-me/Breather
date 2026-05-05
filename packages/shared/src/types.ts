@@ -16,6 +16,7 @@ export interface Reminder {
   snoozeDurationMinutes: number;
   icon: string;
   schedule: Schedule;
+  breakDurationSeconds: number;
 }
 
 export interface AppSettings {
@@ -47,6 +48,25 @@ export interface PlantState {
   stage: PlantStage;
   lastWateredDate: string;
   lastDecayCheckDate: string;
+}
+
+export interface Pot {
+  id: string;
+  name: string;
+  unlockThreshold: number;
+  colors: {
+    body: string;
+    accent: string;
+    rim: string;
+  };
+  pattern?: 'solid' | 'marble' | 'porcelain' | 'stone' | 'mystery';
+}
+
+export interface PotCollectionState {
+  totalBreaksCompleted: number;
+  activePotId: string;
+  unlockedPotIds: string[];
+  lastUnlockCelebrated: string;
 }
 
 export type ReminderAction =

@@ -63,7 +63,7 @@ function checkAndFire() {
     'Your body will thank you!',
     'A small pause goes a long way.',
     'Time to stretch and reset.',
-    'Step away for a moment — you have earned it.',
+    'Step away for a moment - you have earned it.',
     'Quick break? Your plant is thirsty too!',
   ];
 
@@ -184,8 +184,8 @@ self.addEventListener('notificationclick', (event) => {
   const data = event.notification.data || {};
   event.notification.close();
 
-  // Snooze just dismisses — the next scheduled fire will handle it
-  // Any other click (body click, "Done" button) counts as complete → water plant
+  // Snooze just dismisses - the next scheduled fire will handle it
+  // Any other click (body click, "Done" button) routes to the active break screen
   const resolvedAction = action === 'snooze' ? 'snooze' : 'complete';
   notifyClients(data.reminderId || '', resolvedAction);
 
@@ -194,8 +194,12 @@ self.addEventListener('notificationclick', (event) => {
       if (clients.length > 0) {
         clients[0].focus();
       } else {
-        // No open window — open with a flag so the app waters on load
-        self.clients.openWindow('/?action=water');
+        const params = new URLSearchParams({
+          action: 'break',
+          reminderId: data.reminderId || '',
+          title: data.title || '',
+        });
+        self.clients.openWindow(`/?${params.toString()}`);
       }
     })
   );

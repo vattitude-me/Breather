@@ -10,7 +10,9 @@ import {
 } from '@breather/shared';
 import Logo from '../components/Logo';
 import Plant from '../components/Plant';
+import PotsDrawer from '../components/PotsDrawer';
 import { usePlantState } from '../hooks/usePlantState';
+import { usePotCollection } from '../hooks/usePotCollection';
 import '../screens.css';
 
 function getGreeting(): string {
@@ -30,7 +32,7 @@ function getFormattedDate(): string {
   });
 }
 
-function CountdownWidget({ reminders }: { reminders: Reminder[] }) {
+function HeaderCountdown({ reminders }: { reminders: Reminder[] }) {
   const [now, setNow] = useState(Date.now());
 
   useEffect(() => {
@@ -54,49 +56,38 @@ function CountdownWidget({ reminders }: { reminders: Reminder[] }) {
     return earliest;
   }, [reminders, now]);
 
-  // No reminders at all — don't show anything
   if (reminders.length === 0) return null;
 
-  // Paused state: active reminders exist but all are outside schedule
   if (!nextBreak && hasActiveReminders && hasOutsideHours) {
     return (
       <div style={{
-        marginTop: '16px',
-        padding: '16px 20px',
+        display: 'flex',
+        alignItems: 'center',
+        gap: '4px',
+        padding: '4px 10px',
         backgroundColor: COLORS.secondaryLight,
-        borderRadius: '14px',
+        borderRadius: '20px',
         border: `1px solid ${COLORS.border}`,
-        textAlign: 'center',
       }}>
-        <div style={{ fontSize: '20px', marginBottom: '6px' }}>😴</div>
-        <div style={{ fontSize: '13px', fontWeight: 600, color: COLORS.text }}>
-          Breaks paused
-        </div>
-        <div style={{ fontSize: '11px', color: COLORS.textSecondary, marginTop: '4px' }}>
-          Your reminders are outside their scheduled hours. They will resume automatically.
-        </div>
+        <span style={{ fontSize: '11px' }}>😴</span>
+        <span style={{ fontSize: '11px', fontWeight: 600, color: COLORS.textSecondary }}>Paused</span>
       </div>
     );
   }
 
-  // No active reminders
   if (!nextBreak && !hasActiveReminders && reminders.length > 0) {
     return (
       <div style={{
-        marginTop: '16px',
-        padding: '16px 20px',
+        display: 'flex',
+        alignItems: 'center',
+        gap: '4px',
+        padding: '4px 10px',
         backgroundColor: COLORS.cardMint,
-        borderRadius: '14px',
+        borderRadius: '20px',
         border: `1px solid ${COLORS.border}`,
-        textAlign: 'center',
       }}>
-        <div style={{ fontSize: '20px', marginBottom: '6px' }}>⏸️</div>
-        <div style={{ fontSize: '13px', fontWeight: 600, color: COLORS.text }}>
-          All reminders paused
-        </div>
-        <div style={{ fontSize: '11px', color: COLORS.textSecondary, marginTop: '4px' }}>
-          Toggle a reminder on to start getting break alerts.
-        </div>
+        <span style={{ fontSize: '11px' }}>⏸️</span>
+        <span style={{ fontSize: '11px', fontWeight: 600, color: COLORS.textSecondary }}>Off</span>
       </div>
     );
   }
@@ -110,41 +101,27 @@ function CountdownWidget({ reminders }: { reminders: Reminder[] }) {
   const seconds = totalSecs % 60;
 
   const pad = (n: number) => String(n).padStart(2, '0');
-
-  const activeCount = reminders.filter((r) => r.isActive && isWithinSchedule(r.schedule)).length;
+  const timeStr = hours > 0
+    ? `${pad(hours)}:${pad(minutes)}:${pad(seconds)}`
+    : `${pad(minutes)}:${pad(seconds)}`;
 
   return (
     <div style={{
-      marginTop: '16px',
-      padding: '16px',
+      display: 'flex',
+      alignItems: 'center',
+      gap: '5px',
+      padding: '4px 10px',
       backgroundColor: COLORS.primaryLight,
-      borderRadius: '14px',
+      borderRadius: '20px',
       border: `1px solid ${COLORS.border}`,
-      textAlign: 'center',
     }}>
-      <div style={{ fontSize: '11px', fontWeight: 600, color: COLORS.textSecondary, textTransform: 'uppercase', letterSpacing: '0.5px', marginBottom: '8px' }}>
-        Next Break
-      </div>
-      <div style={{ display: 'flex', justifyContent: 'center', alignItems: 'baseline', gap: '2px', marginBottom: '6px' }}>
-        {hours > 0 && (
-          <>
-            <span style={{ fontSize: '28px', fontWeight: 800, color: COLORS.primary, fontVariantNumeric: 'tabular-nums' }}>{pad(hours)}</span>
-            <span style={{ fontSize: '13px', fontWeight: 600, color: COLORS.textSecondary, marginRight: '4px' }}>h</span>
-          </>
-        )}
-        <span style={{ fontSize: '28px', fontWeight: 800, color: COLORS.primary, fontVariantNumeric: 'tabular-nums' }}>{pad(minutes)}</span>
-        <span style={{ fontSize: '13px', fontWeight: 600, color: COLORS.textSecondary, marginRight: '4px' }}>m</span>
-        <span style={{ fontSize: '28px', fontWeight: 800, color: COLORS.primary, fontVariantNumeric: 'tabular-nums' }}>{pad(seconds)}</span>
-        <span style={{ fontSize: '13px', fontWeight: 600, color: COLORS.textSecondary }}>s</span>
-      </div>
-      <div style={{ fontSize: '12px', color: COLORS.textSecondary }}>
-        {nextBreak.reminder.icon} {nextBreak.reminder.title}
-        {activeCount > 1 && (
-          <span style={{ marginLeft: '6px', fontSize: '11px', color: COLORS.disabled }}>
-            +{activeCount - 1} more
-          </span>
-        )}
-      </div>
+      <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke={COLORS.primary} strokeWidth="2.5" strokeLinecap="round">
+        <circle cx="12" cy="12" r="10" />
+        <polyline points="12 6 12 12 16 14" />
+      </svg>
+      <span style={{ fontSize: '12px', fontWeight: 700, color: COLORS.primary, fontVariantNumeric: 'tabular-nums' }}>
+        {timeStr}
+      </span>
     </div>
   );
 }
@@ -153,8 +130,11 @@ export default function HomeScreen() {
   const { reminders, dispatch } = useRemindersContext();
   const navigation = useNavigate();
   const { plantState, stageLabel, progress, water } = usePlantState();
+  const { activePot, nextUnlock, newUnlockId, equip, completeBreak, dismissUnlock, catalog, state: potState } = usePotCollection();
   const [motivation, setMotivation] = useState<{ icon: string; text: string } | null>(null);
   const [isWatering, setIsWatering] = useState(false);
+  const [showPotsDrawer, setShowPotsDrawer] = useState(false);
+  const [showConfetti, setShowConfetti] = useState(false);
   const [devColorIndex, setDevColorIndex] = useState<number | undefined>(undefined);
   const [devMode, setDevMode] = useState(
     () => localStorage.getItem(STORAGE_KEYS.DEV_MODE) === 'true'
@@ -183,6 +163,11 @@ export default function HomeScreen() {
 
   const handleWater = () => {
     water();
+    const unlocked = completeBreak();
+    if (unlocked) {
+      setShowConfetti(true);
+      setTimeout(() => setShowConfetti(false), 3000);
+    }
     showMotivation();
     triggerWatering();
   };
@@ -195,6 +180,14 @@ export default function HomeScreen() {
     window.addEventListener('plant-updated', handler);
     return () => window.removeEventListener('plant-updated', handler);
   }, [showMotivation, triggerWatering]);
+
+  useEffect(() => {
+    if (newUnlockId) {
+      setShowConfetti(true);
+      const t = setTimeout(() => setShowConfetti(false), 3000);
+      return () => clearTimeout(t);
+    }
+  }, [newUnlockId]);
 
   const [notifPermission, setNotifPermission] = useState(
     () => 'Notification' in window ? Notification.permission : 'denied'
@@ -279,6 +272,7 @@ export default function HomeScreen() {
           <Logo />
           <h1>{APP_NAME}</h1>
           <div style={{ marginLeft: 'auto', display: 'flex', gap: '8px', alignItems: 'center' }}>
+            <HeaderCountdown reminders={reminders} />
             {!isInstalled && installPrompt && (
               <button
                 onClick={handleInstall}
@@ -537,7 +531,7 @@ export default function HomeScreen() {
           )}
         </div>
 
-        {/* Virtual Plant */}
+        {/* Virtual Plant Hero Card */}
         <div
           className={isWatering ? 'water-animation' : ''}
           style={{
@@ -551,6 +545,51 @@ export default function HomeScreen() {
             border: `1px solid ${COLORS.border}`,
           }}
         >
+          {/* Confetti burst on unlock */}
+          {showConfetti && (
+            <div className="confetti-container">
+              {Array.from({ length: 24 }).map((_, i) => (
+                <div key={i} className="confetti-piece" style={{ '--i': i } as React.CSSProperties} />
+              ))}
+            </div>
+          )}
+
+          {/* Unlock celebration toast */}
+          {newUnlockId && (
+            <div
+              onClick={dismissUnlock}
+              style={{
+                display: 'flex',
+                alignItems: 'center',
+                gap: '8px',
+                marginBottom: '8px',
+                padding: '8px 14px',
+                backgroundColor: '#ECFDF5',
+                borderRadius: '10px',
+                border: '1px solid #10B981',
+                cursor: 'pointer',
+                animation: 'fadeIn 0.3s ease',
+              }}
+            >
+              <span style={{ fontSize: '16px' }}>🎉</span>
+              <span style={{ fontSize: '12px', fontWeight: 600, color: '#065F46' }}>
+                New pot unlocked: {catalog.find((p) => p.id === newUnlockId)?.name}!
+              </span>
+            </div>
+          )}
+
+          {/* Micro-goal header */}
+          {nextUnlock && !newUnlockId && (
+            <div style={{ display: 'flex', alignItems: 'center', gap: '6px', marginBottom: '8px' }}>
+              <svg width="14" height="14" viewBox="0 0 24 24" fill={COLORS.secondary} stroke="none">
+                <path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z" />
+              </svg>
+              <span style={{ fontSize: '12px', fontWeight: 600, color: COLORS.text }}>
+                Next {nextUnlock.name} in {nextUnlock.breaksAway} break{nextUnlock.breaksAway !== 1 ? 's' : ''}
+              </span>
+            </div>
+          )}
+
           {isWatering && (
             <div className="water-drops">
               {[
@@ -573,7 +612,39 @@ export default function HomeScreen() {
               <div className="water-splash" />
             </div>
           )}
-          <Plant stage={plantState.stage} progress={progress} colorIndex={devColorIndex} />
+
+          {/* Plant + Swap button wrapper */}
+          <div style={{ position: 'relative', cursor: 'pointer' }} onClick={() => setShowPotsDrawer(true)}>
+            <Plant stage={plantState.stage} progress={progress} colorIndex={devColorIndex} pot={activePot} />
+            {/* Swap icon */}
+            <button
+              onClick={(e) => { e.stopPropagation(); setShowPotsDrawer(true); }}
+              style={{
+                position: 'absolute',
+                right: '-16px',
+                top: '50%',
+                transform: 'translateY(-50%)',
+                width: '30px',
+                height: '30px',
+                borderRadius: '15px',
+                border: `1px solid ${COLORS.border}`,
+                backgroundColor: COLORS.surface,
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'center',
+                cursor: 'pointer',
+                boxShadow: '0 2px 6px rgba(0,0,0,0.08)',
+              }}
+            >
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke={COLORS.textSecondary} strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                <polyline points="17 1 21 5 17 9" />
+                <path d="M3 11V9a4 4 0 0 1 4-4h14" />
+                <polyline points="7 23 3 19 7 15" />
+                <path d="M21 13v2a4 4 0 0 1-4 4H3" />
+              </svg>
+            </button>
+          </div>
+
           {motivation && (
             <div style={{
               fontSize: '13px',
@@ -597,7 +668,6 @@ export default function HomeScreen() {
           </div>
           {/* Stage progress bar */}
           <div style={{ width: '92%', marginTop: '12px' }}>
-            {/* Stage icons above the bar */}
             <div style={{
               display: 'flex',
               justifyContent: 'space-between',
@@ -642,7 +712,6 @@ export default function HomeScreen() {
                 );
               })}
             </div>
-            {/* Bar */}
             <div style={{
               height: '6px',
               backgroundColor: COLORS.border,
@@ -659,6 +728,14 @@ export default function HomeScreen() {
             </div>
           </div>
         </div>
+
+        {/* Pots Collection Drawer */}
+        <PotsDrawer
+          isOpen={showPotsDrawer}
+          onClose={() => setShowPotsDrawer(false)}
+          onEquip={equip}
+          state={potState}
+        />
 
         {/* Dev-only plant testing panel */}
         {devMode && (
@@ -708,10 +785,8 @@ export default function HomeScreen() {
           </div>
         )}
 
-        {/* Next Break Countdown */}
-        <CountdownWidget reminders={reminders} />
 
-        {/* Tip of the Day — pushed to bottom */}
+        {/* Tip of the Day - pushed to bottom */}
         <div style={{
           marginTop: 'auto',
           backgroundColor: COLORS.accentLight,
@@ -771,9 +846,11 @@ export default function HomeScreen() {
         </button>
         <button className="bottom-nav-item" onClick={() => navigation('/progress')}>
           <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-            <line x1="18" y1="20" x2="18" y2="10" />
-            <line x1="12" y1="20" x2="12" y2="4" />
-            <line x1="6" y1="20" x2="6" y2="14" />
+            <path d="M7 17l-2 4h14l-2-4" />
+            <path d="M12 13V8" />
+            <path d="M8 10c0-2.2 1.8-4 4-4s4 1.8 4 4" />
+            <path d="M9 12c-1.5-1-2-3-1-4.5" />
+            <path d="M15 12c1.5-1 2-3 1-4.5" />
           </svg>
           <span>Progress</span>
         </button>

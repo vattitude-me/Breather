@@ -2,6 +2,7 @@ import { useState, useEffect } from 'react';
 import {
   Reminder, DayOfWeek,
   COLORS, PRESET_REMINDERS, DAYS_OF_WEEK, DEFAULT_SCHEDULE, DEFAULT_SETTINGS,
+  DEFAULT_BREAK_DURATION_SECONDS,
 } from '@breather/shared';
 import { loadReminders, saveReminders } from '../../lib/storage';
 import Logo from '../components/Logo';
@@ -54,6 +55,7 @@ export default function AddReminderScreen({ navigate }: Props) {
       title: preset.title, icon: preset.icon, intervalMinutes: preset.defaultInterval,
       isActive: true, snoozeDurationMinutes: 10,
       schedule: { activeDays: [...DEFAULT_SCHEDULE.activeDays], startHour: DEFAULT_SCHEDULE.startHour, endHour: DEFAULT_SCHEDULE.endHour },
+      breakDurationSeconds: DEFAULT_BREAK_DURATION_SECONDS,
     });
   };
 
@@ -67,6 +69,7 @@ export default function AddReminderScreen({ navigate }: Props) {
     createReminder({
       title: title.trim(), icon, intervalMinutes, isActive: true, snoozeDurationMinutes: 10,
       schedule: { activeDays, startHour, endHour },
+      breakDurationSeconds: DEFAULT_BREAK_DURATION_SECONDS,
     });
   };
 

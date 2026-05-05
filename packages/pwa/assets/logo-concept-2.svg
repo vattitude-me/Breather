@@ -1,5 +1,5 @@
 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64">
-  <!-- Concept 2: Diagonal crack/fracture through the B — a clean diagonal split
+  <!-- Concept 2: Diagonal crack/fracture through the B - a clean diagonal split
        with the two pieces pulling apart slightly -->
 
   <!-- Rounded square background -->
@@ -17,7 +17,7 @@
     </clipPath>
   </defs>
 
-  <!-- Top-left piece — shifted up-left slightly -->
+  <!-- Top-left piece - shifted up-left slightly -->
   <g clip-path="url(#top-piece)" transform="translate(-1.5, -1.5)">
     <!-- Full B shape -->
     <path d="M18,8 L18,56 L34,56 C44,56 50,50 50,43 C50,37 46,33 40,32
@@ -27,7 +27,7 @@
           fill="#D4503C"/>
   </g>
 
-  <!-- Bottom-right piece — shifted down-right slightly -->
+  <!-- Bottom-right piece - shifted down-right slightly -->
   <g clip-path="url(#bottom-piece)" transform="translate(1.5, 1.5)">
     <!-- Full B shape (same path) -->
     <path d="M18,8 L18,56 L34,56 C44,56 50,50 50,43 C50,37 46,33 40,32

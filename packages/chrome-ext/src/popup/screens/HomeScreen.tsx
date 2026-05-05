@@ -172,7 +172,7 @@ export default function HomeScreen({ navigate }: Props) {
           {getGreeting()} · {getFormattedDate()}
         </p>
 
-        {/* Virtual Plant — above routines for visibility */}
+        {/* Virtual Plant - above routines for visibility */}
         {plant && (
           <div
             className={isWatering ? 'water-animation' : ''}
@@ -223,7 +223,7 @@ export default function HomeScreen({ navigate }: Props) {
           </div>
         )}
 
-        {/* My Routines — always list layout */}
+        {/* My Routines - always list layout */}
         <div style={{ marginBottom: '20px' }}>
           <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '12px' }}>
             <h2 style={{ fontSize: '16px', fontWeight: 700, color: COLORS.text, margin: 0 }}>My Break Routines</h2>
@@ -300,7 +300,7 @@ export default function HomeScreen({ navigate }: Props) {
           )}
         </div>
 
-        {/* Tip of the Day — pushed to bottom */}
+        {/* Tip of the Day - pushed to bottom */}
         <div style={{
           marginTop: 'auto', backgroundColor: COLORS.accentLight, borderRadius: '12px',
           padding: '14px', borderLeft: `3px solid ${COLORS.accent}`,

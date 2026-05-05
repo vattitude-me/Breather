@@ -4,6 +4,7 @@ import { useNotifications } from './hooks/useNotifications';
 import { initAnalytics } from './services/analytics';
 import './services/installPrompt';
 import HomeScreen from './screens/HomeScreen';
+import ActiveBreakScreen from './screens/ActiveBreakScreen';
 import AddEditReminderScreen from './screens/AddEditReminderScreen';
 import ProgressScreen from './screens/ProgressScreen';
 import SettingsScreen from './screens/SettingsScreen';
@@ -38,6 +39,7 @@ function App() {
       <Routes>
         <Route path="/" element={<Navigate to="/home" replace />} />
         <Route path="/home" element={<HomeScreen />} />
+        <Route path="/active-break" element={<ActiveBreakScreen />} />
         <Route path="/add-reminder" element={<AddEditReminderScreen />} />
         <Route path="/edit-reminder/:reminderId" element={<AddEditReminderScreen />} />
         <Route path="/progress" element={<ProgressScreen />} />

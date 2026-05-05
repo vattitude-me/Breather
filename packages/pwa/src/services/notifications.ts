@@ -135,7 +135,7 @@ const BREAK_PROMPTS = [
   'Your body will thank you!',
   'A small pause goes a long way.',
   'Time to stretch and reset.',
-  'Step away for a moment — you have earned it.',
+  'Step away for a moment - you have earned it.',
   'Quick break? Your plant is thirsty too!',
 ];
 
@@ -145,7 +145,7 @@ function fireNotificationForReminder(reminder: Reminder): void {
 
   const title = `${reminder.icon} Time for a ${reminder.title.toLowerCase()} break`;
   const body = BREAK_PROMPTS[Math.floor(Math.random() * BREAK_PROMPTS.length)];
-  // Stable tag per reminder — deduplicates if both page and SW fire close together
+  // Stable tag per reminder - deduplicates if both page and SW fire close together
   const tag = `breather_${reminder.id}`;
 
   if ('serviceWorker' in navigator && navigator.serviceWorker.controller) {

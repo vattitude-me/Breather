@@ -10,7 +10,7 @@ const BREAK_PROMPTS = [
   'Your body will thank you!',
   'A small pause goes a long way.',
   'Time to stretch and reset.',
-  'Step away for a moment — you have earned it.',
+  'Step away for a moment - you have earned it.',
   'Quick break? Your plant is thirsty too!',
 ];
 

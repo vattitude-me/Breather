@@ -1,47 +1,52 @@
 import { useEffect } from 'react';
+import { useNavigate } from 'react-router-dom';
 import { useRemindersContext } from '../context/RemindersContext';
 import { requestPermissions, resyncAllTimers, scheduleReminder } from '../services/notifications';
-import { waterPlant } from '@breather/shared';
-
-const ALERTS_SENT_KEY = '@breather_alerts_sent';
-const COMPLETED_KEY = '@breather_completed';
+import { DEFAULT_BREAK_DURATION_SECONDS } from '@breather/shared';
 
 export function useNotifications() {
   const { reminders, isLoading } = useRemindersContext();
+  const navigate = useNavigate();
 
   useEffect(() => {
     requestPermissions();
 
     // If opened from a notification click with no client window open
     const params = new URLSearchParams(window.location.search);
-    if (params.get('action') === 'water') {
-      waterPlant();
-      const current = parseInt(localStorage.getItem(COMPLETED_KEY) || '0', 10);
-      localStorage.setItem(COMPLETED_KEY, String(current + 1));
+    if (params.get('action') === 'break') {
+      const reminderId = params.get('reminderId') || '';
+      const title = params.get('title') || '';
       window.history.replaceState({}, '', window.location.pathname);
+      navigate(`/active-break?reminderId=${reminderId}&title=${encodeURIComponent(title)}`);
+      return;
+    }
+    // Legacy support for older ?action=water links
+    if (params.get('action') === 'water') {
+      window.history.replaceState({}, '', window.location.pathname);
+      navigate('/active-break?title=Break');
+      return;
     }
 
     if (!('serviceWorker' in navigator)) return;
     const handler = (event: MessageEvent) => {
       if (event.data?.type === 'NOTIFICATION_ACTION') {
-        const { action } = event.data;
+        const { reminderId, action } = event.data;
         if (action === 'complete') {
-          const current = parseInt(localStorage.getItem(COMPLETED_KEY) || '0', 10);
-          localStorage.setItem(COMPLETED_KEY, String(current + 1));
-          waterPlant();
+          const reminder = reminders.find((r) =>
+            r.id === reminderId || r.notificationId === reminderId || `web_${r.id}` === reminderId
+          );
+          const duration = reminder?.breakDurationSeconds || DEFAULT_BREAK_DURATION_SECONDS;
+          navigate(`/active-break?reminderId=${reminder?.id || reminderId}&title=${encodeURIComponent(reminder?.title || 'Break')}&duration=${duration}`);
         }
-        const alerts = parseInt(localStorage.getItem(ALERTS_SENT_KEY) || '0', 10);
-        localStorage.setItem(ALERTS_SENT_KEY, String(alerts + 1));
       }
     };
     navigator.serviceWorker.addEventListener('message', handler);
     return () => {
       navigator.serviceWorker.removeEventListener('message', handler);
     };
-  }, []);
+  }, [navigate, reminders]);
 
   // Resync timers when the page regains focus or becomes visible
-  // This catches missed notifications from browser throttling background tabs/windows
   useEffect(() => {
     const handleVisibility = () => {
       if (document.visibilityState === 'visible') resyncAllTimers();

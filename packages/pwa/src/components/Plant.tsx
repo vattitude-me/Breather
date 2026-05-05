@@ -1,13 +1,14 @@
-import { PlantStage, COLORS, PLANT_DAILY_COLORS } from '@breather/shared';
+import { PlantStage, COLORS, PLANT_DAILY_COLORS, Pot } from '@breather/shared';
 
 interface PlantProps {
   stage: PlantStage;
   progress: number;
   colorIndex?: number;
+  pot?: Pot;
 }
 
-const POT_COLOR = '#C47A30';
-const POT_LIGHT = '#D4894A';
+const DEFAULT_POT_COLOR = '#C47A30';
+const DEFAULT_POT_LIGHT = '#D4894A';
 const SOIL_COLOR = '#5C3D2E';
 
 function getDailyColors() {
@@ -15,18 +16,55 @@ function getDailyColors() {
   return PLANT_DAILY_COLORS[dayOfYear % PLANT_DAILY_COLORS.length];
 }
 
-export default function Plant({ stage, progress, colorIndex }: PlantProps) {
+export default function Plant({ stage, progress, colorIndex, pot }: PlantProps) {
   const colors = colorIndex !== undefined
     ? PLANT_DAILY_COLORS[colorIndex % PLANT_DAILY_COLORS.length]
     : getDailyColors();
   const scale = 0.85 + (progress / 100) * 0.15;
   const leafOpacity = 0.6 + (progress / 100) * 0.4;
 
+  const potBody = pot ? pot.colors.body : DEFAULT_POT_COLOR;
+  const potRim = pot ? pot.colors.rim : DEFAULT_POT_LIGHT;
+  const potAccent = pot ? pot.colors.accent : DEFAULT_POT_COLOR;
+  const potPattern = pot?.pattern || 'solid';
+
   return (
     <svg width="120" height="140" viewBox="0 0 120 140" xmlns="http://www.w3.org/2000/svg">
+      {/* Pedestal */}
+      <rect x="30" y="131" width="60" height="6" rx="2" fill="#D6CEC8" />
+      <rect x="34" y="134" width="52" height="4" rx="1" fill="#C4BAB2" />
+
       {/* Pot */}
-      <path d="M35,105 L40,130 L80,130 L85,105 Z" fill={POT_COLOR} />
-      <path d="M33,100 L87,100 L87,108 L33,108 Z" rx="2" fill={POT_LIGHT} />
+      <path d="M35,105 L40,130 L80,130 L85,105 Z" fill={potBody} />
+      <path d="M33,100 L87,100 L87,108 L33,108 Z" rx="2" fill={potRim} />
+      {potPattern === 'marble' && (
+        <>
+          <path d="M42,110 Q52,118 46,126" stroke={potAccent} strokeWidth="1.5" fill="none" opacity="0.4" />
+          <path d="M68,108 Q74,116 70,124" stroke={potAccent} strokeWidth="1" fill="none" opacity="0.35" />
+        </>
+      )}
+      {potPattern === 'porcelain' && (
+        <>
+          <circle cx="50" cy="115" r="4" fill="none" stroke={potAccent} strokeWidth="1.2" opacity="0.7" />
+          <circle cx="68" cy="118" r="3.5" fill="none" stroke={potAccent} strokeWidth="1" opacity="0.6" />
+          <path d="M55,122 Q60,126 65,122" stroke={potAccent} strokeWidth="1" fill="none" opacity="0.5" />
+          <circle cx="60" cy="110" r="2" fill="none" stroke={potAccent} strokeWidth="0.8" opacity="0.5" />
+        </>
+      )}
+      {potPattern === 'stone' && (
+        <>
+          <circle cx="45" cy="114" r="2" fill={potAccent} opacity="0.25" />
+          <circle cx="65" cy="120" r="2.5" fill={potAccent} opacity="0.2" />
+          <circle cx="55" cy="125" r="1.5" fill={potAccent} opacity="0.3" />
+        </>
+      )}
+      {potPattern === 'mystery' && (
+        <>
+          <path d="M45,108 L50,112 L45,116 Z" fill={potAccent} opacity="0.4" />
+          <path d="M70,112 L75,116 L70,120 Z" fill={potAccent} opacity="0.3" />
+          <circle cx="60" cy="118" r="3" fill={potAccent} opacity="0.25" />
+        </>
+      )}
       <ellipse cx="60" cy="104" rx="26" ry="4" fill={SOIL_COLOR} />
 
       {stage === 'seed' && (
@@ -79,7 +117,7 @@ export default function Plant({ stage, progress, colorIndex }: PlantProps) {
           <ellipse cx="48" cy="55" rx="16" ry="14" fill={colors.leafDark} opacity="0.6" />
           <ellipse cx="72" cy="52" rx="14" ry="12" fill={colors.leafDark} opacity="0.5" />
           <ellipse cx="60" cy="40" rx="18" ry="13" fill={colors.leaf} opacity="0.8" />
-          {/* Flowers — appear progressively */}
+          {/* Flowers - appear progressively */}
           <circle cx="45" cy="42" r={4 + (progress / 100)} fill={COLORS.primary} opacity={0.7 + (progress / 100) * 0.3} />
           <circle cx="45" cy="42" r="2" fill="#FFF9C4" />
           <circle cx="70" cy="38" r={4 + (progress / 100)} fill={COLORS.primary} opacity={0.7 + (progress / 100) * 0.3} />

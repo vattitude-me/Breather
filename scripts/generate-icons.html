@@ -1,0 +1,39 @@
+<!DOCTYPE html>
+<html>
+<head><title>Generate Breakly Icons</title></head>
+<body>
+<h2>Right-click each icon and "Save image as..." to the icons/ folder</h2>
+<p>Save as: icon16.png, icon48.png, icon128.png</p>
+<div style="display: flex; gap: 20px; align-items: end; margin-top: 20px;">
+  <div>
+    <p>icon16.png</p>
+    <canvas id="c16" width="16" height="16"></canvas>
+  </div>
+  <div>
+    <p>icon48.png</p>
+    <canvas id="c48" width="48" height="48"></canvas>
+  </div>
+  <div>
+    <p>icon128.png</p>
+    <canvas id="c128" width="128" height="128"></canvas>
+  </div>
+</div>
+<script>
+[16, 48, 128].forEach(size => {
+  const canvas = document.getElementById(`c${size}`);
+  const ctx = canvas.getContext('2d');
+  // Background circle
+  ctx.beginPath();
+  ctx.arc(size/2, size/2, size/2, 0, Math.PI*2);
+  ctx.fillStyle = '#E8614D';
+  ctx.fill();
+  // Letter B
+  ctx.fillStyle = '#FFFFFF';
+  ctx.font = `bold ${Math.round(size*0.55)}px Arial`;
+  ctx.textAlign = 'center';
+  ctx.textBaseline = 'middle';
+  ctx.fillText('B', size/2, size/2 + 1);
+});
+</script>
+</body>
+</html>

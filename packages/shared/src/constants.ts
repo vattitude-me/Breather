@@ -20,7 +20,7 @@ export const COLORS = {
 };
 
 export const APP_NAME = 'Breather';
-export const APP_VERSION = '3.5.3';
+export const APP_VERSION = '3.7.0';
 
 export const CATEGORIES = [
   { title: 'Targeted', icon: '🎯', color: '#FCE4EC' },
@@ -42,6 +42,9 @@ export const INTERVAL_PRESETS = [1, 5, 15, 30, 45, 60, 90, 120];
 
 export const SNOOZE_OPTIONS = [5, 10, 15, 30];
 
+export const BREAK_DURATION_OPTIONS = [30, 60, 90, 120, 180, 300];
+export const DEFAULT_BREAK_DURATION_SECONDS = 60;
+
 export const DAYS_OF_WEEK = ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'] as const;
 
 export const DEFAULT_SCHEDULE = {
@@ -56,6 +59,7 @@ export const STORAGE_KEYS = {
   PROGRESS: '@breather_progress',
   PROGRESS_SECTIONS: '@breather_progress_sections',
   PLANT: '@breather_plant',
+  POT_COLLECTION: '@breather_pot_collection',
   DEV_MODE: '@breather_dev_mode',
 };
 
@@ -103,6 +107,16 @@ export const PLANT_MOTIVATIONS = [
   { icon: '🌈', text: 'Colourful progress!' },
   { icon: '⭐', text: 'Star gardener!' },
   { icon: '🐝', text: 'The bees approve!' },
+];
+
+export const POTS_CATALOG = [
+  { id: 'classic-terracotta', name: 'Classic Terracotta', unlockThreshold: 0, colors: { body: '#C47A30', accent: '#D4894A', rim: '#A0622A' }, pattern: 'solid' as const },
+  { id: 'matte-black', name: 'Matte Black', unlockThreshold: 5, colors: { body: '#2C2C2C', accent: '#444444', rim: '#1A1A1A' }, pattern: 'solid' as const },
+  { id: 'rustic-stone', name: 'Rustic Stone', unlockThreshold: 10, colors: { body: '#8B7D6B', accent: '#A69883', rim: '#6B5F50' }, pattern: 'stone' as const },
+  { id: 'stonet-stone', name: 'Stonet Stone', unlockThreshold: 20, colors: { body: '#6B6B6B', accent: '#888888', rim: '#4A4A4A' }, pattern: 'stone' as const },
+  { id: 'marble', name: 'Marble', unlockThreshold: 35, colors: { body: '#E8D5E0', accent: '#C4A0B8', rim: '#D4B8CC' }, pattern: 'marble' as const },
+  { id: 'porcelain', name: 'Porcelain Pot', unlockThreshold: 50, colors: { body: '#F0F4FF', accent: '#1E40AF', rim: '#DBEAFE' }, pattern: 'porcelain' as const },
+  { id: 'mystery', name: 'Mystery Pot', unlockThreshold: 75, colors: { body: '#8B5CF6', accent: '#A78BFA', rim: '#7C3AED' }, pattern: 'mystery' as const },
 ];
 
 export const WELLNESS_TIPS = [

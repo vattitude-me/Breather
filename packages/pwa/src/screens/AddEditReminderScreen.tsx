@@ -3,7 +3,7 @@ import { useNavigate, useParams, useLocation } from 'react-router-dom';
 import { nanoid } from 'nanoid';
 import { useRemindersContext } from '../context/RemindersContext';
 import { scheduleReminder, cancelReminder } from '../services/notifications';
-import { PRESET_REMINDERS, DAYS_OF_WEEK, DEFAULT_SCHEDULE, Reminder, DayOfWeek } from '@breather/shared';
+import { PRESET_REMINDERS, DAYS_OF_WEEK, DEFAULT_SCHEDULE, DEFAULT_BREAK_DURATION_SECONDS, BREAK_DURATION_OPTIONS, Reminder, DayOfWeek } from '@breather/shared';
 import Logo from '../components/Logo';
 import '../screens.css';
 
@@ -43,6 +43,9 @@ export default function AddEditReminderScreen() {
   const [endHour, setEndHour] = useState(
     existingReminder?.schedule?.endHour ?? settings.defaultSchedule?.endHour ?? DEFAULT_SCHEDULE.endHour
   );
+  const [breakDuration, setBreakDuration] = useState(
+    existingReminder?.breakDurationSeconds || DEFAULT_BREAK_DURATION_SECONDS
+  );
   const [errors, setErrors] = useState<{ title?: string; interval?: string; days?: string }>({});
 
   useEffect(() => {
@@ -73,6 +76,7 @@ export default function AddEditReminderScreen() {
       icon: preset.icon,
       createdAt: new Date().toISOString(),
       schedule: settings.defaultSchedule || DEFAULT_SCHEDULE as any,
+      breakDurationSeconds: DEFAULT_BREAK_DURATION_SECONDS,
     };
 
     try {
@@ -120,6 +124,7 @@ export default function AddEditReminderScreen() {
         startHour,
         endHour,
       },
+      breakDurationSeconds: breakDuration,
     };
 
     try {
@@ -365,6 +370,27 @@ export default function AddEditReminderScreen() {
                   </button>
                 ))}
               </div>
+            </div>
+
+            {/* Break Duration */}
+            <div className="settings-card">
+              <div className="settings-card-header">
+                <span className="settings-card-label">Break Duration</span>
+              </div>
+              <div className="chips-row">
+                {BREAK_DURATION_OPTIONS.map((secs) => (
+                  <button
+                    key={secs}
+                    className={`chip ${breakDuration === secs ? 'active' : ''}`}
+                    onClick={() => setBreakDuration(secs)}
+                  >
+                    {secs >= 60 ? `${secs / 60}m` : `${secs}s`}
+                  </button>
+                ))}
+              </div>
+              <p style={{ fontSize: '11px', color: '#5C6370', margin: '8px 0 0', fontWeight: 500 }}>
+                How long your active break timer will run
+              </p>
             </div>
 
             {/* Schedule - Days */}

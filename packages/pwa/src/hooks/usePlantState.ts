@@ -24,7 +24,7 @@ function sendDecayNotification(missedDays: number, pointsLost: number) {
   const dayText = missedDays === 1 ? '1 day' : `${missedDays} days`;
 
   new Notification(`${msg.icon} Your plant needs water!`, {
-    body: `${msg.text}\n${dayText} missed — lost ${pointsLost} water points.`,
+    body: `${msg.text}\n${dayText} missed - lost ${pointsLost} water points.`,
     icon: '/logo192.png',
     tag: 'plant-decay',
   });
