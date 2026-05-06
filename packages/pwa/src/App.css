@@ -586,16 +586,47 @@
 }
 
 /* Reward Overlay */
-.active-break-reward-overlay {
-  position: absolute;
-  inset: 0;
-  z-index: 10;
+/* Break complete screen */
+.active-break-complete {
   display: flex;
   flex-direction: column;
   align-items: center;
   justify-content: center;
-  background: radial-gradient(ellipse at center, rgba(224, 247, 245, 0.95) 0%, rgba(255, 249, 245, 0.98) 70%);
-  animation: rewardFadeIn 0.5s ease;
+  height: 100%;
+  animation: rewardFadeIn 0.4s ease;
+}
+
+.active-break-complete-icon {
+  width: 64px;
+  height: 64px;
+  border-radius: 50%;
+  background: #0E8A7D;
+  color: #fff;
+  font-size: 28px;
+  font-weight: 700;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin-bottom: 16px;
+  animation: checkBounce 0.5s cubic-bezier(0.34, 1.56, 0.64, 1) 0.2s both;
+}
+
+@keyframes checkBounce {
+  0% { transform: scale(0); }
+  100% { transform: scale(1); }
+}
+
+.active-break-complete-title {
+  font-size: 20px;
+  font-weight: 700;
+  color: #1A1A2E;
+  margin: 0 0 6px;
+}
+
+.active-break-complete-subtitle {
+  font-size: 14px;
+  color: #5C6370;
+  margin: 0;
 }
 
 @keyframes rewardFadeIn {
@@ -603,108 +634,53 @@
   to { opacity: 1; }
 }
 
-.active-break-watering-can {
-  animation: wateringCanEnter 1s ease forwards;
-  margin-bottom: -20px;
-  z-index: 3;
-}
-
-@keyframes wateringCanEnter {
-  0% { opacity: 0; transform: translateX(-80px) translateY(-40px) rotate(-20deg); }
-  40% { opacity: 1; transform: translateX(0) translateY(0) rotate(0deg); }
-  60% { transform: translateX(0) translateY(0) rotate(25deg); }
-  100% { transform: translateX(0) translateY(0) rotate(25deg); }
-}
-
-.active-break-water-stream {
-  position: relative;
-  width: 60px;
-  height: 60px;
-  margin-bottom: -30px;
-  z-index: 2;
-}
-
-.active-break-water-drop {
-  position: absolute;
-  width: 6px;
-  height: 6px;
-  border-radius: 50%;
-  background: #0E8A7D;
-  opacity: 0;
-  left: calc(30px + var(--drop-i) * 3px - 12px);
-  animation: rewardWaterDrop 2s ease-in calc(0.8s + var(--drop-i) * 0.15s) infinite;
-}
-
-@keyframes rewardWaterDrop {
-  0% { opacity: 0; transform: translateY(0) scale(1); }
-  20% { opacity: 0.8; }
-  100% { opacity: 0; transform: translateY(70px) scale(0.3); }
-}
-
-.active-break-plant-reward {
-  z-index: 1;
-  animation: plantGrow 1s ease 1.2s both;
-}
-
-@keyframes plantGrow {
-  0% { transform: scale(0.9); }
-  50% { transform: scale(1.08); }
-  100% { transform: scale(1); }
-}
-
-.active-break-sparkles {
+/* ===== Home Watering Overlay ===== */
+.home-water-overlay {
   position: absolute;
   inset: 0;
   pointer-events: none;
-  z-index: 4;
+  z-index: 10;
 }
 
-.active-break-sparkle {
+.home-watering-can {
   position: absolute;
-  width: 8px;
-  height: 8px;
-  top: 50%;
-  left: 50%;
+  top: -10px;
+  right: 10px;
+  z-index: 11;
+  animation: homeWateringCanEnter 1.2s ease forwards;
+}
+
+@keyframes homeWateringCanEnter {
+  0% { opacity: 0; transform: translateX(40px) translateY(-20px) rotate(-15deg); }
+  30% { opacity: 1; transform: translateX(0) translateY(0) rotate(0deg); }
+  50% { transform: translateX(0) translateY(0) rotate(22deg); }
+  80% { transform: translateX(0) translateY(0) rotate(22deg); }
+  100% { opacity: 0; transform: translateX(0) translateY(-10px) rotate(22deg); }
+}
+
+.home-water-stream {
+  position: absolute;
+  top: 30px;
+  right: 30px;
+  width: 40px;
+  height: 80px;
+  z-index: 10;
+}
+
+.home-water-droplet {
+  position: absolute;
+  width: 5px;
+  height: 5px;
   border-radius: 50%;
+  background: #0E8A7D;
   opacity: 0;
-  animation: sparkleOut 2s ease calc(1.5s + var(--sparkle-i) * 0.1s) forwards;
+  left: calc(10px + var(--drop-i) * 4px);
+  animation: homeWaterDrop 1.5s ease-in calc(0.5s + var(--drop-i) * 0.12s) forwards;
 }
 
-.active-break-sparkle:nth-child(3n) { background: #FFD700; }
-.active-break-sparkle:nth-child(3n+1) { background: #0E8A7D; }
-.active-break-sparkle:nth-child(3n+2) { background: #D4503C; }
-
-@keyframes sparkleOut {
-  0% {
-    opacity: 0;
-    transform: translate(0, 0) scale(0);
-  }
-  30% {
-    opacity: 1;
-    transform:
-      translate(
-        calc(cos(calc(var(--sparkle-i) * 30deg)) * 80px),
-        calc(sin(calc(var(--sparkle-i) * 30deg)) * 80px)
-      )
-      scale(1.2);
-  }
-  100% {
-    opacity: 0;
-    transform:
-      translate(
-        calc(cos(calc(var(--sparkle-i) * 30deg)) * 120px),
-        calc(sin(calc(var(--sparkle-i) * 30deg)) * 120px)
-      )
-      scale(0);
-  }
-}
-
-.active-break-reward-text {
-  margin-top: 24px;
-  font-size: 18px;
-  font-weight: 700;
-  color: #0E8A7D;
-  animation: fadeIn 0.5s ease 2s both;
-  z-index: 5;
+@keyframes homeWaterDrop {
+  0% { opacity: 0; transform: translateY(0) scale(1); }
+  15% { opacity: 0.9; }
+  100% { opacity: 0; transform: translateY(90px) scale(0.4); }
 }
 

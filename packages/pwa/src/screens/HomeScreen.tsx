@@ -1,5 +1,5 @@
 import { useState, useEffect, useCallback, useMemo } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, useLocation } from 'react-router-dom';
 import { useRemindersContext } from '../context/RemindersContext';
 import { scheduleReminder, cancelReminder, isWithinSchedule, getNextFireTime } from '../services/notifications';
 import { getInstallPrompt, onInstallPromptChange } from '../services/installPrompt';
@@ -129,10 +129,12 @@ function HeaderCountdown({ reminders }: { reminders: Reminder[] }) {
 export default function HomeScreen() {
   const { reminders, dispatch } = useRemindersContext();
   const navigation = useNavigate();
+  const location = useLocation();
   const { plantState, progress, water, dailyLeaves, leafDrop, triggerLeafDrop } = usePlantState();
   const { activePot, nextUnlock, newUnlockId, equip, completeBreak, dismissUnlock, catalog, state: potState } = usePotCollection();
   const [motivation, setMotivation] = useState<{ icon: string; text: string } | null>(null);
   const [isWatering, setIsWatering] = useState(false);
+  const [showWateringOverlay, setShowWateringOverlay] = useState(false);
   const [showPotsDrawer, setShowPotsDrawer] = useState(false);
   const [showConfetti, setShowConfetti] = useState(false);
   const [devColorIndex, setDevColorIndex] = useState<number | undefined>(undefined);
@@ -160,6 +162,19 @@ export default function HomeScreen() {
     setMotivation(msg);
     setTimeout(() => setMotivation(null), 2000);
   }, []);
+
+  useEffect(() => {
+    const state = location.state as { justCompletedBreak?: boolean } | null;
+    if (state?.justCompletedBreak) {
+      window.history.replaceState({}, '');
+      completeBreak();
+      setShowWateringOverlay(true);
+      showMotivation();
+      setTimeout(() => {
+        setShowWateringOverlay(false);
+      }, 3500);
+    }
+  }, [location.state]);
 
   const handleWater = () => {
     water();
@@ -643,6 +658,26 @@ export default function HomeScreen() {
                 <path d="M21 13v2a4 4 0 0 1-4 4H3" />
               </svg>
             </button>
+
+            {/* Watering can overlay - plays when returning from break */}
+            {showWateringOverlay && (
+              <div className="home-water-overlay">
+                <div className="home-watering-can">
+                  <svg width="56" height="56" viewBox="0 0 80 80" fill="none">
+                    <path d="M20 55 L20 35 Q20 25 30 25 L55 25 Q60 25 60 30 L60 55 Q60 60 55 60 L25 60 Q20 60 20 55Z" fill={COLORS.accent} opacity="0.9" />
+                    <path d="M55 30 L70 20 L72 22 L58 33" fill={COLORS.accent} opacity="0.8" />
+                    <circle cx="72" cy="18" r="2" fill={COLORS.accentLight} />
+                    <circle cx="74" cy="22" r="1.5" fill={COLORS.accentLight} />
+                    <circle cx="70" cy="16" r="1.5" fill={COLORS.accentLight} />
+                  </svg>
+                </div>
+                <div className="home-water-stream">
+                  {Array.from({ length: 6 }).map((_, i) => (
+                    <div key={i} className="home-water-droplet" style={{ '--drop-i': i } as React.CSSProperties} />
+                  ))}
+                </div>
+              </div>
+            )}
           </div>
 
           {motivation && (

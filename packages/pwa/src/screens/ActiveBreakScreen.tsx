@@ -1,21 +1,16 @@
-import { useState, useEffect, useCallback, useRef } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { useNavigate, useSearchParams } from 'react-router-dom';
 import { useRemindersContext } from '../context/RemindersContext';
-import { usePlantState } from '../hooks/usePlantState';
-import { usePotCollection } from '../hooks/usePotCollection';
 import { incrementCompleted } from '../services/notifications';
-import { COLORS, DEFAULT_BREAK_DURATION_SECONDS } from '@breather/shared';
-import Plant from '../components/Plant';
+import { COLORS, DEFAULT_BREAK_DURATION_SECONDS, waterPlant } from '@breather/shared';
 import '../screens.css';
 
-type Phase = 'counting' | 'rewarding' | 'done';
+type Phase = 'counting' | 'complete';
 
 export default function ActiveBreakScreen() {
   const navigate = useNavigate();
   const [searchParams] = useSearchParams();
   const { reminders } = useRemindersContext();
-  const { plantState, progress, water } = usePlantState();
-  const { activePot, completeBreak } = usePotCollection();
 
   const reminderId = searchParams.get('reminderId');
   const titleParam = searchParams.get('title') || 'Break';
@@ -38,7 +33,7 @@ export default function ActiveBreakScreen() {
       setSecondsLeft((prev) => {
         if (prev <= 1) {
           clearInterval(timerRef.current!);
-          setPhase('rewarding');
+          setPhase('complete');
           return 0;
         }
         return prev - 1;
@@ -50,20 +45,16 @@ export default function ActiveBreakScreen() {
     };
   }, [phase, paused]);
 
-  const handleComplete = useCallback(() => {
-    water();
-    completeBreak();
-    incrementCompleted();
-    setPhase('done');
-    setTimeout(() => navigate('/home'), 3500);
-  }, [water, completeBreak, navigate]);
-
   useEffect(() => {
-    if (phase === 'rewarding') {
-      const t = setTimeout(handleComplete, 300);
+    if (phase === 'complete') {
+      waterPlant();
+      incrementCompleted();
+      const t = setTimeout(() => {
+        navigate('/home', { state: { justCompletedBreak: true } });
+      }, 1500);
       return () => clearTimeout(t);
     }
-  }, [phase, handleComplete]);
+  }, [phase, navigate]);
 
   const handleSkip = () => {
     if (timerRef.current) clearInterval(timerRef.current);
@@ -79,32 +70,12 @@ export default function ActiveBreakScreen() {
 
   return (
     <div className="active-break-screen">
-      {/* Reward overlay */}
-      {(phase === 'rewarding' || phase === 'done') && (
-        <div className="active-break-reward-overlay">
-          <div className="active-break-watering-can">
-            <svg width="80" height="80" viewBox="0 0 80 80" fill="none">
-              <path d="M20 55 L20 35 Q20 25 30 25 L55 25 Q60 25 60 30 L60 55 Q60 60 55 60 L25 60 Q20 60 20 55Z" fill={COLORS.accent} opacity="0.9" />
-              <path d="M55 30 L70 20 L72 22 L58 33" fill={COLORS.accent} opacity="0.8" />
-              <circle cx="72" cy="18" r="2" fill={COLORS.accentLight} />
-              <circle cx="74" cy="22" r="1.5" fill={COLORS.accentLight} />
-              <circle cx="70" cy="16" r="1.5" fill={COLORS.accentLight} />
-            </svg>
-          </div>
-          <div className="active-break-water-stream">
-            {Array.from({ length: 8 }).map((_, i) => (
-              <div key={i} className="active-break-water-drop" style={{ '--drop-i': i } as React.CSSProperties} />
-            ))}
-          </div>
-          <div className="active-break-plant-reward">
-            <Plant stage={plantState.stage} progress={progress} pot={activePot} />
-          </div>
-          <div className="active-break-sparkles">
-            {Array.from({ length: 12 }).map((_, i) => (
-              <div key={i} className="active-break-sparkle" style={{ '--sparkle-i': i } as React.CSSProperties} />
-            ))}
-          </div>
-          <p className="active-break-reward-text">Great job! Your plant is happy!</p>
+      {/* Break complete message */}
+      {phase === 'complete' && (
+        <div className="active-break-complete">
+          <span className="active-break-complete-icon">✓</span>
+          <h2 className="active-break-complete-title">Break Complete!</h2>
+          <p className="active-break-complete-subtitle">Heading back to your plant...</p>
         </div>
       )}
 
@@ -118,7 +89,6 @@ export default function ActiveBreakScreen() {
           </div>
 
           <div className="active-break-timer-container">
-            {/* Circular progress ring */}
             <svg className="active-break-ring" viewBox="0 0 200 200">
               <circle cx="100" cy="100" r="88" fill="none" stroke={COLORS.border} strokeWidth="6" />
               <circle
@@ -136,7 +106,6 @@ export default function ActiveBreakScreen() {
               <span className="active-break-time">{timeDisplay}</span>
               <span className="active-break-time-label">{paused ? 'Paused' : 'remaining'}</span>
             </div>
-            {/* Breathing pulse */}
             <div className="active-break-pulse" />
           </div>
 
