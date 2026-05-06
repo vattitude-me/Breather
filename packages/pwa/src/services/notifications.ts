@@ -1,4 +1,4 @@
-import { Reminder, DayOfWeek, loadProgress, saveProgress, waterPlant } from '@breather/shared';
+import { Reminder, DayOfWeek, loadProgress, saveProgress } from '@breather/shared';
 
 const ALERTS_SENT_KEY = '@breather_alerts_sent';
 const COMPLETED_KEY = '@breather_completed';
@@ -30,7 +30,6 @@ export async function getCompletedCount(): Promise<number> {
 export async function incrementCompleted(): Promise<void> {
   const current = await getCompletedCount();
   localStorage.setItem(COMPLETED_KEY, String(current + 1));
-  waterPlant();
   await updateProgressOnAlert();
 }
 
@@ -164,7 +163,6 @@ function fireNotificationForReminder(reminder: Reminder): void {
     });
   } else {
     new Notification(title, { body, tag, requireInteraction: true, icon: '/pwa-192x192.png' });
-    waterPlant();
   }
   incrementAlertsSent();
 }

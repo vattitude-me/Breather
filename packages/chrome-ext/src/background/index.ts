@@ -106,23 +106,20 @@ chrome.alarms.onAlarm.addListener(async (alarm) => {
     title: `${reminder.icon} Time for a ${reminder.title.toLowerCase()} break`,
     message: body,
     buttons: [
-      { title: '🌱 Done! Water plant' },
-      { title: '💤 Snooze' },
+      { title: '🧘 Take Break' },
     ],
     requireInteraction: true,
   });
 });
 
-chrome.notifications.onButtonClicked.addListener(async (notificationId, buttonIndex) => {
-  if (buttonIndex === 0) {
-    await waterPlant();
-  }
+chrome.notifications.onButtonClicked.addListener(async (notificationId) => {
   chrome.notifications.clear(notificationId);
+  chrome.action.openPopup();
 });
 
 chrome.notifications.onClicked.addListener(async (notificationId) => {
-  await waterPlant();
   chrome.notifications.clear(notificationId);
+  chrome.action.openPopup();
 });
 
 chrome.runtime.onMessage.addListener((message, _sender, sendResponse) => {
