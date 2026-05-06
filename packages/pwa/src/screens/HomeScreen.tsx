@@ -312,6 +312,163 @@ export default function HomeScreen() {
           {getGreeting()} · {getFormattedDate()}
         </p>
 
+        {/* Virtual Plant Hero Card */}
+        <div
+          className={isWatering ? 'water-animation' : ''}
+          style={{
+            position: 'relative',
+            display: 'flex',
+            flexDirection: 'column',
+            alignItems: 'center',
+            padding: '16px',
+            backgroundColor: COLORS.surface,
+            borderRadius: '14px',
+            border: `1px solid ${COLORS.border}`,
+          }}
+        >
+          {/* Confetti burst on unlock */}
+          {showConfetti && (
+            <div className="confetti-container">
+              {Array.from({ length: 24 }).map((_, i) => (
+                <div key={i} className="confetti-piece" style={{ '--i': i } as React.CSSProperties} />
+              ))}
+            </div>
+          )}
+
+          {/* Unlock celebration toast */}
+          {newUnlockId && (
+            <div
+              onClick={dismissUnlock}
+              style={{
+                display: 'flex',
+                alignItems: 'center',
+                gap: '8px',
+                marginBottom: '8px',
+                padding: '8px 14px',
+                backgroundColor: '#ECFDF5',
+                borderRadius: '10px',
+                border: '1px solid #10B981',
+                cursor: 'pointer',
+                animation: 'fadeIn 0.3s ease',
+              }}
+            >
+              <span style={{ fontSize: '16px' }}>🎉</span>
+              <span style={{ fontSize: '12px', fontWeight: 600, color: '#065F46' }}>
+                New pot unlocked: {catalog.find((p) => p.id === newUnlockId)?.name}!
+              </span>
+            </div>
+          )}
+
+          {/* Micro-goal header */}
+          {nextUnlock && !newUnlockId && (
+            <div style={{ display: 'flex', alignItems: 'center', gap: '6px', marginBottom: '8px' }}>
+              <svg width="14" height="14" viewBox="0 0 24 24" fill={COLORS.secondary} stroke="none">
+                <path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z" />
+              </svg>
+              <span style={{ fontSize: '12px', fontWeight: 600, color: COLORS.text }}>
+                Next {nextUnlock.name} in {nextUnlock.breaksAway} break{nextUnlock.breaksAway !== 1 ? 's' : ''}
+              </span>
+            </div>
+          )}
+
+          {isWatering && (
+            <div className="water-drops">
+              {[
+                { left: '25%', delay: '0s' },
+                { left: '45%', delay: '0.15s' },
+                { left: '65%', delay: '0.3s' },
+                { left: '35%', delay: '0.1s' },
+                { left: '55%', delay: '0.25s' },
+                { left: '75%', delay: '0.05s' },
+                { left: '20%', delay: '0.2s' },
+              ].map((drop, i) => (
+                <span
+                  key={i}
+                  className="water-drop"
+                  style={{ left: drop.left, top: '5%', animationDelay: drop.delay }}
+                >
+                  💧
+                </span>
+              ))}
+              <div className="water-splash" />
+            </div>
+          )}
+
+          {/* Plant + Swap button wrapper */}
+          <div style={{ position: 'relative', cursor: 'pointer' }} onClick={() => setShowPotsDrawer(true)}>
+            <Plant stage={plantState.stage} progress={progress} colorIndex={devColorIndex} pot={devPotIndex !== undefined ? POTS_CATALOG[devPotIndex] : activePot} dailyLeaves={dailyLeaves} leafDrop={leafDrop} />
+            {/* Swap icon */}
+            <button
+              onClick={(e) => { e.stopPropagation(); setShowPotsDrawer(true); }}
+              style={{
+                position: 'absolute',
+                right: '-16px',
+                top: '50%',
+                transform: 'translateY(-50%)',
+                width: '30px',
+                height: '30px',
+                borderRadius: '15px',
+                border: `1px solid ${COLORS.border}`,
+                backgroundColor: COLORS.surface,
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'center',
+                cursor: 'pointer',
+                boxShadow: '0 2px 6px rgba(0,0,0,0.08)',
+              }}
+            >
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke={COLORS.textSecondary} strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                <polyline points="17 1 21 5 17 9" />
+                <path d="M3 11V9a4 4 0 0 1 4-4h14" />
+                <polyline points="7 23 3 19 7 15" />
+                <path d="M21 13v2a4 4 0 0 1-4 4H3" />
+              </svg>
+            </button>
+
+            {/* Watering can overlay - plays when returning from break */}
+            {showWateringOverlay && (
+              <div className="home-water-overlay">
+                <div className="home-watering-can">
+                  <svg width="56" height="56" viewBox="0 0 80 80" fill="none">
+                    <path d="M20 55 L20 35 Q20 25 30 25 L55 25 Q60 25 60 30 L60 55 Q60 60 55 60 L25 60 Q20 60 20 55Z" fill={COLORS.accent} opacity="0.9" />
+                    <path d="M55 30 L70 20 L72 22 L58 33" fill={COLORS.accent} opacity="0.8" />
+                    <circle cx="72" cy="18" r="2" fill={COLORS.accentLight} />
+                    <circle cx="74" cy="22" r="1.5" fill={COLORS.accentLight} />
+                    <circle cx="70" cy="16" r="1.5" fill={COLORS.accentLight} />
+                  </svg>
+                </div>
+                <div className="home-water-stream">
+                  {Array.from({ length: 6 }).map((_, i) => (
+                    <div key={i} className="home-water-droplet" style={{ '--drop-i': i } as React.CSSProperties} />
+                  ))}
+                </div>
+              </div>
+            )}
+          </div>
+
+          {motivation && (
+            <div style={{
+              fontSize: '13px',
+              fontWeight: 600,
+              color: COLORS.accent,
+              marginTop: '6px',
+              display: 'flex',
+              alignItems: 'center',
+              gap: '4px',
+              animation: 'fadeIn 0.3s ease',
+            }}>
+              <span style={{ fontSize: '16px' }}>{motivation.icon}</span>
+              {motivation.text}
+            </div>
+          )}
+          <div style={{ fontSize: '14px', fontWeight: 700, color: COLORS.text, marginTop: motivation ? '2px' : '4px' }}>
+            Today's Growth
+          </div>
+          <div style={{ fontSize: '11px', color: COLORS.textSecondary, marginTop: '2px' }}>
+            {dailyLeaves} {dailyLeaves === 1 ? 'break' : 'breaks'} today
+          </div>
+        </div>
+
         {/* My Routines */}
         <div style={{ marginBottom: '20px' }}>
           <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '12px' }}>
@@ -545,163 +702,6 @@ export default function HomeScreen() {
               })}
             </div>
           )}
-        </div>
-
-        {/* Virtual Plant Hero Card */}
-        <div
-          className={isWatering ? 'water-animation' : ''}
-          style={{
-            position: 'relative',
-            display: 'flex',
-            flexDirection: 'column',
-            alignItems: 'center',
-            padding: '16px',
-            backgroundColor: COLORS.surface,
-            borderRadius: '14px',
-            border: `1px solid ${COLORS.border}`,
-          }}
-        >
-          {/* Confetti burst on unlock */}
-          {showConfetti && (
-            <div className="confetti-container">
-              {Array.from({ length: 24 }).map((_, i) => (
-                <div key={i} className="confetti-piece" style={{ '--i': i } as React.CSSProperties} />
-              ))}
-            </div>
-          )}
-
-          {/* Unlock celebration toast */}
-          {newUnlockId && (
-            <div
-              onClick={dismissUnlock}
-              style={{
-                display: 'flex',
-                alignItems: 'center',
-                gap: '8px',
-                marginBottom: '8px',
-                padding: '8px 14px',
-                backgroundColor: '#ECFDF5',
-                borderRadius: '10px',
-                border: '1px solid #10B981',
-                cursor: 'pointer',
-                animation: 'fadeIn 0.3s ease',
-              }}
-            >
-              <span style={{ fontSize: '16px' }}>🎉</span>
-              <span style={{ fontSize: '12px', fontWeight: 600, color: '#065F46' }}>
-                New pot unlocked: {catalog.find((p) => p.id === newUnlockId)?.name}!
-              </span>
-            </div>
-          )}
-
-          {/* Micro-goal header */}
-          {nextUnlock && !newUnlockId && (
-            <div style={{ display: 'flex', alignItems: 'center', gap: '6px', marginBottom: '8px' }}>
-              <svg width="14" height="14" viewBox="0 0 24 24" fill={COLORS.secondary} stroke="none">
-                <path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z" />
-              </svg>
-              <span style={{ fontSize: '12px', fontWeight: 600, color: COLORS.text }}>
-                Next {nextUnlock.name} in {nextUnlock.breaksAway} break{nextUnlock.breaksAway !== 1 ? 's' : ''}
-              </span>
-            </div>
-          )}
-
-          {isWatering && (
-            <div className="water-drops">
-              {[
-                { left: '25%', delay: '0s' },
-                { left: '45%', delay: '0.15s' },
-                { left: '65%', delay: '0.3s' },
-                { left: '35%', delay: '0.1s' },
-                { left: '55%', delay: '0.25s' },
-                { left: '75%', delay: '0.05s' },
-                { left: '20%', delay: '0.2s' },
-              ].map((drop, i) => (
-                <span
-                  key={i}
-                  className="water-drop"
-                  style={{ left: drop.left, top: '5%', animationDelay: drop.delay }}
-                >
-                  💧
-                </span>
-              ))}
-              <div className="water-splash" />
-            </div>
-          )}
-
-          {/* Plant + Swap button wrapper */}
-          <div style={{ position: 'relative', cursor: 'pointer' }} onClick={() => setShowPotsDrawer(true)}>
-            <Plant stage={plantState.stage} progress={progress} colorIndex={devColorIndex} pot={devPotIndex !== undefined ? POTS_CATALOG[devPotIndex] : activePot} dailyLeaves={dailyLeaves} leafDrop={leafDrop} />
-            {/* Swap icon */}
-            <button
-              onClick={(e) => { e.stopPropagation(); setShowPotsDrawer(true); }}
-              style={{
-                position: 'absolute',
-                right: '-16px',
-                top: '50%',
-                transform: 'translateY(-50%)',
-                width: '30px',
-                height: '30px',
-                borderRadius: '15px',
-                border: `1px solid ${COLORS.border}`,
-                backgroundColor: COLORS.surface,
-                display: 'flex',
-                alignItems: 'center',
-                justifyContent: 'center',
-                cursor: 'pointer',
-                boxShadow: '0 2px 6px rgba(0,0,0,0.08)',
-              }}
-            >
-              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke={COLORS.textSecondary} strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-                <polyline points="17 1 21 5 17 9" />
-                <path d="M3 11V9a4 4 0 0 1 4-4h14" />
-                <polyline points="7 23 3 19 7 15" />
-                <path d="M21 13v2a4 4 0 0 1-4 4H3" />
-              </svg>
-            </button>
-
-            {/* Watering can overlay - plays when returning from break */}
-            {showWateringOverlay && (
-              <div className="home-water-overlay">
-                <div className="home-watering-can">
-                  <svg width="56" height="56" viewBox="0 0 80 80" fill="none">
-                    <path d="M20 55 L20 35 Q20 25 30 25 L55 25 Q60 25 60 30 L60 55 Q60 60 55 60 L25 60 Q20 60 20 55Z" fill={COLORS.accent} opacity="0.9" />
-                    <path d="M55 30 L70 20 L72 22 L58 33" fill={COLORS.accent} opacity="0.8" />
-                    <circle cx="72" cy="18" r="2" fill={COLORS.accentLight} />
-                    <circle cx="74" cy="22" r="1.5" fill={COLORS.accentLight} />
-                    <circle cx="70" cy="16" r="1.5" fill={COLORS.accentLight} />
-                  </svg>
-                </div>
-                <div className="home-water-stream">
-                  {Array.from({ length: 6 }).map((_, i) => (
-                    <div key={i} className="home-water-droplet" style={{ '--drop-i': i } as React.CSSProperties} />
-                  ))}
-                </div>
-              </div>
-            )}
-          </div>
-
-          {motivation && (
-            <div style={{
-              fontSize: '13px',
-              fontWeight: 600,
-              color: COLORS.accent,
-              marginTop: '6px',
-              display: 'flex',
-              alignItems: 'center',
-              gap: '4px',
-              animation: 'fadeIn 0.3s ease',
-            }}>
-              <span style={{ fontSize: '16px' }}>{motivation.icon}</span>
-              {motivation.text}
-            </div>
-          )}
-          <div style={{ fontSize: '14px', fontWeight: 700, color: COLORS.text, marginTop: motivation ? '2px' : '4px' }}>
-            Today's Growth
-          </div>
-          <div style={{ fontSize: '11px', color: COLORS.textSecondary, marginTop: '2px' }}>
-            {dailyLeaves} {dailyLeaves === 1 ? 'break' : 'breaks'} today
-          </div>
         </div>
 
         {/* Pots Collection Drawer */}
