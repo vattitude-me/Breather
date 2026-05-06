@@ -56,6 +56,7 @@ export interface Pot {
   id: string;
   name: string;
   unlockThreshold: number;
+  image: string;
   colors: {
     body: string;
     accent: string;

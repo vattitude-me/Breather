@@ -271,76 +271,134 @@
   animation: waterGlow 1.2s ease-out;
 }
 
+/* ===== Plant Container Layout ===== */
+
+.plant-container {
+  position: relative;
+  width: 180px;
+  height: 260px;
+  margin: 0 auto;
+}
+
+.plant-stem-layer {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  z-index: 1;
+  pointer-events: none;
+}
+
+.plant-leaves-layer {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  z-index: 3;
+  pointer-events: none;
+}
+
+.plant-pot-layer {
+  position: absolute;
+  bottom: 0;
+  left: 50%;
+  transform: translateX(-50%);
+  z-index: 2;
+  width: 130px;
+  height: 130px;
+}
+
+.plant-pot-layer.with-pedestal {
+  width: 150px;
+  height: 150px;
+}
+
+.plant-pot-img {
+  width: 100%;
+  height: 100%;
+  object-fit: contain;
+}
+
+.plant-seed {
+  position: absolute;
+  bottom: 110px;
+  left: 50%;
+  transform: translateX(-50%);
+  z-index: 4;
+}
+
 /* ===== Daily Plant Animations ===== */
 
-/* Idle sway - gentle wind breathing */
 .plant-idle-sway {
   animation: plantSway 4.5s ease-in-out infinite;
-  transform-origin: 60px 120px;
+  transform-origin: center bottom;
 }
 
 @keyframes plantSway {
   0%, 100% { transform: rotate(0deg); }
-  25% { transform: rotate(-1.5deg); }
-  75% { transform: rotate(1.5deg); }
+  25% { transform: rotate(-1deg); }
+  75% { transform: rotate(1deg); }
 }
 
-/* Leaf visibility and sprout animation */
-.plant-leaf {
+/* Leaf image animations */
+.plant-leaf-img {
+  position: absolute;
+  width: 40px;
+  height: auto;
   opacity: 0;
-  transform: scale(0);
+  transform-origin: right center;
   transition: opacity 0.4s ease, transform 0.4s ease;
+  pointer-events: none;
 }
 
-.plant-leaf.visible {
+.plant-leaf-img.visible {
   opacity: 1;
-  transform: scale(1);
-  animation: leafWiggle 3s ease-in-out calc(var(--leaf-i) * 0.4s) infinite;
+  animation: leafWiggle 3.5s ease-in-out calc(var(--leaf-i) * 0.4s) infinite;
 }
 
 @keyframes leafWiggle {
-  0%, 85%, 100% { transform: scale(1) rotate(0deg); }
-  90% { transform: scale(1) rotate(calc(var(--leaf-side) * 2.5deg)); }
-  95% { transform: scale(1) rotate(calc(var(--leaf-side) * -1.5deg)); }
+  0%, 82%, 100% { transform: rotate(var(--base-rot, 0deg)) scale(var(--base-scale, 1)); }
+  88% { transform: rotate(calc(var(--base-rot, 0deg) + var(--leaf-side) * 3deg)) scale(var(--base-scale, 1)); }
+  94% { transform: rotate(calc(var(--base-rot, 0deg) + var(--leaf-side) * -2deg)) scale(var(--base-scale, 1)); }
 }
 
-.plant-leaf.newest {
-  animation: leafSprout 0.6s cubic-bezier(0.34, 1.56, 0.64, 1) forwards;
+.plant-leaf-img.newest {
+  animation: leafImgSprout 0.7s cubic-bezier(0.34, 1.56, 0.64, 1) forwards !important;
 }
 
-@keyframes leafSprout {
-  0% { opacity: 0; transform: scale(0) rotate(-10deg); }
-  60% { opacity: 1; transform: scale(1.15) rotate(3deg); }
-  80% { transform: scale(0.95) rotate(-1deg); }
+@keyframes leafImgSprout {
+  0% { opacity: 0; transform: scale(0) rotate(-15deg); }
+  50% { opacity: 1; transform: scale(1.2) rotate(5deg); }
+  75% { transform: scale(0.9) rotate(-2deg); }
   100% { opacity: 1; transform: scale(1) rotate(0deg); }
 }
 
 /* End-of-day leaf drop */
-.plant-leaf.dropping {
-  animation: leafDrop 1.8s ease-in forwards;
-  animation-delay: calc(var(--leaf-i) * 0.12s);
+.plant-leaf-img.dropping {
+  animation: leafImgDrop 2s ease-in forwards !important;
+  animation-delay: calc(var(--leaf-i) * 0.15s) !important;
 }
 
-@keyframes leafDrop {
+@keyframes leafImgDrop {
   0% {
     opacity: 1;
-    transform: scale(1) translateY(0) rotate(0deg);
-    filter: hue-rotate(0deg);
+    transform: translateY(0) rotate(0deg);
+    filter: hue-rotate(0deg) saturate(1);
   }
   30% {
     opacity: 1;
-    filter: hue-rotate(30deg);
-    transform: scale(1) translateY(5px) rotate(calc(var(--leaf-side) * 8deg));
+    filter: hue-rotate(40deg) saturate(0.8);
+    transform: translateY(8px) rotate(calc(var(--leaf-side) * 10deg));
   }
   60% {
-    opacity: 0.7;
-    filter: hue-rotate(60deg);
-    transform: scale(0.9) translateY(30px) rotate(calc(var(--leaf-side) * -15deg));
+    opacity: 0.6;
+    filter: hue-rotate(70deg) saturate(0.5);
+    transform: translateY(40px) rotate(calc(var(--leaf-side) * -20deg));
   }
   100% {
     opacity: 0;
-    filter: hue-rotate(80deg);
-    transform: scale(0.6) translateY(80px) rotate(calc(var(--leaf-side) * 25deg));
+    filter: hue-rotate(90deg) saturate(0.3);
+    transform: translateY(100px) rotate(calc(var(--leaf-side) * 30deg));
   }
 }
 
