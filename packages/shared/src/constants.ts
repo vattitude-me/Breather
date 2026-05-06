@@ -20,7 +20,7 @@ export const COLORS = {
 };
 
 export const APP_NAME = 'Breather';
-export const APP_VERSION = '3.11.0';
+export const APP_VERSION = '3.11.1';
 
 export const CATEGORIES = [
   { title: 'Targeted', icon: '🎯', color: '#FCE4EC' },
@@ -111,12 +111,12 @@ export const PLANT_MOTIVATIONS = [
 
 export const POTS_CATALOG = [
   { id: 'classic-terracotta', name: 'Classic Terracotta', unlockThreshold: 0, image: '/pots/terracotta.png', colors: { body: '#C47A30', accent: '#D4894A', rim: '#A0622A' }, pattern: 'solid' as const },
-  { id: 'woven-rattan', name: 'Woven Rattan', unlockThreshold: 5, image: '/pots/rattan.png', colors: { body: '#C49A6C', accent: '#A67C52', rim: '#D4AA7C' }, pattern: 'solid' as const },
-  { id: 'hammered-copper', name: 'Hammered Copper', unlockThreshold: 10, image: '/pots/copper.png', colors: { body: '#B87333', accent: '#2E8B7B', rim: '#CD853F' }, pattern: 'solid' as const },
-  { id: 'vintage-galvanized', name: 'Vintage Galvanized', unlockThreshold: 20, image: '/pots/galvanized.png', colors: { body: '#808080', accent: '#696969', rim: '#A9A9A9' }, pattern: 'stone' as const },
-  { id: 'rustic-stone', name: 'Rustic Stone', unlockThreshold: 35, image: '/pots/stone.png', colors: { body: '#6B6B6B', accent: '#888888', rim: '#4A4A4A' }, pattern: 'stone' as const },
-  { id: 'carrara-marble', name: 'Carrara Marble', unlockThreshold: 50, image: '/pots/marble.png', colors: { body: '#E8E8E8', accent: '#9E9E9E', rim: '#F5F5F5' }, pattern: 'marble' as const },
-  { id: 'matte-black-geo', name: 'Matte Black Geo', unlockThreshold: 75, image: '/pots/matte-black.png', colors: { body: '#2C2C2C', accent: '#444444', rim: '#1A1A1A' }, pattern: 'solid' as const },
+  { id: 'woven-rattan', name: 'Woven Rattan', unlockThreshold: 15, image: '/pots/rattan.png', colors: { body: '#C49A6C', accent: '#A67C52', rim: '#D4AA7C' }, pattern: 'solid' as const },
+  { id: 'hammered-copper', name: 'Hammered Copper', unlockThreshold: 50, image: '/pots/copper.png', colors: { body: '#B87333', accent: '#2E8B7B', rim: '#CD853F' }, pattern: 'solid' as const },
+  { id: 'vintage-galvanized', name: 'Vintage Galvanized', unlockThreshold: 120, image: '/pots/galvanized.png', colors: { body: '#808080', accent: '#696969', rim: '#A9A9A9' }, pattern: 'stone' as const },
+  { id: 'rustic-stone', name: 'Rustic Stone', unlockThreshold: 250, image: '/pots/stone.png', colors: { body: '#6B6B6B', accent: '#888888', rim: '#4A4A4A' }, pattern: 'stone' as const },
+  { id: 'carrara-marble', name: 'Carrara Marble', unlockThreshold: 500, image: '/pots/marble.png', colors: { body: '#E8E8E8', accent: '#9E9E9E', rim: '#F5F5F5' }, pattern: 'marble' as const },
+  { id: 'matte-black-geo', name: 'Matte Black Geo', unlockThreshold: 1000, image: '/pots/matte-black.png', colors: { body: '#2C2C2C', accent: '#444444', rim: '#1A1A1A' }, pattern: 'solid' as const },
 ];
 
 export const WELLNESS_TIPS = [
