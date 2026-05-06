@@ -31,7 +31,7 @@ export default function WelcomeModal({ onDismiss }: WelcomeModalProps) {
         textAlign: 'center',
         boxShadow: '0 20px 60px rgba(0, 0, 0, 0.15)',
       }}>
-        <div style={{ fontSize: '36px', marginBottom: '12px' }}>🧘</div>
+        <div style={{ fontSize: '36px', marginBottom: '12px' }}>🌱</div>
         <h2 style={{
           fontSize: '22px',
           fontWeight: 700,
@@ -46,7 +46,7 @@ export default function WelcomeModal({ onDismiss }: WelcomeModalProps) {
           color: COLORS.primary,
           marginBottom: '8px',
         }}>
-          Your workplace break reminder
+          Take breaks. Grow your plant.
         </p>
 
         <p style={{
@@ -55,7 +55,7 @@ export default function WelcomeModal({ onDismiss }: WelcomeModalProps) {
           lineHeight: 1.6,
           marginBottom: '24px',
         }}>
-          Breather reminds you to take regular breaks - stretch, hydrate, walk, and rest your eyes. Set your schedule, and we'll nudge you at the right time. Small breaks, big impact.
+          Set break reminders for stretching, hydrating, and resting your eyes. Every completed break grows a new leaf on your plant and unlocks collectible pots over time. Small breaks, big impact.
         </p>
 
         <button

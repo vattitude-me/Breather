@@ -1,6 +1,6 @@
 # Breather
 
-**A workplace wellness PWA and Chrome extension that keeps you healthy, focused, and productive - with a virtual plant companion that grows when you take breaks.**
+**A workplace wellness PWA and Chrome extension that keeps you healthy, focused, and productive - with a virtual plant that grows a new leaf every time you complete a break.**
 
 ---
 
@@ -28,17 +28,19 @@ It's not another wellness platform that gets ignored. It's a simple tool that do
 - **Countdown timer** - See exactly when your next break is coming, with paused-state awareness
 
 ### Plant Gamification
-- **Virtual plant companion** - Grows from seed to bloom as you complete breaks
-- **5 growth stages** - Seed → Sprout → Sapling → Tree → Bloom, each unlocked by watering
-- **Water your plant** - Complete a break or tap "Done" on a notification to water it
+- **Daily leaf growth** - Each completed break grows a new leaf on your plant
+- **Realistic pot images** - Photorealistic collectible pots (terracotta, rattan, copper, galvanized, stone, marble, matte black)
+- **Progressive unlocks** - Pots unlock over days to months of consistent use (15, 50, 120, 250, 500, 1000 breaks)
+- **Watering animation** - Watering can overlay plays on the home screen when a break timer completes
 - **Daily decay** - Miss a day and your plant loses progress, encouraging consistency
-- **Watering animation** - Satisfying water droplet animation on each completed break
 - **Daily colour rotation** - Your plant changes colour palette each day
-- **Motivational messages** - Random encouragement every time you water
+- **Leaf wiggle** - Subtle idle animation makes the plant feel alive
+- **End-of-day leaf drop** - Leaves fall with autumn colour transition at day reset
+- **Motivational messages** - Random encouragement every time you complete a break
 
 ### Progress Tracking
 - **Daily, weekly, and monthly views** - See your break history over time
-- **Stage milestone visualisation** - Progress bar with stage icons showing your journey
+- **Pots collection drawer** - Browse unlocked and upcoming pots, equip your favourite
 - **Wellness tips** - Rotating evidence-based health tips throughout the day
 
 ### Multi-Platform
@@ -55,7 +57,7 @@ It's not another wellness platform that gets ignored. It's a simple tool that do
 2. **Set the interval** - Choose how often you want to be reminded
 3. **Configure your schedule** - Select active days and working hours
 4. **Get reminded** - Receive a notification when it's time for a break
-5. **Water your plant** - Tap "Done" to mark the break complete and watch your plant grow
+5. **Grow your plant** - Complete the break timer and watch a new leaf sprout on your plant
 
 No onboarding flow, no account creation, no subscription.
 
