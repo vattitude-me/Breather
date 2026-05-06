@@ -295,6 +295,13 @@
 .plant-leaf.visible {
   opacity: 1;
   transform: scale(1);
+  animation: leafWiggle 3s ease-in-out calc(var(--leaf-i) * 0.4s) infinite;
+}
+
+@keyframes leafWiggle {
+  0%, 85%, 100% { transform: scale(1) rotate(0deg); }
+  90% { transform: scale(1) rotate(calc(var(--leaf-side) * 2.5deg)); }
+  95% { transform: scale(1) rotate(calc(var(--leaf-side) * -1.5deg)); }
 }
 
 .plant-leaf.newest {
