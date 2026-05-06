@@ -158,8 +158,7 @@ function fireNotificationForReminder(reminder: Reminder): void {
         badge: '/pwa-192x192.png',
         data: { reminderId: reminder.id, title: reminder.title },
         actions: [
-          { action: 'complete', title: '🌱 Done! Water plant' },
-          { action: 'snooze', title: '💤 Snooze' },
+          { action: 'complete', title: '🧘 Take Break' },
         ],
       } as NotificationOptions);
     });

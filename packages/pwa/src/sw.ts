@@ -79,8 +79,7 @@ function checkAndFire() {
           badge: '/pwa-192x192.png',
           data: { reminderId: id, title: reminder.title },
           actions: [
-            { action: 'complete', title: '🌱 Done! Water plant' },
-            { action: 'snooze', title: '💤 Snooze' },
+            { action: 'complete', title: '🧘 Take Break' },
           ],
         } as unknown as NotificationOptions);
         notifyClients(id, 'alert');
@@ -180,14 +179,10 @@ self.addEventListener('push', (event) => {
 });
 
 self.addEventListener('notificationclick', (event) => {
-  const action = event.action;
   const data = event.notification.data || {};
   event.notification.close();
 
-  // Snooze just dismisses - the next scheduled fire will handle it
-  // Any other click (body click, "Done" button) routes to the active break screen
-  const resolvedAction = action === 'snooze' ? 'snooze' : 'complete';
-  notifyClients(data.reminderId || '', resolvedAction);
+  notifyClients(data.reminderId || '', 'complete');
 
   event.waitUntil(
     self.clients.matchAll({ type: 'window', includeUncontrolled: true }).then((clients) => {
