@@ -13,7 +13,9 @@ clientsClaim();
 precacheAndRoute(self.__WB_MANIFEST);
 cleanupOutdatedCaches();
 
-const navigationRoute = new NavigationRoute(createHandlerBoundToURL('index.html'));
+const navigationRoute = new NavigationRoute(createHandlerBoundToURL('index.html'), {
+  denylist: [/\/pots\//, /\.(png|jpg|svg|ico|webp)$/],
+});
 registerRoute(navigationRoute);
 
 registerRoute(
