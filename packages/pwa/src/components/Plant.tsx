@@ -57,7 +57,7 @@ export default function Plant({ progress, colorIndex, pot, dailyLeaves = 0, leaf
   return (
     <div className="plant-container">
       {/* SVG stem and leaves */}
-      <svg className="plant-svg-layer" viewBox="0 0 120 160" xmlns="http://www.w3.org/2000/svg">
+      <svg className="plant-svg-layer" viewBox="0 0 120 128" xmlns="http://www.w3.org/2000/svg">
         <defs>
           <linearGradient id="stem-grad" x1="0" y1="0" x2="0" y2="1">
             <stop offset="0%" stopColor={colors.stem} stopOpacity="0.85" />
@@ -68,10 +68,10 @@ export default function Plant({ progress, colorIndex, pot, dailyLeaves = 0, leaf
           </filter>
         </defs>
 
-        {/* Soil mound - spans full pot width */}
-        <ellipse cx="60" cy="119" rx="34" ry="6" fill={SOIL_COLOR} />
-        <ellipse cx="54" cy="118" rx="10" ry="2.5" fill="#5D4037" opacity="0.4" />
-        <ellipse cx="68" cy="118.5" rx="6" ry="1.5" fill="#4E342E" opacity="0.3" />
+        {/* Soil mound - matches full pot image width */}
+        <ellipse cx="60" cy="121" rx="56" ry="7" fill={SOIL_COLOR} />
+        <ellipse cx="52" cy="120" rx="14" ry="3" fill="#5D4037" opacity="0.4" />
+        <ellipse cx="70" cy="120.5" rx="8" ry="2" fill="#4E342E" opacity="0.3" />
 
         {/* Main stem */}
         <g className="plant-idle-sway">
