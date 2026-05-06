@@ -59,7 +59,7 @@ export default function Plant({ progress, colorIndex, pot, dailyLeaves = 0, leaf
   const stemHeight = Math.min(95, 30 + visibleLeaves * 5.5);
 
   return (
-    <svg width="120" height="160" viewBox="0 0 120 160" xmlns="http://www.w3.org/2000/svg" className="plant-svg">
+    <svg width="180" height="220" viewBox="0 0 120 160" xmlns="http://www.w3.org/2000/svg" className="plant-svg">
       {/* Pedestal */}
       <rect x="30" y="148" width="60" height="6" rx="2" fill="#D6CEC8" />
       <rect x="34" y="151" width="52" height="4" rx="1" fill="#C4BAB2" />
