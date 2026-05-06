@@ -6,7 +6,7 @@ import { getInstallPrompt, onInstallPromptChange } from '../services/installProm
 import {
   COLORS, APP_NAME, WELLNESS_TIPS, PLANT_MOTIVATIONS, PLANT_DAILY_COLORS,
   Reminder, loadPlantState, savePlantState, stageFromPoints,
-  PLANT_DECAY_PER_DAY, STORAGE_KEYS,
+  PLANT_DECAY_PER_DAY, STORAGE_KEYS, POTS_CATALOG,
 } from '@breather/shared';
 import Logo from '../components/Logo';
 import Plant from '../components/Plant';
@@ -138,6 +138,7 @@ export default function HomeScreen() {
   const [showPotsDrawer, setShowPotsDrawer] = useState(false);
   const [showConfetti, setShowConfetti] = useState(false);
   const [devColorIndex, setDevColorIndex] = useState<number | undefined>(undefined);
+  const [devPotIndex, setDevPotIndex] = useState<number | undefined>(undefined);
   const [devMode, setDevMode] = useState(
     () => localStorage.getItem(STORAGE_KEYS.DEV_MODE) === 'true'
   );
@@ -630,7 +631,7 @@ export default function HomeScreen() {
 
           {/* Plant + Swap button wrapper */}
           <div style={{ position: 'relative', cursor: 'pointer' }} onClick={() => setShowPotsDrawer(true)}>
-            <Plant stage={plantState.stage} progress={progress} colorIndex={devColorIndex} pot={activePot} dailyLeaves={dailyLeaves} leafDrop={leafDrop} />
+            <Plant stage={plantState.stage} progress={progress} colorIndex={devColorIndex} pot={devPotIndex !== undefined ? POTS_CATALOG[devPotIndex] : activePot} dailyLeaves={dailyLeaves} leafDrop={leafDrop} />
             {/* Swap icon */}
             <button
               onClick={(e) => { e.stopPropagation(); setShowPotsDrawer(true); }}
@@ -758,9 +759,15 @@ export default function HomeScreen() {
               >
                 Leaf Drop
               </button>
+              <button
+                onClick={() => setDevPotIndex((prev) => ((prev ?? -1) + 1) % POTS_CATALOG.length)}
+                style={{ padding: '6px 12px', borderRadius: '8px', border: '1px solid #6B21A8', background: '#FFF', fontSize: '11px', cursor: 'pointer', fontWeight: 600, color: '#6B21A8' }}
+              >
+                Next Pot
+              </button>
             </div>
             <div style={{ fontSize: '10px', color: '#856404', marginTop: '6px' }}>
-              Points: {plantState.waterPoints} | Leaves today: {dailyLeaves} | Last watered: {plantState.lastWateredDate || 'never'}
+              Points: {plantState.waterPoints} | Leaves today: {dailyLeaves} | Pot: {devPotIndex !== undefined ? POTS_CATALOG[devPotIndex].name : activePot?.name} | Last watered: {plantState.lastWateredDate || 'never'}
             </div>
           </div>
         )}
