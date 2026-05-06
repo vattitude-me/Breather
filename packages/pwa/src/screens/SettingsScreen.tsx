@@ -1,8 +1,7 @@
-import { useState, useEffect } from 'react';
+import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useRemindersContext } from '../context/RemindersContext';
 import { cancelAllReminders, scheduleReminder } from '../services/notifications';
-import { getInstallPrompt, onInstallPromptChange } from '../services/installPrompt';
 import { hasAnalyticsConsent, setAnalyticsConsent } from '../services/analytics';
 import { COLORS, APP_VERSION, STORAGE_KEYS } from '@breather/shared';
 import Logo from '../components/Logo';
@@ -39,32 +38,10 @@ export default function SettingsScreen() {
   const navigation = useNavigate();
   const [notificationsEnabled, setNotificationsEnabled] = useState(settings.notificationsEnabled);
   const [analyticsEnabled, setAnalyticsEnabled] = useState(hasAnalyticsConsent);
-  const [installPrompt, setInstallPrompt] = useState<any>(getInstallPrompt);
-  const [isInstalled, setIsInstalled] = useState(
-    () => window.matchMedia('(display-mode: standalone)').matches
-  );
   const [tapCount, setTapCount] = useState(0);
   const [devMode, setDevMode] = useState(
     () => localStorage.getItem(STORAGE_KEYS.DEV_MODE) === 'true'
   );
-
-  useEffect(() => {
-    if (isInstalled) return;
-    return onInstallPromptChange((prompt) => {
-      if (prompt) setInstallPrompt(prompt);
-      else setIsInstalled(true);
-    });
-  }, [isInstalled]);
-
-  const handleInstall = async () => {
-    if (!installPrompt) return;
-    installPrompt.prompt();
-    const result = await installPrompt.userChoice;
-    if (result.outcome === 'accepted') {
-      setIsInstalled(true);
-    }
-    setInstallPrompt(null);
-  };
 
   const handleToggleNotifications = async (value: boolean) => {
     setNotificationsEnabled(value);
@@ -138,76 +115,6 @@ export default function SettingsScreen() {
         </div>
 
 
-        {/* Install App */}
-        {!isInstalled && (
-          <div className="settings-card">
-            <div className="settings-card-header">
-              <span className="settings-card-label">Install App</span>
-              <InfoTooltip text="Pin Breather to your taskbar/dock like a native app" />
-            </div>
-            <p style={{ fontSize: '12px', color: COLORS.textSecondary, margin: '0 0 12px' }}>
-              Install Breather to your desktop for quick access - runs in its own window like a native app.
-            </p>
-            {installPrompt ? (
-              <button
-                className="btn"
-                onClick={handleInstall}
-                style={{
-                  fontSize: '14px',
-                  padding: '12px',
-                  backgroundColor: COLORS.primary,
-                  color: '#FFFFFF',
-                  border: 'none',
-                  borderRadius: '10px',
-                  width: '100%',
-                  cursor: 'pointer',
-                  fontWeight: 600,
-                }}
-              >
-                ⬇ Install to Desktop
-              </button>
-            ) : (
-              <div style={{
-                backgroundColor: '#F8F4F2',
-                borderRadius: '10px',
-                padding: '14px',
-              }}>
-                <p style={{ fontSize: '13px', fontWeight: 600, color: COLORS.text, margin: '0 0 8px' }}>
-                  How to install:
-                </p>
-                <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
-                  <div style={{ display: 'flex', alignItems: 'flex-start', gap: '8px' }}>
-                    <span style={{ fontSize: '16px', flexShrink: 0 }}>🌐</span>
-                    <div>
-                      <span style={{ fontSize: '12px', fontWeight: 600, color: COLORS.text }}>Chrome / Edge</span>
-                      <p style={{ fontSize: '11px', color: COLORS.textSecondary, margin: '2px 0 0' }}>
-                        Click the install icon (⊕) in the address bar, or Menu &rarr; "Install Breather"
-                      </p>
-                    </div>
-                  </div>
-                  <div style={{ display: 'flex', alignItems: 'flex-start', gap: '8px' }}>
-                    <span style={{ fontSize: '16px', flexShrink: 0 }}>🍎</span>
-                    <div>
-                      <span style={{ fontSize: '12px', fontWeight: 600, color: COLORS.text }}>Safari (Mac/iOS)</span>
-                      <p style={{ fontSize: '11px', color: COLORS.textSecondary, margin: '2px 0 0' }}>
-                        Tap Share &rarr; "Add to Home Screen"
-                      </p>
-                    </div>
-                  </div>
-                  <div style={{ display: 'flex', alignItems: 'flex-start', gap: '8px' }}>
-                    <span style={{ fontSize: '16px', flexShrink: 0 }}>🦊</span>
-                    <div>
-                      <span style={{ fontSize: '12px', fontWeight: 600, color: COLORS.text }}>Firefox</span>
-                      <p style={{ fontSize: '11px', color: COLORS.textSecondary, margin: '2px 0 0' }}>
-                        Not supported - use Chrome or Edge for install
-                      </p>
-                    </div>
-                  </div>
-                </div>
-              </div>
-            )}
-          </div>
-        )}
 
         {/* Analytics */}
         <div className="settings-card">
