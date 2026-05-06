@@ -6,7 +6,7 @@ import { getInstallPrompt, onInstallPromptChange } from '../services/installProm
 import {
   COLORS, APP_NAME, WELLNESS_TIPS, PLANT_MOTIVATIONS, PLANT_DAILY_COLORS,
   Reminder, loadPlantState, savePlantState, stageFromPoints,
-  PLANT_DECAY_PER_DAY, STORAGE_KEYS, POTS_CATALOG,
+  PLANT_DECAY_PER_DAY, STORAGE_KEYS, POTS_CATALOG, savePotCollection,
 } from '@breather/shared';
 import Logo from '../components/Logo';
 import Plant from '../components/Plant';
@@ -748,10 +748,12 @@ export default function HomeScreen() {
               <button
                 onClick={() => {
                   savePlantState({ waterPoints: 0, stage: 'seed', lastWateredDate: '', lastDecayCheckDate: '', dailyLeavesGrown: 0, dailyDate: '' });
+                  savePotCollection({ totalBreaksCompleted: 0, activePotId: 'classic-terracotta', unlockedPotIds: ['classic-terracotta'], lastUnlockCelebrated: '' });
+                  setDevPotIndex(undefined);
                 }}
                 style={{ padding: '6px 12px', borderRadius: '8px', border: '1px solid #DC2626', background: '#FFF', fontSize: '11px', cursor: 'pointer', fontWeight: 600, color: '#DC2626' }}
               >
-                Reset
+                Reset All
               </button>
               <button
                 onClick={triggerLeafDrop}
