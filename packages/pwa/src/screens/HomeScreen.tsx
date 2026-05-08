@@ -348,18 +348,35 @@ export default function HomeScreen() {
 
         {/* Virtual Plant Hero Card */}
         <div
-          className={isWatering ? 'water-animation' : ''}
+          className={`plant-hero-scene ${isWatering ? 'water-animation' : ''}`}
           style={{
             position: 'relative',
             display: 'flex',
             flexDirection: 'column',
             alignItems: 'center',
             padding: '16px',
-            backgroundColor: COLORS.surface,
             borderRadius: '14px',
             border: `1px solid ${COLORS.border}`,
+            overflow: 'hidden',
           }}
         >
+          {/* Window sill background scene */}
+          <div className="window-scene">
+            <div className="window-sky" />
+            <div className="window-cloud cloud-1" />
+            <div className="window-cloud cloud-2" />
+            <div className="window-cloud cloud-3" />
+            <div className="window-bird bird-1" />
+            <div className="window-bird bird-2" />
+            <div className="window-bird bird-3" />
+            <div className="window-butterfly butterfly-1" />
+            <div className="window-butterfly butterfly-2" />
+            <div className="window-curtain curtain-left" />
+            <div className="window-curtain curtain-right" />
+            <div className="window-sill" />
+            <div className="window-sunbeam" />
+          </div>
+
           {/* Confetti burst on unlock */}
           {showConfetti && (
             <div className="confetti-container">

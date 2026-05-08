@@ -283,9 +283,9 @@
 }
 
 .plant-svg-layer {
-  width: 140px;
-  height: 140px;
-  margin-bottom: -12px;
+  width: 150px;
+  height: 150px;
+  margin-bottom: -18px;
   z-index: 2;
   overflow: visible;
   flex-shrink: 0;
@@ -293,8 +293,8 @@
 
 .plant-pot-wrapper {
   position: relative;
-  width: 140px;
-  height: 120px;
+  width: 110px;
+  height: 95px;
   z-index: 1;
   flex-shrink: 0;
 }
@@ -313,10 +313,282 @@
   left: 50%;
   transform: translateX(-50%);
   width: 80%;
-  height: 14px;
+  height: 12px;
   border-radius: 50%;
-  background: radial-gradient(ellipse, rgba(0,0,0,0.3) 0%, rgba(0,0,0,0.1) 50%, transparent 70%);
+  background: radial-gradient(ellipse, rgba(0,0,0,0.25) 0%, rgba(0,0,0,0.08) 50%, transparent 70%);
   z-index: 0;
+}
+
+/* ===== Window Sill Scene ===== */
+
+.plant-hero-scene {
+  background: linear-gradient(180deg, #E8F4FD 0%, #F0F8FF 60%, #FEFEFE 85%);
+}
+
+.window-scene {
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  overflow: hidden;
+  border-radius: 14px;
+}
+
+.window-sky {
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: 60%;
+  background: linear-gradient(180deg, #87CEEB 0%, #B8E4F9 50%, #E8F4FD 100%);
+  opacity: 0.5;
+}
+
+.window-cloud {
+  position: absolute;
+  width: 60px;
+  height: 20px;
+  background: rgba(255, 255, 255, 0.8);
+  border-radius: 20px;
+  animation: cloudDrift linear infinite;
+}
+
+.window-cloud::before,
+.window-cloud::after {
+  content: '';
+  position: absolute;
+  background: rgba(255, 255, 255, 0.8);
+  border-radius: 50%;
+}
+
+.window-cloud::before {
+  width: 25px;
+  height: 25px;
+  top: -10px;
+  left: 10px;
+}
+
+.window-cloud::after {
+  width: 18px;
+  height: 18px;
+  top: -7px;
+  right: 12px;
+}
+
+.cloud-1 {
+  top: 12%;
+  left: -70px;
+  animation-duration: 25s;
+  opacity: 0.6;
+}
+
+.cloud-2 {
+  top: 22%;
+  left: -70px;
+  animation-duration: 35s;
+  animation-delay: -12s;
+  opacity: 0.4;
+  transform: scale(0.7);
+}
+
+.cloud-3 {
+  top: 8%;
+  left: -70px;
+  animation-duration: 30s;
+  animation-delay: -20s;
+  opacity: 0.5;
+  transform: scale(0.85);
+}
+
+@keyframes cloudDrift {
+  from { transform: translateX(0); }
+  to { transform: translateX(calc(100vw + 140px)); }
+}
+
+.window-bird {
+  position: absolute;
+  width: 12px;
+  height: 6px;
+  animation: birdFly linear infinite;
+}
+
+.window-bird::before,
+.window-bird::after {
+  content: '';
+  position: absolute;
+  top: 0;
+  width: 8px;
+  height: 3px;
+  background: #555;
+  border-radius: 3px 3px 0 0;
+  animation: wingFlap 0.35s ease-in-out infinite alternate;
+}
+
+.window-bird::before {
+  left: 0;
+  transform-origin: right center;
+}
+
+.window-bird::after {
+  right: 0;
+  transform-origin: left center;
+  animation-delay: 0.1s;
+}
+
+@keyframes wingFlap {
+  0% { transform: rotate(-20deg); }
+  100% { transform: rotate(20deg); }
+}
+
+.bird-1 {
+  top: 18%;
+  left: -20px;
+  animation-duration: 8s;
+  animation-delay: -2s;
+}
+
+.bird-2 {
+  top: 12%;
+  left: -20px;
+  animation-duration: 10s;
+  animation-delay: -6s;
+  transform: scale(0.7);
+}
+
+.bird-3 {
+  top: 25%;
+  left: -20px;
+  animation-duration: 12s;
+  animation-delay: -4s;
+  transform: scale(0.85);
+}
+
+@keyframes birdFly {
+  0% { transform: translateX(0) translateY(0); }
+  25% { transform: translateX(25vw) translateY(-4px); }
+  50% { transform: translateX(50vw) translateY(2px); }
+  75% { transform: translateX(75vw) translateY(-3px); }
+  100% { transform: translateX(calc(100vw + 30px)) translateY(0); }
+}
+
+.window-butterfly {
+  position: absolute;
+  width: 14px;
+  height: 14px;
+  animation: butterflyFloat 12s ease-in-out infinite;
+}
+
+.window-butterfly::before,
+.window-butterfly::after {
+  content: '';
+  position: absolute;
+  top: 2px;
+  width: 7px;
+  height: 9px;
+  border-radius: 50% 50% 50% 0;
+  animation: butterflyWing 0.4s ease-in-out infinite alternate;
+}
+
+.window-butterfly::before {
+  left: 0;
+  background: rgba(255, 150, 200, 0.7);
+  transform-origin: right center;
+}
+
+.window-butterfly::after {
+  right: 0;
+  background: rgba(200, 130, 255, 0.7);
+  transform-origin: left center;
+  animation-delay: 0.15s;
+}
+
+.butterfly-1 {
+  top: 30%;
+  left: 20%;
+  animation-delay: -3s;
+}
+
+.butterfly-2 {
+  top: 40%;
+  right: 20%;
+  animation-delay: -8s;
+  transform: scale(0.8);
+}
+
+@keyframes butterflyWing {
+  0% { transform: scaleX(1) rotate(-5deg); }
+  100% { transform: scaleX(0.6) rotate(5deg); }
+}
+
+@keyframes butterflyFloat {
+  0%, 100% { transform: translate(0, 0) rotate(0deg); }
+  15% { transform: translate(15px, -10px) rotate(3deg); }
+  30% { transform: translate(5px, -18px) rotate(-2deg); }
+  45% { transform: translate(-10px, -8px) rotate(4deg); }
+  60% { transform: translate(-15px, 5px) rotate(-3deg); }
+  75% { transform: translate(-5px, 12px) rotate(2deg); }
+  90% { transform: translate(10px, 5px) rotate(-1deg); }
+}
+
+.window-curtain {
+  position: absolute;
+  top: 0;
+  width: 28px;
+  height: 75%;
+  opacity: 0.35;
+  z-index: 3;
+}
+
+.curtain-left {
+  left: 0;
+  background: linear-gradient(90deg, #F5E6D3 0%, #F5E6D3 60%, transparent 100%);
+  border-radius: 0 0 8px 14px;
+  animation: curtainSwayLeft 6s ease-in-out infinite;
+  transform-origin: top left;
+}
+
+.curtain-right {
+  right: 0;
+  background: linear-gradient(270deg, #F5E6D3 0%, #F5E6D3 60%, transparent 100%);
+  border-radius: 0 0 14px 8px;
+  animation: curtainSwayRight 6s ease-in-out infinite;
+  transform-origin: top right;
+}
+
+@keyframes curtainSwayLeft {
+  0%, 100% { transform: skewX(0deg); }
+  50% { transform: skewX(1.5deg); }
+}
+
+@keyframes curtainSwayRight {
+  0%, 100% { transform: skewX(0deg); }
+  50% { transform: skewX(-1.5deg); }
+}
+
+.window-sill {
+  position: absolute;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  height: 22px;
+  background: linear-gradient(180deg, #F5EDE3 0%, #E8DDD0 100%);
+  border-top: 1px solid rgba(0, 0, 0, 0.06);
+  z-index: 1;
+}
+
+.window-sunbeam {
+  position: absolute;
+  top: 0;
+  right: 10%;
+  width: 40%;
+  height: 80%;
+  background: linear-gradient(160deg, rgba(255, 248, 220, 0.35) 0%, transparent 70%);
+  pointer-events: none;
+  animation: sunbeamPulse 8s ease-in-out infinite;
+}
+
+@keyframes sunbeamPulse {
+  0%, 100% { opacity: 0.6; }
+  50% { opacity: 0.9; }
 }
 
 /* ===== Daily Plant Animations ===== */
