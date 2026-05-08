@@ -546,104 +546,103 @@ export default function HomeScreen() {
               <span style={{ fontSize: '13px', color: COLORS.textSecondary }}>Set reminders to stretch, move, and rest</span>
             </button>
           ) : (
-            <div style={{ display: 'flex', flexDirection: 'column', gap: '10px' }}>
+            <div style={{ display: 'flex', flexDirection: 'column', gap: '14px' }}>
               {reminders.map((item, index) => {
                 const statusColor = !item.isActive ? COLORS.disabled : isWithinSchedule(item.schedule) ? '#4CAF50' : COLORS.secondary;
                 const statusText = !item.isActive ? 'Paused' : isWithinSchedule(item.schedule) ? 'Active' : 'Outside hours';
 
                 return (
                   <div key={item.id} style={{
-                    display: 'flex',
-                    alignItems: 'center',
-                    gap: '12px',
                     backgroundColor: getCategoryColor(index),
-                    borderRadius: '14px',
-                    padding: '14px 16px',
-                    boxShadow: '0 1px 4px rgba(0,0,0,0.04)',
-                    minHeight: '72px',
+                    borderRadius: '18px',
+                    padding: '18px',
+                    boxShadow: '0 2px 8px rgba(0,0,0,0.06)',
+                    position: 'relative',
                   }}>
-                    <button
-                      onClick={() => navigation(`/edit-reminder/${item.id}`)}
-                      style={{
-                        width: '44px',
-                        height: '44px',
-                        borderRadius: '12px',
-                        backgroundColor: 'rgba(255,255,255,0.7)',
-                        display: 'flex',
-                        alignItems: 'center',
-                        justifyContent: 'center',
-                        border: 'none',
-                        cursor: 'pointer',
-                        flexShrink: 0,
-                      }}
-                    >
-                      <span style={{ fontSize: '20px' }}>{item.icon}</span>
-                    </button>
-                    <button
-                      onClick={() => navigation(`/edit-reminder/${item.id}`)}
-                      style={{ background: 'none', border: 'none', padding: 0, cursor: 'pointer', textAlign: 'left', flex: 1, minWidth: 0 }}
-                    >
-                      <div style={{ fontSize: '14px', fontWeight: 700, color: COLORS.text }}>{item.title}</div>
-                      <div style={{ display: 'flex', alignItems: 'center', gap: '6px', marginTop: '4px' }}>
-                        <span style={{ fontSize: '12px', color: COLORS.textSecondary }}>Every {formatInterval(item.intervalMinutes)}</span>
-                        <div style={{ width: '3px', height: '3px', borderRadius: '50%', backgroundColor: COLORS.disabled }} />
-                        <div style={{ display: 'flex', alignItems: 'center', gap: '4px' }}>
-                          <div style={{ width: '6px', height: '6px', borderRadius: '3px', backgroundColor: statusColor }} />
-                          <span style={{ fontSize: '11px', color: statusColor === '#4CAF50' ? '#4CAF50' : COLORS.textSecondary, fontWeight: 500 }}>{statusText}</span>
-                        </div>
-                      </div>
-                      <div style={{ fontSize: '10px', color: COLORS.textSecondary, marginTop: '3px', opacity: 0.8 }}>
-                        {formatScheduleInfo(item.schedule)}
-                      </div>
-                    </button>
-                    <div style={{ display: 'flex', alignItems: 'center', gap: '8px', flexShrink: 0 }}>
+                    <div style={{ display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between', marginBottom: '12px' }}>
                       <button
-                        onClick={() => handleDelete(item)}
+                        onClick={() => navigation(`/edit-reminder/${item.id}`)}
                         style={{
-                          width: '32px',
-                          height: '32px',
-                          borderRadius: '10px',
-                          backgroundColor: 'rgba(239, 68, 68, 0.08)',
+                          width: '48px',
+                          height: '48px',
+                          borderRadius: '14px',
+                          backgroundColor: 'rgba(255,255,255,0.75)',
                           display: 'flex',
                           alignItems: 'center',
                           justifyContent: 'center',
                           border: 'none',
                           cursor: 'pointer',
+                          flexShrink: 0,
                         }}
                       >
-                        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke={COLORS.danger} strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-                          <polyline points="3 6 5 6 21 6" />
-                          <path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2" />
-                        </svg>
+                        <span style={{ fontSize: '24px' }}>{item.icon}</span>
                       </button>
-                      <label style={{ position: 'relative', display: 'inline-block', width: '46px', height: '28px' }}>
-                        <input
-                          type="checkbox"
-                          checked={item.isActive}
-                          onChange={() => handleToggle(item)}
-                          style={{ opacity: 0, width: 0, height: 0 }}
-                        />
-                        <span style={{
-                          position: 'absolute',
-                          cursor: 'pointer',
-                          inset: 0,
-                          backgroundColor: item.isActive ? COLORS.primary : COLORS.disabled,
-                          borderRadius: '28px',
-                          transition: '0.3s',
-                        }}>
+                      <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                        <button
+                          onClick={() => handleDelete(item)}
+                          style={{
+                            width: '32px',
+                            height: '32px',
+                            borderRadius: '10px',
+                            backgroundColor: 'rgba(239, 68, 68, 0.08)',
+                            display: 'flex',
+                            alignItems: 'center',
+                            justifyContent: 'center',
+                            border: 'none',
+                            cursor: 'pointer',
+                          }}
+                        >
+                          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke={COLORS.danger} strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                            <polyline points="3 6 5 6 21 6" />
+                            <path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2" />
+                          </svg>
+                        </button>
+                        <label style={{ position: 'relative', display: 'inline-block', width: '46px', height: '28px' }}>
+                          <input
+                            type="checkbox"
+                            checked={item.isActive}
+                            onChange={() => handleToggle(item)}
+                            style={{ opacity: 0, width: 0, height: 0 }}
+                          />
                           <span style={{
                             position: 'absolute',
-                            left: item.isActive ? '21px' : '3px',
-                            top: '3px',
-                            width: '22px',
-                            height: '22px',
-                            backgroundColor: '#FFFFFF',
-                            borderRadius: '50%',
+                            cursor: 'pointer',
+                            inset: 0,
+                            backgroundColor: item.isActive ? COLORS.primary : COLORS.disabled,
+                            borderRadius: '28px',
                             transition: '0.3s',
-                          }} />
-                        </span>
-                      </label>
+                          }}>
+                            <span style={{
+                              position: 'absolute',
+                              left: item.isActive ? '21px' : '3px',
+                              top: '3px',
+                              width: '22px',
+                              height: '22px',
+                              backgroundColor: '#FFFFFF',
+                              borderRadius: '50%',
+                              transition: '0.3s',
+                            }} />
+                          </span>
+                        </label>
+                      </div>
                     </div>
+                    <button
+                      onClick={() => navigation(`/edit-reminder/${item.id}`)}
+                      style={{ background: 'none', border: 'none', padding: 0, cursor: 'pointer', textAlign: 'left', width: '100%' }}
+                    >
+                      <div style={{ fontSize: '16px', fontWeight: 700, color: COLORS.text, marginBottom: '6px' }}>{item.title}</div>
+                      <div style={{ display: 'flex', alignItems: 'center', gap: '8px', marginBottom: '4px' }}>
+                        <span style={{ fontSize: '13px', color: COLORS.textSecondary }}>Every {formatInterval(item.intervalMinutes)}</span>
+                        <div style={{ width: '4px', height: '4px', borderRadius: '50%', backgroundColor: COLORS.disabled }} />
+                        <div style={{ display: 'flex', alignItems: 'center', gap: '4px' }}>
+                          <div style={{ width: '7px', height: '7px', borderRadius: '50%', backgroundColor: statusColor }} />
+                          <span style={{ fontSize: '12px', color: statusColor === '#4CAF50' ? '#4CAF50' : COLORS.textSecondary, fontWeight: 500 }}>{statusText}</span>
+                        </div>
+                      </div>
+                      <div style={{ fontSize: '11px', color: COLORS.textSecondary, opacity: 0.8 }}>
+                        {formatScheduleInfo(item.schedule)}
+                      </div>
+                    </button>
                   </div>
                 );
               })}
