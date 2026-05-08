@@ -258,7 +258,7 @@ export default function HomeScreen({ navigate }: Props) {
                     backgroundColor: CARD_COLORS[index % CARD_COLORS.length],
                     borderRadius: '14px', padding: '11px',
                     boxShadow: '0 2px 8px rgba(0,0,0,0.06)',
-                    display: 'flex', flexDirection: 'column',
+                    display: 'flex', flexDirection: 'column', overflow: 'hidden',
                   }}>
                     <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '8px' }}>
                       <button onClick={() => navigate({ name: 'edit-reminder', reminderId: item.id })} style={{
@@ -284,14 +284,14 @@ export default function HomeScreen({ navigate }: Props) {
                         </label>
                       </div>
                     </div>
-                    <button onClick={() => navigate({ name: 'edit-reminder', reminderId: item.id })} style={{ background: 'none', border: 'none', padding: 0, cursor: 'pointer', textAlign: 'left', flex: 1 }}>
-                      <div style={{ fontSize: '12px', fontWeight: 700, color: COLORS.text, marginBottom: '3px' }}>{item.title}</div>
+                    <button onClick={() => navigate({ name: 'edit-reminder', reminderId: item.id })} style={{ background: 'none', border: 'none', padding: 0, cursor: 'pointer', textAlign: 'left', flex: 1, overflow: 'hidden' }}>
+                      <div style={{ fontSize: '12px', fontWeight: 700, color: COLORS.text, marginBottom: '3px', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{item.title}</div>
                       <div style={{ fontSize: '10px', color: COLORS.textSecondary, marginBottom: '2px' }}>Every {formatInterval(item.intervalMinutes)}</div>
                       <div style={{ display: 'flex', alignItems: 'center', gap: '3px', marginBottom: '3px' }}>
-                        <div style={{ width: '5px', height: '5px', borderRadius: '50%', backgroundColor: statusColor }} />
+                        <div style={{ width: '5px', height: '5px', borderRadius: '50%', backgroundColor: statusColor, flexShrink: 0 }} />
                         <span style={{ fontSize: '9px', color: statusColor === '#4CAF50' ? '#4CAF50' : COLORS.textSecondary, fontWeight: 500 }}>{statusText}</span>
                       </div>
-                      <div style={{ fontSize: '9px', color: COLORS.textSecondary, opacity: 0.8 }}>
+                      <div style={{ fontSize: '9px', color: COLORS.textSecondary, opacity: 0.8, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
                         {formatScheduleInfo(item.schedule)}
                       </div>
                     </button>
