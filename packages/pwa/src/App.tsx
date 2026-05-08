@@ -46,7 +46,7 @@ function App() {
         <Route path="/settings" element={<SettingsScreen />} />
         <Route path="/privacy" element={<PrivacyScreen />} />
       </Routes>
-      <CookieConsent />
+      {!showWelcome && <CookieConsent />}
       {!showWelcome && <NotificationPrompt />}
     </div>
   );

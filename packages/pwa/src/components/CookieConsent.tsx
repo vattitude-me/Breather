@@ -1,11 +1,18 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { COLORS } from '@breather/shared';
 import { setAnalyticsConsent } from '../services/analytics';
 
 export default function CookieConsent() {
-  const [visible, setVisible] = useState(
-    () => localStorage.getItem('@breather_analytics_consent') === null
-  );
+  const [visible, setVisible] = useState(false);
+
+  useEffect(() => {
+    const alreadyAnswered = localStorage.getItem('@breather_analytics_consent') !== null;
+    const onboarded = localStorage.getItem('@breather_onboarded') === 'true';
+    if (alreadyAnswered || !onboarded) return;
+
+    const timer = setTimeout(() => setVisible(true), 3000);
+    return () => clearTimeout(timer);
+  }, []);
 
   if (!visible) return null;
 
@@ -21,64 +28,50 @@ export default function CookieConsent() {
 
   return (
     <div style={{
-      position: 'fixed',
-      bottom: 0,
-      left: 0,
-      right: 0,
-      zIndex: 2000,
+      flexShrink: 0,
       display: 'flex',
-      justifyContent: 'center',
-      padding: '16px',
-      pointerEvents: 'none',
+      alignItems: 'center',
+      gap: '10px',
+      padding: '10px 16px',
+      backgroundColor: '#F3F0FF',
+      borderTop: `1px solid ${COLORS.border}`,
     }}>
-      <div style={{
-        maxWidth: '400px',
-        width: '100%',
-        backgroundColor: '#FFFFFF',
-        borderRadius: '16px',
-        padding: '16px 20px',
-        boxShadow: '0 8px 32px rgba(0, 0, 0, 0.15)',
-        border: `1px solid ${COLORS.border}`,
-        pointerEvents: 'auto',
-      }}>
-        <p style={{ fontSize: '13px', color: COLORS.text, lineHeight: 1.5, margin: '0 0 12px' }}>
-          We use cookies to understand how Breather is used and improve the experience. No personal data is collected.
-        </p>
-        <div style={{ display: 'flex', gap: '8px' }}>
-          <button
-            onClick={handleDecline}
-            style={{
-              flex: 1,
-              padding: '10px',
-              borderRadius: '10px',
-              border: `1px solid ${COLORS.border}`,
-              backgroundColor: '#FFFFFF',
-              fontSize: '13px',
-              fontWeight: 600,
-              color: COLORS.textSecondary,
-              cursor: 'pointer',
-            }}
-          >
-            Decline
-          </button>
-          <button
-            onClick={handleAccept}
-            style={{
-              flex: 1,
-              padding: '10px',
-              borderRadius: '10px',
-              border: 'none',
-              backgroundColor: COLORS.primary,
-              fontSize: '13px',
-              fontWeight: 600,
-              color: '#FFFFFF',
-              cursor: 'pointer',
-            }}
-          >
-            Accept
-          </button>
-        </div>
-      </div>
+      <span style={{ fontSize: '16px', flexShrink: 0 }}>🍪</span>
+      <p style={{ fontSize: '12px', color: COLORS.text, lineHeight: 1.4, margin: 0, flex: 1 }}>
+        Help us improve Breather with anonymous usage data.
+      </p>
+      <button
+        onClick={handleDecline}
+        style={{
+          flexShrink: 0,
+          padding: '6px 10px',
+          borderRadius: '8px',
+          border: `1px solid ${COLORS.border}`,
+          backgroundColor: '#FFFFFF',
+          fontSize: '11px',
+          fontWeight: 600,
+          color: COLORS.textSecondary,
+          cursor: 'pointer',
+        }}
+      >
+        No
+      </button>
+      <button
+        onClick={handleAccept}
+        style={{
+          flexShrink: 0,
+          padding: '6px 12px',
+          borderRadius: '8px',
+          border: 'none',
+          backgroundColor: COLORS.primary,
+          color: '#FFFFFF',
+          fontSize: '11px',
+          fontWeight: 600,
+          cursor: 'pointer',
+        }}
+      >
+        Sure
+      </button>
     </div>
   );
 }

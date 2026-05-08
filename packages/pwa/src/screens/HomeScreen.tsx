@@ -126,7 +126,27 @@ function HeaderCountdown({ reminders }: { reminders: Reminder[] }) {
   );
 }
 
+function useHourlyTick() {
+  const [, setTick] = useState(0);
+  useEffect(() => {
+    const msUntilNextHour = () => {
+      const now = new Date();
+      return (60 - now.getMinutes()) * 60000 - now.getSeconds() * 1000 - now.getMilliseconds();
+    };
+    let timeout: number;
+    const schedule = () => {
+      timeout = window.setTimeout(() => {
+        setTick((t) => t + 1);
+        schedule();
+      }, msUntilNextHour());
+    };
+    schedule();
+    return () => window.clearTimeout(timeout);
+  }, []);
+}
+
 export default function HomeScreen() {
+  useHourlyTick();
   const { reminders, dispatch } = useRemindersContext();
   const navigation = useNavigate();
   const location = useLocation();
@@ -273,6 +293,20 @@ export default function HomeScreen() {
       return mins > 0 ? `${hours}h ${mins}m` : `${hours}h`;
     }
     return `${minutes} min`;
+  };
+
+  const formatScheduleInfo = (schedule: Reminder['schedule']): string => {
+    const formatHour = (h: number) => {
+      const period = h >= 12 ? 'pm' : 'am';
+      const hour12 = h === 0 ? 12 : h > 12 ? h - 12 : h;
+      return `${hour12}${period}`;
+    };
+    const timeRange = `${formatHour(schedule.startHour)}-${formatHour(schedule.endHour)}`;
+    const allWeekdays = schedule.activeDays.length === 5 &&
+      ['Mon', 'Tue', 'Wed', 'Thu', 'Fri'].every(d => schedule.activeDays.includes(d as any));
+    const allDays = schedule.activeDays.length === 7;
+    const days = allDays ? 'Every day' : allWeekdays ? 'Weekdays' : schedule.activeDays.join(', ');
+    return `${timeRange} · ${days}`;
   };
 
   const getCategoryColor = (index: number): string => {
@@ -563,6 +597,9 @@ export default function HomeScreen() {
                           <span style={{ fontSize: '11px', color: statusColor === '#4CAF50' ? '#4CAF50' : COLORS.textSecondary, fontWeight: 500 }}>{statusText}</span>
                         </div>
                       </div>
+                      <div style={{ fontSize: '10px', color: COLORS.textSecondary, marginTop: '2px', opacity: 0.8 }}>
+                        {formatScheduleInfo(item.schedule)}
+                      </div>
                     </button>
                     <div style={{ display: 'flex', alignItems: 'center', gap: '8px', flexShrink: 0 }}>
                       <button
@@ -672,6 +709,9 @@ export default function HomeScreen() {
                       >
                         <div style={{ fontSize: '14px', fontWeight: 700, color: COLORS.text }}>{item.title}</div>
                         <div style={{ fontSize: '11px', color: COLORS.textSecondary, marginTop: '2px' }}>Every {formatInterval(item.intervalMinutes)}</div>
+                        <div style={{ fontSize: '10px', color: COLORS.textSecondary, marginTop: '2px', opacity: 0.8 }}>
+                          {formatScheduleInfo(item.schedule)}
+                        </div>
                       </button>
                       <div style={{ display: 'flex', alignItems: 'center', marginTop: '8px', gap: '6px' }}>
                         <div style={{ width: '6px', height: '6px', borderRadius: '3px', backgroundColor: statusColor }} />

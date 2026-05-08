@@ -7,6 +7,105 @@ import '../screens.css';
 
 type Phase = 'counting' | 'complete';
 
+interface BreakGuidance {
+  subtitle: string;
+  instructions: string[];
+  animationClass: string;
+}
+
+function getBreakGuidance(title: string): BreakGuidance {
+  const key = title.toLowerCase();
+
+  if (key.includes('stretch')) {
+    return {
+      subtitle: 'Loosen up those muscles',
+      instructions: [
+        'Roll your shoulders back slowly',
+        'Reach your arms overhead and hold',
+        'Gently tilt your neck side to side',
+        'Twist your torso left and right',
+      ],
+      animationClass: 'break-anim-stretch',
+    };
+  }
+
+  if (key.includes('water') || key.includes('hydra') || key.includes('drink')) {
+    return {
+      subtitle: 'Time to hydrate',
+      instructions: [
+        'Take a nice big sip of water',
+        'Refill your glass if it is empty',
+        'Your body needs 8 glasses a day',
+        'Hydration boosts focus and energy',
+      ],
+      animationClass: 'break-anim-water',
+    };
+  }
+
+  if (key.includes('eye') || key.includes('blink')) {
+    return {
+      subtitle: 'Rest your eyes',
+      instructions: [
+        'Close your eyes gently for 5 seconds',
+        'Look at something 20 feet away',
+        'Blink slowly 10 times',
+        'Gently massage your temples',
+      ],
+      animationClass: 'break-anim-eyes',
+    };
+  }
+
+  if (key.includes('walk') || key.includes('move') || key.includes('step')) {
+    return {
+      subtitle: 'Get moving',
+      instructions: [
+        'Stand up and take a short walk',
+        'Walk to a window and look outside',
+        'Do 10 steps in place',
+        'Shake out your arms and legs',
+      ],
+      animationClass: 'break-anim-walk',
+    };
+  }
+
+  if (key.includes('posture')) {
+    return {
+      subtitle: 'Check your posture',
+      instructions: [
+        'Sit up straight, feet flat on floor',
+        'Pull your shoulders back and down',
+        'Align your ears over your shoulders',
+        'Unclench your jaw and relax your face',
+      ],
+      animationClass: 'break-anim-posture',
+    };
+  }
+
+  if (key.includes('breath') || key.includes('deep')) {
+    return {
+      subtitle: 'Breathe deeply',
+      instructions: [
+        'Inhale slowly through your nose for 4 seconds',
+        'Hold your breath for 4 seconds',
+        'Exhale slowly through your mouth for 6 seconds',
+        'Repeat and feel the calm',
+      ],
+      animationClass: 'break-anim-breathe',
+    };
+  }
+
+  return {
+    subtitle: 'Relax, breathe, and be present',
+    instructions: [
+      'Step away from your screen',
+      'Take a few deep breaths',
+      'Notice how your body feels',
+      'Return when you are ready',
+    ],
+    animationClass: 'break-anim-default',
+  };
+}
+
 export default function ActiveBreakScreen() {
   const navigate = useNavigate();
   const [searchParams] = useSearchParams();
@@ -21,9 +120,12 @@ export default function ActiveBreakScreen() {
   const breakIcon = reminder?.icon || '🧘';
   const totalSeconds = durationParam || reminder?.breakDurationSeconds || DEFAULT_BREAK_DURATION_SECONDS;
 
+  const guidance = getBreakGuidance(breakTitle);
+
   const [secondsLeft, setSecondsLeft] = useState(totalSeconds);
   const [phase, setPhase] = useState<Phase>('counting');
   const [paused, setPaused] = useState(false);
+  const [currentStep, setCurrentStep] = useState(0);
   const timerRef = useRef<number | null>(null);
 
   useEffect(() => {
@@ -44,6 +146,15 @@ export default function ActiveBreakScreen() {
       if (timerRef.current) clearInterval(timerRef.current);
     };
   }, [phase, paused]);
+
+  useEffect(() => {
+    if (phase !== 'counting' || paused) return;
+    const stepInterval = Math.max(5000, (totalSeconds * 1000) / guidance.instructions.length);
+    const id = window.setInterval(() => {
+      setCurrentStep((s) => (s + 1) % guidance.instructions.length);
+    }, stepInterval);
+    return () => window.clearInterval(id);
+  }, [phase, paused, totalSeconds, guidance.instructions.length]);
 
   useEffect(() => {
     if (phase === 'complete') {
@@ -85,7 +196,7 @@ export default function ActiveBreakScreen() {
           <div className="active-break-header">
             <span className="active-break-icon">{breakIcon}</span>
             <h1 className="active-break-title">Time to {breakTitle}</h1>
-            <p className="active-break-subtitle">Relax, breathe, and be present</p>
+            <p className="active-break-subtitle">{guidance.subtitle}</p>
           </div>
 
           <div className="active-break-timer-container">
@@ -106,7 +217,27 @@ export default function ActiveBreakScreen() {
               <span className="active-break-time">{timeDisplay}</span>
               <span className="active-break-time-label">{paused ? 'Paused' : 'remaining'}</span>
             </div>
-            <div className="active-break-pulse" />
+            <div className={`active-break-pulse ${guidance.animationClass}`} />
+          </div>
+
+          {/* Contextual instruction */}
+          <div style={{
+            textAlign: 'center',
+            padding: '12px 24px',
+            minHeight: '48px',
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'center',
+          }}>
+            <p key={currentStep} style={{
+              fontSize: '14px',
+              fontWeight: 500,
+              color: COLORS.accent,
+              margin: 0,
+              animation: 'fadeIn 0.5s ease',
+            }}>
+              {guidance.instructions[currentStep]}
+            </p>
           </div>
 
           <div className="active-break-controls">
