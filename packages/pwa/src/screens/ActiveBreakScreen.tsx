@@ -1,8 +1,16 @@
 import { useState, useEffect, useRef } from 'react';
 import { useNavigate, useSearchParams } from 'react-router-dom';
+import Lottie from 'lottie-react';
 import { useRemindersContext } from '../context/RemindersContext';
 import { incrementCompleted } from '../services/notifications';
 import { COLORS, DEFAULT_BREAK_DURATION_SECONDS, waterPlant } from '@breather/shared';
+import stretchAnim from '../assets/lottie/stretch.json';
+import waterAnim from '../assets/lottie/water.json';
+import eyesAnim from '../assets/lottie/eyes.json';
+import walkAnim from '../assets/lottie/walk.json';
+import postureAnim from '../assets/lottie/posture.json';
+import breatheAnim from '../assets/lottie/breathe.json';
+import defaultAnim from '../assets/lottie/default.json';
 import '../screens.css';
 
 type Phase = 'counting' | 'complete';
@@ -11,6 +19,7 @@ interface BreakGuidance {
   subtitle: string;
   instructions: string[];
   animationClass: string;
+  lottieData: unknown;
 }
 
 function getBreakGuidance(title: string): BreakGuidance {
@@ -26,6 +35,7 @@ function getBreakGuidance(title: string): BreakGuidance {
         'Twist your torso left and right',
       ],
       animationClass: 'break-anim-stretch',
+      lottieData: stretchAnim,
     };
   }
 
@@ -39,6 +49,7 @@ function getBreakGuidance(title: string): BreakGuidance {
         'Hydration boosts focus and energy',
       ],
       animationClass: 'break-anim-water',
+      lottieData: waterAnim,
     };
   }
 
@@ -52,6 +63,7 @@ function getBreakGuidance(title: string): BreakGuidance {
         'Gently massage your temples',
       ],
       animationClass: 'break-anim-eyes',
+      lottieData: eyesAnim,
     };
   }
 
@@ -65,6 +77,7 @@ function getBreakGuidance(title: string): BreakGuidance {
         'Shake out your arms and legs',
       ],
       animationClass: 'break-anim-walk',
+      lottieData: walkAnim,
     };
   }
 
@@ -78,6 +91,7 @@ function getBreakGuidance(title: string): BreakGuidance {
         'Unclench your jaw and relax your face',
       ],
       animationClass: 'break-anim-posture',
+      lottieData: postureAnim,
     };
   }
 
@@ -91,6 +105,7 @@ function getBreakGuidance(title: string): BreakGuidance {
         'Repeat and feel the calm',
       ],
       animationClass: 'break-anim-breathe',
+      lottieData: breatheAnim,
     };
   }
 
@@ -103,6 +118,7 @@ function getBreakGuidance(title: string): BreakGuidance {
       'Return when you are ready',
     ],
     animationClass: 'break-anim-default',
+    lottieData: defaultAnim,
   };
 }
 
@@ -117,7 +133,6 @@ export default function ActiveBreakScreen() {
 
   const reminder = reminders.find((r) => r.id === reminderId);
   const breakTitle = reminder?.title || titleParam;
-  const breakIcon = reminder?.icon || '🧘';
   const totalSeconds = durationParam || reminder?.breakDurationSeconds || DEFAULT_BREAK_DURATION_SECONDS;
 
   const guidance = getBreakGuidance(breakTitle);
@@ -194,7 +209,9 @@ export default function ActiveBreakScreen() {
       {phase === 'counting' && (
         <>
           <div className="active-break-header">
-            <span className="active-break-icon">{breakIcon}</span>
+            <div style={{ width: '80px', height: '80px', margin: '0 auto 8px' }}>
+              <Lottie animationData={guidance.lottieData} loop autoplay style={{ width: '100%', height: '100%' }} />
+            </div>
             <h1 className="active-break-title">Time to {breakTitle}</h1>
             <p className="active-break-subtitle">{guidance.subtitle}</p>
           </div>

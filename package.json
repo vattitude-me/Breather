@@ -1,11 +1,16 @@
 {
   "name": "breather",
   "private": true,
-  "workspaces": ["packages/*"],
+  "workspaces": [
+    "packages/*"
+  ],
   "scripts": {
     "dev": "npm run dev -w packages/pwa",
     "build": "npm run build -w packages/shared && npm run build -w packages/pwa",
     "build:ext": "npm run build -w packages/shared && npm run build -w packages/chrome-ext",
     "dev:ext": "npm run dev -w packages/chrome-ext"
+  },
+  "dependencies": {
+    "lottie-react": "^2.4.1"
   }
 }
