@@ -280,6 +280,7 @@
   justify-content: flex-end;
   width: 180px;
   margin: 0 auto;
+  flex-shrink: 0;
 }
 
 .plant-svg-layer {

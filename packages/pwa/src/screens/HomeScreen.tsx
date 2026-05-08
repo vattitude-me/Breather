@@ -358,6 +358,8 @@ export default function HomeScreen() {
             borderRadius: '14px',
             border: `1px solid ${COLORS.border}`,
             overflow: 'hidden',
+            minHeight: '280px',
+            flexShrink: 0,
           }}
         >
           {/* Window sill background scene */}

@@ -20,7 +20,7 @@ export const COLORS = {
 };
 
 export const APP_NAME = 'Breather';
-export const APP_VERSION = '3.12.5';
+export const APP_VERSION = '3.12.6';
 
 export const CATEGORIES = [
   { title: 'Targeted', icon: '🎯', color: '#FCE4EC' },
