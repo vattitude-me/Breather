@@ -373,9 +373,6 @@ export default function HomeScreen() {
             <div className="window-bird bird-3" />
             <div className="window-butterfly butterfly-1" />
             <div className="window-butterfly butterfly-2" />
-            <div className="window-curtain curtain-left" />
-            <div className="window-curtain curtain-right" />
-            <div className="window-sill" />
             <div className="window-sunbeam" />
           </div>
 
@@ -403,6 +400,8 @@ export default function HomeScreen() {
                 border: '1px solid #10B981',
                 cursor: 'pointer',
                 animation: 'fadeIn 0.3s ease',
+                position: 'relative',
+                zIndex: 6,
               }}
             >
               <span style={{ fontSize: '16px' }}>🎉</span>
@@ -412,9 +411,14 @@ export default function HomeScreen() {
             </div>
           )}
 
-          {/* Micro-goal header */}
+          {/* Breaks today + Micro-goal header at top */}
+          <div style={{ position: 'relative', zIndex: 6, textAlign: 'center', marginBottom: '4px' }}>
+            <div style={{ fontSize: '13px', fontWeight: 700, color: COLORS.text }}>
+              {dailyLeaves} {dailyLeaves === 1 ? 'break' : 'breaks'} today
+            </div>
+          </div>
           {nextUnlock && !newUnlockId && (
-            <div style={{ display: 'flex', alignItems: 'center', gap: '6px', marginBottom: '8px' }}>
+            <div style={{ display: 'flex', alignItems: 'center', gap: '6px', marginBottom: '8px', position: 'relative', zIndex: 6 }}>
               <svg width="14" height="14" viewBox="0 0 24 24" fill={COLORS.secondary} stroke="none">
                 <path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z" />
               </svg>
@@ -448,7 +452,7 @@ export default function HomeScreen() {
           )}
 
           {/* Plant + Swap button wrapper */}
-          <div style={{ position: 'relative', cursor: 'pointer' }} onClick={() => setShowPotsDrawer(true)}>
+          <div style={{ position: 'relative', cursor: 'pointer', zIndex: 4, marginTop: 'auto', marginBottom: '-10px' }} onClick={() => setShowPotsDrawer(true)}>
             <Plant stage={plantState.stage} progress={progress} colorIndex={devColorIndex} pot={devPotIndex !== undefined ? POTS_CATALOG[devPotIndex] : activePot} dailyLeaves={dailyLeaves} leafDrop={leafDrop} />
             {/* Swap icon */}
             <button
@@ -509,17 +513,15 @@ export default function HomeScreen() {
               alignItems: 'center',
               gap: '4px',
               animation: 'fadeIn 0.3s ease',
+              position: 'relative',
+              zIndex: 6,
             }}>
               <span style={{ fontSize: '16px' }}>{motivation.icon}</span>
               {motivation.text}
             </div>
           )}
-          <div style={{ fontSize: '14px', fontWeight: 700, color: COLORS.text, marginTop: motivation ? '2px' : '4px' }}>
-            Today's Growth
-          </div>
-          <div style={{ fontSize: '11px', color: COLORS.textSecondary, marginTop: '2px' }}>
-            {dailyLeaves} {dailyLeaves === 1 ? 'break' : 'breaks'} today
-          </div>
+          {/* Grass surface */}
+          <div className="plant-grass-surface" />
         </div>
 
         {/* My Routines */}

@@ -68,10 +68,10 @@ export default function Plant({ progress, colorIndex, pot, dailyLeaves = 0, leaf
           </filter>
         </defs>
 
-        {/* Soil mound - matches full pot image width */}
-        <ellipse cx="60" cy="121" rx="56" ry="7" fill={SOIL_COLOR} />
-        <ellipse cx="52" cy="120" rx="14" ry="3" fill="#5D4037" opacity="0.4" />
-        <ellipse cx="70" cy="120.5" rx="8" ry="2" fill="#4E342E" opacity="0.3" />
+        {/* Soil mound - sized to match pot opening */}
+        <ellipse cx="60" cy="122" rx="42" ry="7" fill={SOIL_COLOR} />
+        <ellipse cx="52" cy="121" rx="12" ry="3" fill="#5D4037" opacity="0.4" />
+        <ellipse cx="68" cy="121.5" rx="7" ry="2" fill="#4E342E" opacity="0.3" />
 
         {/* Main stem */}
         <g className="plant-idle-sway">
