@@ -306,7 +306,7 @@ export default function HomeScreen() {
       ['Mon', 'Tue', 'Wed', 'Thu', 'Fri'].every(d => schedule.activeDays.includes(d as any));
     const allDays = schedule.activeDays.length === 7;
     const days = allDays ? 'Every day' : allWeekdays ? 'Weekdays' : schedule.activeDays.join(', ');
-    return `${timeRange} · ${days}`;
+    return `${timeRange} - ${days}`;
   };
 
   const getCategoryColor = (index: number): string => {
@@ -546,7 +546,7 @@ export default function HomeScreen() {
               <span style={{ fontSize: '13px', color: COLORS.textSecondary }}>Set reminders to stretch, move, and rest</span>
             </button>
           ) : (
-            <div style={{ display: 'flex', flexDirection: 'column', gap: '14px' }}>
+            <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '12px' }}>
               {reminders.map((item, index) => {
                 const statusColor = !item.isActive ? COLORS.disabled : isWithinSchedule(item.schedule) ? '#4CAF50' : COLORS.secondary;
                 const statusText = !item.isActive ? 'Paused' : isWithinSchedule(item.schedule) ? 'Active' : 'Outside hours';
@@ -554,36 +554,54 @@ export default function HomeScreen() {
                 return (
                   <div key={item.id} style={{
                     backgroundColor: getCategoryColor(index),
-                    borderRadius: '18px',
-                    padding: '18px',
+                    borderRadius: '16px',
+                    padding: '14px',
                     boxShadow: '0 2px 8px rgba(0,0,0,0.06)',
-                    position: 'relative',
+                    display: 'flex',
+                    gap: '10px',
                   }}>
-                    <div style={{ display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between', marginBottom: '12px' }}>
-                      <button
-                        onClick={() => navigation(`/edit-reminder/${item.id}`)}
-                        style={{
-                          width: '48px',
-                          height: '48px',
-                          borderRadius: '14px',
-                          backgroundColor: 'rgba(255,255,255,0.75)',
-                          display: 'flex',
-                          alignItems: 'center',
-                          justifyContent: 'center',
-                          border: 'none',
-                          cursor: 'pointer',
-                          flexShrink: 0,
-                        }}
-                      >
-                        <span style={{ fontSize: '24px' }}>{item.icon}</span>
-                      </button>
-                      <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                    <button
+                      onClick={() => navigation(`/edit-reminder/${item.id}`)}
+                      style={{
+                        display: 'flex',
+                        flexDirection: 'column',
+                        alignItems: 'flex-start',
+                        background: 'none',
+                        border: 'none',
+                        padding: 0,
+                        cursor: 'pointer',
+                        textAlign: 'left',
+                        flex: 1,
+                        minWidth: 0,
+                      }}
+                    >
+                      <div style={{
+                        width: '40px',
+                        height: '40px',
+                        borderRadius: '12px',
+                        backgroundColor: 'rgba(255,255,255,0.75)',
+                        display: 'flex',
+                        alignItems: 'center',
+                        justifyContent: 'center',
+                        marginBottom: '8px',
+                      }}>
+                        <span style={{ fontSize: '20px' }}>{item.icon}</span>
+                      </div>
+                      <div style={{ fontSize: '14px', fontWeight: 700, color: COLORS.text, marginBottom: '3px' }}>{item.title}</div>
+                      <div style={{ fontSize: '11px', color: COLORS.textSecondary, marginBottom: '2px' }}>Every {formatInterval(item.intervalMinutes)}</div>
+                      <div style={{ display: 'flex', alignItems: 'center', gap: '4px' }}>
+                        <div style={{ width: '6px', height: '6px', borderRadius: '50%', backgroundColor: statusColor }} />
+                        <span style={{ fontSize: '10px', color: statusColor === '#4CAF50' ? '#4CAF50' : COLORS.textSecondary, fontWeight: 500 }}>{statusText}</span>
+                      </div>
+                    </button>
+                    <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'flex-end', justifyContent: 'space-between', flexShrink: 0 }}>
+                      <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
                         <button
                           onClick={() => handleDelete(item)}
                           style={{
-                            width: '32px',
-                            height: '32px',
-                            borderRadius: '10px',
+                            width: '26px',
+                            height: '26px',
+                            borderRadius: '8px',
                             backgroundColor: 'rgba(239, 68, 68, 0.08)',
                             display: 'flex',
                             alignItems: 'center',
@@ -592,12 +610,12 @@ export default function HomeScreen() {
                             cursor: 'pointer',
                           }}
                         >
-                          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke={COLORS.danger} strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                          <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke={COLORS.danger} strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
                             <polyline points="3 6 5 6 21 6" />
                             <path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2" />
                           </svg>
                         </button>
-                        <label style={{ position: 'relative', display: 'inline-block', width: '46px', height: '28px' }}>
+                        <label style={{ position: 'relative', display: 'inline-block', width: '40px', height: '24px' }}>
                           <input
                             type="checkbox"
                             checked={item.isActive}
@@ -609,15 +627,15 @@ export default function HomeScreen() {
                             cursor: 'pointer',
                             inset: 0,
                             backgroundColor: item.isActive ? COLORS.primary : COLORS.disabled,
-                            borderRadius: '28px',
+                            borderRadius: '24px',
                             transition: '0.3s',
                           }}>
                             <span style={{
                               position: 'absolute',
-                              left: item.isActive ? '21px' : '3px',
+                              left: item.isActive ? '19px' : '3px',
                               top: '3px',
-                              width: '22px',
-                              height: '22px',
+                              width: '18px',
+                              height: '18px',
                               backgroundColor: '#FFFFFF',
                               borderRadius: '50%',
                               transition: '0.3s',
@@ -625,24 +643,10 @@ export default function HomeScreen() {
                           </span>
                         </label>
                       </div>
-                    </div>
-                    <button
-                      onClick={() => navigation(`/edit-reminder/${item.id}`)}
-                      style={{ background: 'none', border: 'none', padding: 0, cursor: 'pointer', textAlign: 'left', width: '100%' }}
-                    >
-                      <div style={{ fontSize: '16px', fontWeight: 700, color: COLORS.text, marginBottom: '6px' }}>{item.title}</div>
-                      <div style={{ display: 'flex', alignItems: 'center', gap: '8px', marginBottom: '4px' }}>
-                        <span style={{ fontSize: '13px', color: COLORS.textSecondary }}>Every {formatInterval(item.intervalMinutes)}</span>
-                        <div style={{ width: '4px', height: '4px', borderRadius: '50%', backgroundColor: COLORS.disabled }} />
-                        <div style={{ display: 'flex', alignItems: 'center', gap: '4px' }}>
-                          <div style={{ width: '7px', height: '7px', borderRadius: '50%', backgroundColor: statusColor }} />
-                          <span style={{ fontSize: '12px', color: statusColor === '#4CAF50' ? '#4CAF50' : COLORS.textSecondary, fontWeight: 500 }}>{statusText}</span>
-                        </div>
-                      </div>
-                      <div style={{ fontSize: '11px', color: COLORS.textSecondary, opacity: 0.8 }}>
+                      <div style={{ fontSize: '9px', color: COLORS.textSecondary, opacity: 0.8, textAlign: 'right' }}>
                         {formatScheduleInfo(item.schedule)}
                       </div>
-                    </button>
+                    </div>
                   </div>
                 );
               })}

@@ -248,7 +248,7 @@ export default function HomeScreen({ navigate }: Props) {
               <span style={{ fontSize: '13px', color: COLORS.textSecondary }}>Set reminders to stretch, move, and rest</span>
             </button>
           ) : (
-            <div style={{ display: 'flex', flexDirection: 'column', gap: '14px' }}>
+            <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '10px' }}>
               {reminders.map((item, index) => {
                 const statusColor = !item.isActive ? COLORS.disabled : isWithinSchedule(item.schedule) ? '#4CAF50' : COLORS.secondary;
                 const statusText = !item.isActive ? 'Paused' : isWithinSchedule(item.schedule) ? 'Active' : 'Outside hours';
@@ -256,45 +256,48 @@ export default function HomeScreen({ navigate }: Props) {
                 return (
                   <div key={item.id} style={{
                     backgroundColor: CARD_COLORS[index % CARD_COLORS.length],
-                    borderRadius: '18px', padding: '16px',
+                    borderRadius: '16px', padding: '12px',
                     boxShadow: '0 2px 8px rgba(0,0,0,0.06)',
-                    position: 'relative',
+                    display: 'flex', gap: '8px',
                   }}>
-                    <div style={{ display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between', marginBottom: '10px' }}>
-                      <button onClick={() => navigate({ name: 'edit-reminder', reminderId: item.id })} style={{
-                        width: '46px', height: '46px', borderRadius: '14px', backgroundColor: 'rgba(255,255,255,0.75)',
-                        display: 'flex', alignItems: 'center', justifyContent: 'center', border: 'none', cursor: 'pointer', flexShrink: 0,
+                    <button onClick={() => navigate({ name: 'edit-reminder', reminderId: item.id })} style={{
+                      display: 'flex', flexDirection: 'column', alignItems: 'flex-start',
+                      background: 'none', border: 'none', padding: 0, cursor: 'pointer', textAlign: 'left', flex: 1, minWidth: 0,
+                    }}>
+                      <div style={{
+                        width: '36px', height: '36px', borderRadius: '10px', backgroundColor: 'rgba(255,255,255,0.75)',
+                        display: 'flex', alignItems: 'center', justifyContent: 'center', marginBottom: '6px',
                       }}>
-                        <span style={{ fontSize: '22px' }}>{item.icon}</span>
-                      </button>
-                      <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                        <span style={{ fontSize: '17px' }}>{item.icon}</span>
+                      </div>
+                      <div style={{ fontSize: '12px', fontWeight: 700, color: COLORS.text, marginBottom: '2px' }}>{item.title}</div>
+                      <div style={{ fontSize: '10px', color: COLORS.textSecondary, marginBottom: '2px' }}>Every {formatInterval(item.intervalMinutes)}</div>
+                      <div style={{ display: 'flex', alignItems: 'center', gap: '3px' }}>
+                        <div style={{ width: '5px', height: '5px', borderRadius: '50%', backgroundColor: statusColor }} />
+                        <span style={{ fontSize: '9px', color: statusColor === '#4CAF50' ? '#4CAF50' : COLORS.textSecondary, fontWeight: 500 }}>{statusText}</span>
+                      </div>
+                    </button>
+                    <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'flex-end', justifyContent: 'space-between', flexShrink: 0 }}>
+                      <div style={{ display: 'flex', alignItems: 'center', gap: '5px' }}>
                         <button onClick={() => handleDelete(item.id, item.title)} style={{
-                          width: '32px', height: '32px', borderRadius: '10px', backgroundColor: 'rgba(239, 68, 68, 0.08)',
+                          width: '22px', height: '22px', borderRadius: '6px', backgroundColor: 'rgba(239, 68, 68, 0.08)',
                           display: 'flex', alignItems: 'center', justifyContent: 'center', border: 'none', cursor: 'pointer',
                         }}>
-                          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke={COLORS.danger} strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                          <svg width="9" height="9" viewBox="0 0 24 24" fill="none" stroke={COLORS.danger} strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
                             <polyline points="3 6 5 6 21 6" /><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2" />
                           </svg>
                         </button>
-                        <label style={{ position: 'relative', display: 'inline-block', width: '46px', height: '28px' }}>
+                        <label style={{ position: 'relative', display: 'inline-block', width: '36px', height: '20px' }}>
                           <input type="checkbox" checked={item.isActive} onChange={() => handleToggle(item.id)} style={{ opacity: 0, width: 0, height: 0 }} />
-                          <span style={{ position: 'absolute', cursor: 'pointer', inset: 0, backgroundColor: item.isActive ? COLORS.primary : COLORS.disabled, borderRadius: '28px', transition: '0.3s' }}>
-                            <span style={{ position: 'absolute', left: item.isActive ? '21px' : '3px', top: '3px', width: '22px', height: '22px', backgroundColor: '#FFFFFF', borderRadius: '50%', transition: '0.3s' }} />
+                          <span style={{ position: 'absolute', cursor: 'pointer', inset: 0, backgroundColor: item.isActive ? COLORS.primary : COLORS.disabled, borderRadius: '20px', transition: '0.3s' }}>
+                            <span style={{ position: 'absolute', left: item.isActive ? '18px' : '3px', top: '3px', width: '14px', height: '14px', backgroundColor: '#FFFFFF', borderRadius: '50%', transition: '0.3s' }} />
                           </span>
                         </label>
                       </div>
-                    </div>
-                    <button onClick={() => navigate({ name: 'edit-reminder', reminderId: item.id })} style={{ background: 'none', border: 'none', padding: 0, cursor: 'pointer', textAlign: 'left', width: '100%' }}>
-                      <div style={{ fontSize: '15px', fontWeight: 700, color: COLORS.text, marginBottom: '5px' }}>{item.title}</div>
-                      <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-                        <span style={{ fontSize: '12px', color: COLORS.textSecondary }}>Every {formatInterval(item.intervalMinutes)}</span>
-                        <div style={{ width: '4px', height: '4px', borderRadius: '50%', backgroundColor: COLORS.disabled }} />
-                        <div style={{ display: 'flex', alignItems: 'center', gap: '4px' }}>
-                          <div style={{ width: '7px', height: '7px', borderRadius: '50%', backgroundColor: statusColor }} />
-                          <span style={{ fontSize: '11px', color: statusColor === '#4CAF50' ? '#4CAF50' : COLORS.textSecondary, fontWeight: 500 }}>{statusText}</span>
-                        </div>
+                      <div style={{ fontSize: '8px', color: COLORS.textSecondary, opacity: 0.8, textAlign: 'right' }}>
+                        {formatScheduleInfo(item.schedule)}
                       </div>
-                    </button>
+                    </div>
                   </div>
                 );
               })}
