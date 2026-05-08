@@ -256,28 +256,17 @@ export default function HomeScreen({ navigate }: Props) {
                 return (
                   <div key={item.id} style={{
                     backgroundColor: CARD_COLORS[index % CARD_COLORS.length],
-                    borderRadius: '16px', padding: '12px',
+                    borderRadius: '14px', padding: '11px',
                     boxShadow: '0 2px 8px rgba(0,0,0,0.06)',
-                    display: 'flex', gap: '8px',
+                    display: 'flex', flexDirection: 'column',
                   }}>
-                    <button onClick={() => navigate({ name: 'edit-reminder', reminderId: item.id })} style={{
-                      display: 'flex', flexDirection: 'column', alignItems: 'flex-start',
-                      background: 'none', border: 'none', padding: 0, cursor: 'pointer', textAlign: 'left', flex: 1, minWidth: 0,
-                    }}>
-                      <div style={{
-                        width: '36px', height: '36px', borderRadius: '10px', backgroundColor: 'rgba(255,255,255,0.75)',
-                        display: 'flex', alignItems: 'center', justifyContent: 'center', marginBottom: '6px',
+                    <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '8px' }}>
+                      <button onClick={() => navigate({ name: 'edit-reminder', reminderId: item.id })} style={{
+                        width: '34px', height: '34px', borderRadius: '10px', backgroundColor: 'rgba(255,255,255,0.75)',
+                        display: 'flex', alignItems: 'center', justifyContent: 'center', border: 'none', cursor: 'pointer',
                       }}>
-                        <span style={{ fontSize: '17px' }}>{item.icon}</span>
-                      </div>
-                      <div style={{ fontSize: '12px', fontWeight: 700, color: COLORS.text, marginBottom: '2px' }}>{item.title}</div>
-                      <div style={{ fontSize: '10px', color: COLORS.textSecondary, marginBottom: '2px' }}>Every {formatInterval(item.intervalMinutes)}</div>
-                      <div style={{ display: 'flex', alignItems: 'center', gap: '3px' }}>
-                        <div style={{ width: '5px', height: '5px', borderRadius: '50%', backgroundColor: statusColor }} />
-                        <span style={{ fontSize: '9px', color: statusColor === '#4CAF50' ? '#4CAF50' : COLORS.textSecondary, fontWeight: 500 }}>{statusText}</span>
-                      </div>
-                    </button>
-                    <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'flex-end', justifyContent: 'space-between', flexShrink: 0 }}>
+                        <span style={{ fontSize: '16px' }}>{item.icon}</span>
+                      </button>
                       <div style={{ display: 'flex', alignItems: 'center', gap: '5px' }}>
                         <button onClick={() => handleDelete(item.id, item.title)} style={{
                           width: '22px', height: '22px', borderRadius: '6px', backgroundColor: 'rgba(239, 68, 68, 0.08)',
@@ -294,10 +283,18 @@ export default function HomeScreen({ navigate }: Props) {
                           </span>
                         </label>
                       </div>
-                      <div style={{ fontSize: '8px', color: COLORS.textSecondary, opacity: 0.8, textAlign: 'right' }}>
+                    </div>
+                    <button onClick={() => navigate({ name: 'edit-reminder', reminderId: item.id })} style={{ background: 'none', border: 'none', padding: 0, cursor: 'pointer', textAlign: 'left', flex: 1 }}>
+                      <div style={{ fontSize: '12px', fontWeight: 700, color: COLORS.text, marginBottom: '3px' }}>{item.title}</div>
+                      <div style={{ fontSize: '10px', color: COLORS.textSecondary, marginBottom: '2px' }}>Every {formatInterval(item.intervalMinutes)}</div>
+                      <div style={{ display: 'flex', alignItems: 'center', gap: '3px', marginBottom: '3px' }}>
+                        <div style={{ width: '5px', height: '5px', borderRadius: '50%', backgroundColor: statusColor }} />
+                        <span style={{ fontSize: '9px', color: statusColor === '#4CAF50' ? '#4CAF50' : COLORS.textSecondary, fontWeight: 500 }}>{statusText}</span>
+                      </div>
+                      <div style={{ fontSize: '9px', color: COLORS.textSecondary, opacity: 0.8 }}>
                         {formatScheduleInfo(item.schedule)}
                       </div>
-                    </div>
+                    </button>
                   </div>
                 );
               })}
