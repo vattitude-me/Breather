@@ -1,12 +1,9 @@
-import {
-  Reminder,
-  STORAGE_KEYS, PLANT_MAX_POINTS, PLANT_DECAY_PER_DAY, PLANT_STAGES,
-  PlantState,
-} from '@breather/shared';
+import { Reminder, DayOfWeek } from '@breather/shared/src/types';
+import { STORAGE_KEYS } from '@breather/shared/src/constants';
 
-const ALARM_PREFIX = 'breather_';
+const PWA_URL = 'https://breather-break.vercel.app';
 
-const BREAK_PROMPTS = [
+const NOTIFICATION_PROMPTS = [
   'Your body will thank you!',
   'A small pause goes a long way.',
   'Time to stretch and reset.',
@@ -14,179 +11,196 @@ const BREAK_PROMPTS = [
   'Quick break? Your plant is thirsty too!',
 ];
 
-function getToday(): string {
-  return new Date().toISOString().split('T')[0];
+function getRandomPrompt(): string {
+  return NOTIFICATION_PROMPTS[Math.floor(Math.random() * NOTIFICATION_PROMPTS.length)];
 }
 
-function daysBetween(a: string, b: string): number {
-  return Math.floor(Math.abs(new Date(b).getTime() - new Date(a).getTime()) / 86400000);
+function getDayOfWeek(): DayOfWeek {
+  const days: DayOfWeek[] = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'];
+  return days[new Date().getDay()];
 }
 
-function stageFromPoints(points: number) {
-  for (let i = PLANT_STAGES.length - 1; i >= 0; i--) {
-    if (points >= PLANT_STAGES[i].minPoints) return PLANT_STAGES[i].stage;
-  }
-  return 'seed' as const;
-}
-
-const DEFAULT_PLANT: PlantState = { waterPoints: 0, stage: 'seed', lastWateredDate: '', lastDecayCheckDate: '', dailyLeavesGrown: 0, dailyDate: '' };
-
-async function getPlant(): Promise<PlantState> {
-  const result = await chrome.storage.local.get(STORAGE_KEYS.PLANT);
-  return result[STORAGE_KEYS.PLANT] || { ...DEFAULT_PLANT };
-}
-
-async function savePlant(state: PlantState): Promise<void> {
-  await chrome.storage.local.set({ [STORAGE_KEYS.PLANT]: state });
-}
-
-async function checkDecay(state: PlantState): Promise<PlantState> {
-  const today = getToday();
-  if (state.lastDecayCheckDate === today) return state;
-  if (!state.lastWateredDate) return { ...state, lastDecayCheckDate: today };
-  const missed = daysBetween(state.lastWateredDate, today) - 1;
-  if (missed <= 0) return { ...state, lastDecayCheckDate: today };
-  const pointsLost = Math.min(state.waterPoints, missed * PLANT_DECAY_PER_DAY);
-  const newPoints = Math.max(0, state.waterPoints - pointsLost);
-  const updated: PlantState = { ...state, waterPoints: newPoints, stage: stageFromPoints(newPoints), lastDecayCheckDate: today };
-  await savePlant(updated);
-  return updated;
-}
-
-async function waterPlant(): Promise<PlantState> {
-  let state = await getPlant();
-  state = await checkDecay(state);
-  const newPoints = Math.min(PLANT_MAX_POINTS, state.waterPoints + 1);
-  const today = getToday();
-  const dailyLeavesGrown = (state.dailyDate === today ? state.dailyLeavesGrown : 0) + 1;
-  const updated: PlantState = { waterPoints: newPoints, stage: stageFromPoints(newPoints), lastWateredDate: today, lastDecayCheckDate: state.lastDecayCheckDate, dailyLeavesGrown, dailyDate: today };
-  await savePlant(updated);
-  return updated;
-}
-
-async function getReminders(): Promise<Reminder[]> {
-  const result = await chrome.storage.local.get(STORAGE_KEYS.REMINDERS);
-  return result[STORAGE_KEYS.REMINDERS] || [];
-}
-
-function isWithinSchedule(schedule?: Reminder['schedule']): boolean {
-  if (!schedule) return true;
+function isWithinSchedule(reminder: Reminder): boolean {
   const now = new Date();
-  const days = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'] as const;
-  const dayName = days[now.getDay()];
-  const hour = now.getHours();
-  if (!schedule.activeDays.includes(dayName as never)) return false;
-  if (hour < schedule.startHour || hour >= schedule.endHour) return false;
+  const currentDay = getDayOfWeek();
+  const currentHour = now.getHours();
+
+  if (!reminder.schedule.activeDays.includes(currentDay)) return false;
+  if (currentHour < reminder.schedule.startHour || currentHour >= reminder.schedule.endHour) return false;
   return true;
 }
 
-function scheduleAlarm(reminder: Reminder) {
-  chrome.alarms.create(`${ALARM_PREFIX}${reminder.id}`, {
+function getAlarmName(reminderId: string): string {
+  return `breather_reminder_${reminderId}`;
+}
+
+async function scheduleReminder(reminder: Reminder): Promise<void> {
+  const alarmName = getAlarmName(reminder.id);
+  await chrome.alarms.clear(alarmName);
+
+  if (!reminder.isActive) return;
+
+  await chrome.alarms.create(alarmName, {
     periodInMinutes: reminder.intervalMinutes,
     delayInMinutes: reminder.intervalMinutes,
   });
 }
 
-function cancelAlarm(id: string) {
-  chrome.alarms.clear(`${ALARM_PREFIX}${id}`);
+async function cancelReminder(reminderId: string): Promise<void> {
+  await chrome.alarms.clear(getAlarmName(reminderId));
+}
+
+async function syncAllAlarms(): Promise<void> {
+  const result = await chrome.storage.local.get(STORAGE_KEYS.REMINDERS);
+  const reminders: Reminder[] = result[STORAGE_KEYS.REMINDERS] || [];
+
+  const existing = await chrome.alarms.getAll();
+  for (const alarm of existing) {
+    if (alarm.name.startsWith('breather_reminder_')) {
+      await chrome.alarms.clear(alarm.name);
+    }
+  }
+
+  for (const reminder of reminders) {
+    if (reminder.isActive) {
+      await scheduleReminder(reminder);
+    }
+  }
 }
 
 chrome.alarms.onAlarm.addListener(async (alarm) => {
-  if (!alarm.name.startsWith(ALARM_PREFIX)) return;
-  const id = alarm.name.slice(ALARM_PREFIX.length);
-  const reminders = await getReminders();
-  const reminder = reminders.find((r) => r.id === id);
-  if (!reminder || !reminder.isActive) return;
-  if (!isWithinSchedule(reminder.schedule)) return;
+  if (!alarm.name.startsWith('breather_reminder_')) return;
 
-  const body = BREAK_PROMPTS[Math.floor(Math.random() * BREAK_PROMPTS.length)];
-  chrome.notifications.create(`notif_${id}`, {
+  const reminderId = alarm.name.replace('breather_reminder_', '');
+  const result = await chrome.storage.local.get(STORAGE_KEYS.REMINDERS);
+  const reminders: Reminder[] = result[STORAGE_KEYS.REMINDERS] || [];
+  const reminder = reminders.find((r) => r.id === reminderId);
+
+  if (!reminder || !reminder.isActive) return;
+  if (!isWithinSchedule(reminder)) return;
+
+  await chrome.notifications.create(`breather_notif_${reminderId}_${Date.now()}`, {
     type: 'basic',
     iconUrl: 'icons/icon-128.png',
     title: `${reminder.icon} Time for a ${reminder.title.toLowerCase()} break`,
-    message: body,
-    buttons: [
-      { title: '🧘 Take Break' },
-    ],
+    message: getRandomPrompt(),
+    buttons: [{ title: `${reminder.icon} Take Break` }],
+    priority: 2,
     requireInteraction: true,
   });
 });
 
-chrome.notifications.onButtonClicked.addListener(async (notificationId) => {
+chrome.notifications.onButtonClicked.addListener(async (notificationId, _buttonIndex) => {
+  if (!notificationId.startsWith('breather_notif_')) return;
+
+  const parts = notificationId.split('_');
+  const reminderId = parts[2];
+
+  const result = await chrome.storage.local.get(STORAGE_KEYS.REMINDERS);
+  const reminders: Reminder[] = result[STORAGE_KEYS.REMINDERS] || [];
+  const reminder = reminders.find((r) => r.id === reminderId);
+
+  const breakDuration = reminder?.breakDurationSeconds || 60;
+
+  await chrome.tabs.create({
+    url: `${PWA_URL}/active-break?reminderId=${reminderId}&duration=${breakDuration}`,
+  });
+
   chrome.notifications.clear(notificationId);
-  chrome.action.openPopup();
 });
 
 chrome.notifications.onClicked.addListener(async (notificationId) => {
+  if (!notificationId.startsWith('breather_notif_')) return;
+
+  const parts = notificationId.split('_');
+  const reminderId = parts[2];
+
+  const result = await chrome.storage.local.get(STORAGE_KEYS.REMINDERS);
+  const reminders: Reminder[] = result[STORAGE_KEYS.REMINDERS] || [];
+  const reminder = reminders.find((r) => r.id === reminderId);
+
+  const breakDuration = reminder?.breakDurationSeconds || 60;
+
+  await chrome.tabs.create({
+    url: `${PWA_URL}/active-break?reminderId=${reminderId}&duration=${breakDuration}`,
+  });
+
   chrome.notifications.clear(notificationId);
-  chrome.action.openPopup();
 });
+
+chrome.runtime.onInstalled.addListener(async () => {
+  await syncAllAlarms();
+});
+
+chrome.runtime.onStartup.addListener(async () => {
+  await syncAllAlarms();
+});
+
+chrome.storage.onChanged.addListener(async (changes, area) => {
+  if (area !== 'local') return;
+  if (changes[STORAGE_KEYS.REMINDERS]) {
+    await syncAllAlarms();
+  }
+});
+
+const SYNC_STORAGE_KEYS = [
+  '@breather_reminders',
+  '@breather_settings',
+  '@breather_progress',
+  '@breather_plant',
+  '@breather_pot_collection',
+];
+
+async function pullFromPWA(): Promise<boolean> {
+  try {
+    const tabs = await chrome.tabs.query({ url: `${PWA_URL}/*` });
+    let tabId: number;
+
+    if (tabs.length > 0 && tabs[0].id) {
+      tabId = tabs[0].id;
+    } else {
+      return false;
+    }
+
+    const results = await chrome.scripting.executeScript({
+      target: { tabId },
+      func: (keys: string[]) => {
+        const data: Record<string, unknown> = {};
+        for (const key of keys) {
+          const raw = localStorage.getItem(key);
+          if (raw !== null) {
+            try { data[key] = JSON.parse(raw); } catch { data[key] = raw; }
+          }
+        }
+        return data;
+      },
+      args: [SYNC_STORAGE_KEYS],
+    });
+
+    if (results && results[0] && results[0].result) {
+      const data = results[0].result as Record<string, unknown>;
+      if (Object.keys(data).length > 0) {
+        await chrome.storage.local.set(data);
+        return true;
+      }
+    }
+    return false;
+  } catch {
+    return false;
+  }
+}
 
 chrome.runtime.onMessage.addListener((message, _sender, sendResponse) => {
-  if (message.type === 'GET_PLANT_STATE') {
-    getPlant().then(async (state) => {
-      const updated = await checkDecay(state);
-      sendResponse(updated);
-    });
-    return true;
-  }
-
-  if (message.type === 'WATER_PLANT') {
-    waterPlant().then(sendResponse);
-    return true;
-  }
-
-  if (message.type === 'SYNC_PLANT') {
-    savePlant(message.plant).then(() => sendResponse({ ok: true }));
-    return true;
-  }
-
-  if (message.type === 'GET_NEXT_ALARM') {
-    getReminders().then(async (reminders) => {
-      const activeIds = reminders.filter((r) => r.isActive).map((r) => r.id);
-      const alarms = await chrome.alarms.getAll();
-      let earliest: chrome.alarms.Alarm | null = null;
-      for (const alarm of alarms) {
-        if (!alarm.name.startsWith(ALARM_PREFIX)) continue;
-        const id = alarm.name.slice(ALARM_PREFIX.length);
-        if (!activeIds.includes(id)) continue;
-        if (!earliest || alarm.scheduledTime < earliest.scheduledTime) earliest = alarm;
-      }
-      sendResponse(earliest ? { scheduledTime: earliest.scheduledTime } : null);
-    });
-    return true;
-  }
-
-  if (message.type === 'SCHEDULE_REMINDER') {
-    const reminder = message.reminder as Reminder;
-    scheduleAlarm(reminder);
+  if (message.type === 'OPEN_TAB') {
+    chrome.tabs.create({ url: `${PWA_URL}${message.path || '/'}` });
     sendResponse({ ok: true });
+  }
+  if (message.type === 'SYNC_ALARMS') {
+    syncAllAlarms().then(() => sendResponse({ ok: true }));
     return true;
   }
-
-  if (message.type === 'CANCEL_REMINDER') {
-    cancelAlarm(message.id);
-    sendResponse({ ok: true });
+  if (message.type === 'PULL_FROM_PWA') {
+    pullFromPWA().then((ok) => sendResponse({ ok }));
     return true;
-  }
-
-  if (message.type === 'CANCEL_ALL') {
-    chrome.alarms.clearAll();
-    sendResponse({ ok: true });
-    return true;
-  }
-});
-
-chrome.runtime.onInstalled.addListener(async (details) => {
-  // On first install, open welcome page with pinning instructions
-  if (details.reason === 'install') {
-    chrome.tabs.create({
-      url: chrome.runtime.getURL('welcome.html'),
-    });
-  }
-
-  const reminders = await getReminders();
-  for (const r of reminders) {
-    if (r.isActive) scheduleAlarm(r);
   }
 });

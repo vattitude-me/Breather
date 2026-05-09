@@ -2,8 +2,16 @@
   "manifest_version": 3,
   "name": "Breather - Break Reminders",
   "version": "1.1.0",
-  "description": "Gentle break reminders with a virtual plant companion. Take better breaks.",
-  "permissions": ["alarms", "storage", "notifications", "tabs"],
+  "description": "Grow your virtual plant by taking healthy breaks. Syncs with the Breather web app for full experience.",
+  "permissions": [
+    "alarms",
+    "notifications",
+    "storage",
+    "scripting"
+  ],
+  "host_permissions": [
+    "https://breather-break.vercel.app/*"
+  ],
   "action": {
     "default_popup": "popup.html",
     "default_icon": {
@@ -16,15 +24,16 @@
     "service_worker": "background.js",
     "type": "module"
   },
+  "content_scripts": [
+    {
+      "matches": ["https://breather-break.vercel.app/*"],
+      "js": ["content-sync.js"],
+      "run_at": "document_idle"
+    }
+  ],
   "icons": {
     "16": "icons/icon-16.png",
     "48": "icons/icon-48.png",
     "128": "icons/icon-128.png"
-  },
-  "web_accessible_resources": [
-    {
-      "resources": ["welcome.html", "welcome.js"],
-      "matches": ["<all_urls>"]
-    }
-  ]
+  }
 }

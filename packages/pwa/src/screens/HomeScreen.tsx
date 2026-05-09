@@ -181,7 +181,7 @@ export default function HomeScreen() {
   const showMotivation = useCallback(() => {
     const msg = PLANT_MOTIVATIONS[Math.floor(Math.random() * PLANT_MOTIVATIONS.length)];
     setMotivation(msg);
-    setTimeout(() => setMotivation(null), 2000);
+    setTimeout(() => setMotivation(null), 4000);
   }, []);
 
   useEffect(() => {
@@ -505,16 +505,23 @@ export default function HomeScreen() {
 
           {motivation && (
             <div style={{
+              position: 'absolute',
+              top: '12px',
+              left: '50%',
+              transform: 'translateX(-50%)',
               fontSize: '13px',
               fontWeight: 600,
               color: COLORS.accent,
-              marginTop: '6px',
               display: 'flex',
               alignItems: 'center',
               gap: '4px',
               animation: 'fadeIn 0.3s ease',
-              position: 'relative',
-              zIndex: 6,
+              zIndex: 10,
+              backgroundColor: 'rgba(255,255,255,0.92)',
+              padding: '6px 14px',
+              borderRadius: '20px',
+              boxShadow: '0 2px 8px rgba(0,0,0,0.08)',
+              whiteSpace: 'nowrap',
             }}>
               <span style={{ fontSize: '16px' }}>{motivation.icon}</span>
               {motivation.text}

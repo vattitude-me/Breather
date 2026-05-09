@@ -1,5 +1,10 @@
+import { StrictMode } from 'react';
 import { createRoot } from 'react-dom/client';
-import App from './App';
+import PopupApp from './PopupApp';
+import './popup.css';
 
-const root = createRoot(document.getElementById('root')!);
-root.render(<App />);
+createRoot(document.getElementById('root')!).render(
+  <StrictMode>
+    <PopupApp />
+  </StrictMode>
+);
