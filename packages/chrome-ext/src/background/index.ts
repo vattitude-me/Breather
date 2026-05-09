@@ -128,8 +128,11 @@ chrome.notifications.onClicked.addListener(async (notificationId) => {
   chrome.notifications.clear(notificationId);
 });
 
-chrome.runtime.onInstalled.addListener(async () => {
+chrome.runtime.onInstalled.addListener(async (details) => {
   await syncAllAlarms();
+  if (details.reason === 'install') {
+    await chrome.tabs.create({ url: `${PWA_URL}/home?source=extension` });
+  }
 });
 
 chrome.runtime.onStartup.addListener(async () => {
