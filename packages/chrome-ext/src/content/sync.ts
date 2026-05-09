@@ -6,7 +6,19 @@ const STORAGE_KEYS = [
   '@breather_pot_collection',
 ];
 
+function isContextValid(): boolean {
+  try {
+    return !!chrome.runtime?.id;
+  } catch {
+    return false;
+  }
+}
+
 function localStorageToExtension() {
+  if (!isContextValid()) {
+    cleanup();
+    return;
+  }
   const data: Record<string, unknown> = {};
   for (const key of STORAGE_KEYS) {
     const raw = localStorage.getItem(key);
@@ -33,6 +45,10 @@ function extensionToLocalStorage(changes: Record<string, { newValue?: unknown }>
 }
 
 chrome.storage.onChanged.addListener((changes, area) => {
+  if (!isContextValid()) {
+    cleanup();
+    return;
+  }
   if (area === 'local') {
     extensionToLocalStorage(changes);
   }
@@ -48,9 +64,14 @@ window.addEventListener('breather-local-change', () => {
   localStorageToExtension();
 });
 
-// PWA is source of truth - push localStorage to extension on every page load
-localStorageToExtension();
+let pollInterval: ReturnType<typeof setInterval> | null = null;
 
-// Also poll for changes every 5 seconds in case React state updates localStorage
-// without triggering the custom event
-setInterval(localStorageToExtension, 5000);
+function cleanup() {
+  if (pollInterval) {
+    clearInterval(pollInterval);
+    pollInterval = null;
+  }
+}
+
+localStorageToExtension();
+pollInterval = setInterval(localStorageToExtension, 5000);
