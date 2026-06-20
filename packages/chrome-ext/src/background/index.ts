@@ -2,6 +2,7 @@ import { Reminder, DayOfWeek } from '@breather/shared/src/types';
 import { STORAGE_KEYS } from '@breather/shared/src/constants';
 
 const PWA_URL = 'https://breather-break.vercel.app';
+const PWA_HEARTBEAT_STALE_MS = 90_000; // 90 seconds - PWA writes every 30s
 
 const NOTIFICATION_PROMPTS = [
   'Your body will thank you!',
@@ -28,6 +29,21 @@ function isWithinSchedule(reminder: Reminder): boolean {
   if (!reminder.schedule.activeDays.includes(currentDay)) return false;
   if (currentHour < reminder.schedule.startHour || currentHour >= reminder.schedule.endHour) return false;
   return true;
+}
+
+async function isPwaHandlingNotifications(): Promise<boolean> {
+  try {
+    const result = await chrome.storage.local.get(STORAGE_KEYS.PWA_ACTIVE);
+    const lastHeartbeat = Number(result[STORAGE_KEYS.PWA_ACTIVE]);
+    if (lastHeartbeat && (Date.now() - lastHeartbeat) < PWA_HEARTBEAT_STALE_MS) {
+      return true;
+    }
+    // Check if PWA is open as a tab or installed standalone window
+    const tabs = await chrome.tabs.query({ url: `${PWA_URL}/*` });
+    return tabs.length > 0;
+  } catch {
+    return false;
+  }
 }
 
 function getAlarmName(reminderId: string): string {
@@ -70,6 +86,9 @@ async function syncAllAlarms(): Promise<void> {
 
 chrome.alarms.onAlarm.addListener(async (alarm) => {
   if (!alarm.name.startsWith('breather_reminder_')) return;
+
+  // If the PWA is actively running, let it handle notifications to avoid duplicates
+  if (await isPwaHandlingNotifications()) return;
 
   const reminderId = alarm.name.replace('breather_reminder_', '');
   const result = await chrome.storage.local.get(STORAGE_KEYS.REMINDERS);
@@ -152,6 +171,7 @@ const SYNC_STORAGE_KEYS = [
   '@breather_progress',
   '@breather_plant',
   '@breather_pot_collection',
+  '@breather_pwa_active',
 ];
 
 async function pullFromPWA(): Promise<boolean> {

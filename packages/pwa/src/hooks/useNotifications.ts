@@ -2,7 +2,7 @@ import { useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useRemindersContext } from '../context/RemindersContext';
 import { requestPermissions, resyncAllTimers, scheduleReminder } from '../services/notifications';
-import { DEFAULT_BREAK_DURATION_SECONDS } from '@breather/shared';
+import { DEFAULT_BREAK_DURATION_SECONDS, STORAGE_KEYS } from '@breather/shared';
 
 export function useNotifications() {
   const { reminders, isLoading } = useRemindersContext();
@@ -59,6 +59,20 @@ export function useNotifications() {
       document.removeEventListener('visibilitychange', handleVisibility);
       window.removeEventListener('focus', handleFocus);
     };
+  }, []);
+
+  // Write a heartbeat to localStorage so the Chrome extension knows the PWA is
+  // actively handling notifications and can skip its own.
+  useEffect(() => {
+    if (Notification.permission !== 'granted') return;
+
+    const writeHeartbeat = () => {
+      localStorage.setItem(STORAGE_KEYS.PWA_ACTIVE, String(Date.now()));
+      window.dispatchEvent(new Event('breather-local-change'));
+    };
+    writeHeartbeat();
+    const interval = setInterval(writeHeartbeat, 30_000);
+    return () => clearInterval(interval);
   }, []);
 
   // On load and when reminders change: set up page-side timers AND sync to SW

@@ -1,5 +1,7 @@
 import { useState } from 'react';
-import { COLORS, POTS_CATALOG, BREAK_DURATION_OPTIONS, INTERVAL_PRESETS } from '@breather/shared';
+import { COLORS, POTS_CATALOG, DEFAULT_SCHEDULE, DEFAULT_SETTINGS, saveSettings } from '@breather/shared';
+import { DayOfWeek } from '@breather/shared/src/types';
+import SchedulePicker from '../components/SchedulePicker';
 
 interface WelcomeModalProps {
   onDismiss: () => void;
@@ -28,8 +30,9 @@ const SLIDES = [
 
 export default function WelcomeModal({ onDismiss }: WelcomeModalProps) {
   const [currentSlide, setCurrentSlide] = useState(0);
-  const [selectedInterval, setSelectedInterval] = useState(30);
-  const [selectedBreakDuration, setSelectedBreakDuration] = useState(60);
+  const [activeDays, setActiveDays] = useState<DayOfWeek[]>([...DEFAULT_SCHEDULE.activeDays]);
+  const [startHour, setStartHour] = useState(DEFAULT_SCHEDULE.startHour);
+  const [endHour, setEndHour] = useState(DEFAULT_SCHEDULE.endHour);
 
   const isLastSlide = currentSlide === SLIDES.length - 1;
   const isSetupStep = currentSlide === SLIDES.length;
@@ -44,8 +47,11 @@ export default function WelcomeModal({ onDismiss }: WelcomeModalProps) {
 
   const handleFinish = () => {
     localStorage.setItem('@breather_onboarded', 'true');
-    localStorage.setItem('@breather_setup_interval', String(selectedInterval));
-    localStorage.setItem('@breather_setup_break_duration', String(selectedBreakDuration));
+    const schedule = { activeDays, startHour, endHour };
+    saveSettings({
+      ...DEFAULT_SETTINGS,
+      defaultSchedule: schedule,
+    });
     onDismiss();
   };
 
@@ -56,15 +62,6 @@ export default function WelcomeModal({ onDismiss }: WelcomeModalProps) {
       return secs > 0 ? `${mins}m ${secs}s` : `${mins} min`;
     }
     return `${seconds}s`;
-  };
-
-  const formatInterval = (minutes: number): string => {
-    if (minutes >= 60) {
-      const hours = Math.floor(minutes / 60);
-      const mins = minutes % 60;
-      return mins > 0 ? `${hours}h ${mins}m` : `${hours}h`;
-    }
-    return `${minutes} min`;
   };
 
   const potPreview = POTS_CATALOG.slice(0, 3);
@@ -328,81 +325,19 @@ export default function WelcomeModal({ onDismiss }: WelcomeModalProps) {
               color: COLORS.textSecondary,
               marginBottom: '20px',
             }}>
-              Choose your preferred defaults. You can change these anytime.
+              When should we remind you to take breaks?
             </p>
 
-            {/* Reminder interval selection */}
-            <div style={{ textAlign: 'left', marginBottom: '18px' }}>
-              <label style={{
-                fontSize: '13px',
-                fontWeight: 600,
-                color: COLORS.text,
-                display: 'block',
-                marginBottom: '8px',
-              }}>
-                Remind me every
-              </label>
-              <div style={{
-                display: 'flex',
-                gap: '6px',
-                flexWrap: 'wrap',
-              }}>
-                {INTERVAL_PRESETS.filter(m => m >= 15).map((mins) => (
-                  <button
-                    key={mins}
-                    onClick={() => setSelectedInterval(mins)}
-                    style={{
-                      padding: '8px 14px',
-                      borderRadius: '10px',
-                      border: `1.5px solid ${selectedInterval === mins ? COLORS.primary : COLORS.border}`,
-                      backgroundColor: selectedInterval === mins ? COLORS.primaryLight : 'white',
-                      color: selectedInterval === mins ? COLORS.primary : COLORS.textSecondary,
-                      fontSize: '13px',
-                      fontWeight: 600,
-                      cursor: 'pointer',
-                    }}
-                  >
-                    {formatInterval(mins)}
-                  </button>
-                ))}
-              </div>
-            </div>
-
-            {/* Break duration selection */}
+            {/* Work schedule */}
             <div style={{ textAlign: 'left', marginBottom: '24px' }}>
-              <label style={{
-                fontSize: '13px',
-                fontWeight: 600,
-                color: COLORS.text,
-                display: 'block',
-                marginBottom: '8px',
-              }}>
-                Break duration
-              </label>
-              <div style={{
-                display: 'flex',
-                gap: '6px',
-                flexWrap: 'wrap',
-              }}>
-                {BREAK_DURATION_OPTIONS.map((secs) => (
-                  <button
-                    key={secs}
-                    onClick={() => setSelectedBreakDuration(secs)}
-                    style={{
-                      padding: '8px 14px',
-                      borderRadius: '10px',
-                      border: `1.5px solid ${selectedBreakDuration === secs ? COLORS.accent : COLORS.border}`,
-                      backgroundColor: selectedBreakDuration === secs ? COLORS.accentLight : 'white',
-                      color: selectedBreakDuration === secs ? COLORS.accent : COLORS.textSecondary,
-                      fontSize: '13px',
-                      fontWeight: 600,
-                      cursor: 'pointer',
-                    }}
-                  >
-                    {formatDuration(secs)}
-                  </button>
-                ))}
-              </div>
+              <SchedulePicker
+                activeDays={activeDays}
+                startHour={startHour}
+                endHour={endHour}
+                onDaysChange={setActiveDays}
+                onStartHourChange={setStartHour}
+                onEndHourChange={setEndHour}
+              />
             </div>
 
             {/* Finish buttons */}

@@ -4,6 +4,7 @@ const STORAGE_KEYS = [
   '@breather_progress',
   '@breather_plant',
   '@breather_pot_collection',
+  '@breather_pwa_active',
 ];
 
 function isContextValid(): boolean {

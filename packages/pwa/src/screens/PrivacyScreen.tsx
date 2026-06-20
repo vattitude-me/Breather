@@ -62,6 +62,15 @@ export default function PrivacyScreen() {
 
         <div className="settings-card">
           <h2 style={{ fontSize: '15px', fontWeight: 700, color: COLORS.text, margin: '0 0 8px' }}>
+            Chrome Extension
+          </h2>
+          <p style={{ fontSize: '13px', color: COLORS.textSecondary, lineHeight: 1.6, margin: 0 }}>
+            The Breather Chrome extension syncs your reminders, settings, and plant progress between the extension and this web app using local browser storage only. No data is sent to any external server. The extension uses chrome.storage.local and communicates with this web app via a content script on the same page - all data stays on your device.
+          </p>
+        </div>
+
+        <div className="settings-card">
+          <h2 style={{ fontSize: '15px', fontWeight: 700, color: COLORS.text, margin: '0 0 8px' }}>
             Third-party services
           </h2>
           <p style={{ fontSize: '13px', color: COLORS.textSecondary, lineHeight: 1.6, margin: 0 }}>
@@ -74,7 +83,7 @@ export default function PrivacyScreen() {
             Changes to this policy
           </h2>
           <p style={{ fontSize: '13px', color: COLORS.textSecondary, lineHeight: 1.6, margin: 0 }}>
-            If we make changes to this policy, they will be reflected here. Last updated: April 2026.
+            If we make changes to this policy, they will be reflected here. Last updated: May 2026.
           </p>
         </div>
       </div>

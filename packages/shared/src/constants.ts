@@ -20,7 +20,7 @@ export const COLORS = {
 };
 
 export const APP_NAME = 'Breather';
-export const APP_VERSION = '3.13.1';
+export const APP_VERSION = '3.14.0';
 
 export const CATEGORIES = [
   { title: 'Targeted', icon: '🎯', color: '#FCE4EC' },
@@ -61,6 +61,7 @@ export const STORAGE_KEYS = {
   PLANT: '@breather_plant',
   POT_COLLECTION: '@breather_pot_collection',
   DEV_MODE: '@breather_dev_mode',
+  PWA_ACTIVE: '@breather_pwa_active',
 };
 
 export const PLANT_STAGES = [

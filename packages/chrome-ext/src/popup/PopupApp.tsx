@@ -87,7 +87,7 @@ export default function PopupApp() {
   return (
     <div className="popup">
       <div className="popup-header">
-        <span className="popup-logo">🌱 Breather</span>
+        <span className="popup-logo">Breather</span>
         <button className="popup-open-btn" onClick={() => openPWA('/home')}>
           Open App ↗
         </button>

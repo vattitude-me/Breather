@@ -4,7 +4,9 @@ import { useRemindersContext } from '../context/RemindersContext';
 import { cancelAllReminders, scheduleReminder } from '../services/notifications';
 import { hasAnalyticsConsent, setAnalyticsConsent } from '../services/analytics';
 import { COLORS, APP_VERSION, STORAGE_KEYS } from '@breather/shared';
+import { DayOfWeek } from '@breather/shared/src/types';
 import Logo from '../components/Logo';
+import SchedulePicker from '../components/SchedulePicker';
 import '../screens.css';
 
 function InfoTooltip({ text }: { text: string }) {
@@ -42,6 +44,40 @@ export default function SettingsScreen() {
   const [devMode, setDevMode] = useState(
     () => localStorage.getItem(STORAGE_KEYS.DEV_MODE) === 'true'
   );
+  const [scheduleOpen, setScheduleOpen] = useState(false);
+  const [activeDays, setActiveDays] = useState<DayOfWeek[]>([...settings.defaultSchedule.activeDays]);
+  const [startHour, setStartHour] = useState(settings.defaultSchedule.startHour);
+  const [endHour, setEndHour] = useState(settings.defaultSchedule.endHour);
+  const [scheduleApplied, setScheduleApplied] = useState(false);
+
+  const scheduleChanged =
+    startHour !== settings.defaultSchedule.startHour ||
+    endHour !== settings.defaultSchedule.endHour ||
+    activeDays.length !== settings.defaultSchedule.activeDays.length ||
+    !activeDays.every((d) => settings.defaultSchedule.activeDays.includes(d));
+
+  const handleApplySchedule = async (applyToExisting: boolean) => {
+    const newSchedule = { activeDays, startHour, endHour };
+    updateSettings({ ...settings, defaultSchedule: newSchedule });
+
+    if (applyToExisting && reminders.length > 0) {
+      for (const r of reminders) {
+        const updated = { ...r, schedule: newSchedule };
+        dispatch({ type: 'UPDATE', payload: updated });
+        if (updated.isActive) {
+          try {
+            const notificationId = await scheduleReminder(updated);
+            dispatch({ type: 'UPDATE', payload: { ...updated, notificationId } });
+          } catch (e) {
+            console.error('Failed to reschedule reminder:', e);
+          }
+        }
+      }
+    }
+
+    setScheduleApplied(true);
+    setTimeout(() => setScheduleApplied(false), 2000);
+  };
 
   const handleToggleNotifications = async (value: boolean) => {
     setNotificationsEnabled(value);
@@ -115,6 +151,90 @@ export default function SettingsScreen() {
         </div>
 
 
+
+        {/* Default Schedule */}
+        <div className="settings-card" style={{ overflow: 'hidden' }}>
+          <button
+            onClick={() => setScheduleOpen(!scheduleOpen)}
+            className="settings-card-row"
+            style={{
+              width: '100%', background: 'none', border: 'none',
+              cursor: 'pointer', padding: 0,
+              display: 'flex', alignItems: 'center', justifyContent: 'space-between',
+            }}
+          >
+            <span className="settings-card-label">Default Schedule</span>
+            <svg
+              width="16" height="16" viewBox="0 0 24 24" fill="none"
+              stroke={COLORS.textSecondary} strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"
+              style={{
+                transition: 'transform 0.2s ease',
+                transform: scheduleOpen ? 'rotate(90deg)' : 'rotate(0deg)',
+              }}
+            >
+              <polyline points="9 18 15 12 9 6" />
+            </svg>
+          </button>
+          {scheduleOpen && (
+            <div style={{ padding: '16px 0 4px', borderTop: `1px solid ${COLORS.border}`, marginTop: '12px' }}>
+              <SchedulePicker
+                activeDays={activeDays}
+                startHour={startHour}
+                endHour={endHour}
+                onDaysChange={setActiveDays}
+                onStartHourChange={setStartHour}
+                onEndHourChange={setEndHour}
+              />
+              {scheduleChanged && (
+                <div style={{ marginTop: '14px', display: 'flex', gap: '8px', flexDirection: 'column' }}>
+                  {reminders.length > 0 && (
+                    <button
+                      onClick={() => handleApplySchedule(true)}
+                      style={{
+                        padding: '10px',
+                        background: COLORS.primary,
+                        color: 'white',
+                        border: 'none',
+                        borderRadius: '10px',
+                        fontSize: '13px',
+                        fontWeight: 600,
+                        cursor: 'pointer',
+                      }}
+                    >
+                      Apply to all reminders
+                    </button>
+                  )}
+                  <button
+                    onClick={() => handleApplySchedule(false)}
+                    style={{
+                      padding: '10px',
+                      background: reminders.length > 0 ? 'none' : COLORS.primary,
+                      color: reminders.length > 0 ? COLORS.textSecondary : 'white',
+                      border: reminders.length > 0 ? `1px solid ${COLORS.border}` : 'none',
+                      borderRadius: '10px',
+                      fontSize: '13px',
+                      fontWeight: 600,
+                      cursor: 'pointer',
+                    }}
+                  >
+                    {reminders.length > 0 ? 'Save as default only' : 'Save schedule'}
+                  </button>
+                </div>
+              )}
+              {scheduleApplied && (
+                <div style={{
+                  marginTop: '10px',
+                  textAlign: 'center',
+                  fontSize: '13px',
+                  fontWeight: 600,
+                  color: COLORS.accent,
+                }}>
+                  Schedule updated
+                </div>
+              )}
+            </div>
+          )}
+        </div>
 
         {/* Analytics */}
         <div className="settings-card">
