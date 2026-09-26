@@ -1,11 +1,4 @@
-const STORAGE_KEYS = [
-  '@breather_reminders',
-  '@breather_settings',
-  '@breather_progress',
-  '@breather_plant',
-  '@breather_pot_collection',
-  '@breather_pwa_active',
-];
+const STORAGE_KEYS = ['@breather_garden', '@breather_pwa_active'];
 
 function isContextValid(): boolean {
   try {

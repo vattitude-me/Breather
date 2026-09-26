@@ -14,190 +14,82 @@ precacheAndRoute(self.__WB_MANIFEST);
 cleanupOutdatedCaches();
 
 const navigationRoute = new NavigationRoute(createHandlerBoundToURL('index.html'), {
-  denylist: [/\/pots\//, /\.(png|jpg|svg|ico|webp)$/],
+  denylist: [/\.(png|jpg|svg|ico|webp)$/],
 });
 registerRoute(navigationRoute);
 
 registerRoute(
-  /^https:\/\/fonts\.googleapis\.com\/.*/i,
+  /^https:\/\/fonts\.(googleapis|gstatic)\.com\/.*/i,
   new CacheFirst({
     cacheName: 'google-fonts-cache',
     plugins: [
-      new ExpirationPlugin({ maxEntries: 10, maxAgeSeconds: 60 * 60 * 24 * 365 }),
+      new ExpirationPlugin({ maxEntries: 20, maxAgeSeconds: 60 * 60 * 24 * 365 }),
       new CacheableResponsePlugin({ statuses: [0, 200] }),
     ],
   }),
   'GET'
 );
 
-interface ScheduledReminder {
-  id: string;
+// One gentle reminder a day. The page keeps this in sync via SET_DAILY_REMINDER;
+// the page also runs its own timer, and both use the same tag so only one shows.
+interface DailyReminderState {
+  time: string; // 'HH:MM'
+  lastDay: string; // last local date with a session
   title: string;
-  icon: string;
-  intervalMs: number;
-  nextFireTime: number;
-  schedule?: {
-    activeDays: string[];
-    startHour: number;
-    endHour: number;
-  };
+  body: string;
 }
 
-const scheduledReminders = new Map<string, ScheduledReminder>();
-let checkTimer: ReturnType<typeof setTimeout> | null = null;
+let reminder: DailyReminderState | null = null;
+let timer: ReturnType<typeof setTimeout> | null = null;
 
-function isWithinSchedule(schedule?: ScheduledReminder['schedule']): boolean {
-  if (!schedule) return true;
-  const now = new Date();
-  const days = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'];
-  const dayName = days[now.getDay()];
-  const hour = now.getHours();
-  if (!schedule.activeDays.includes(dayName)) return false;
-  if (hour < schedule.startHour || hour >= schedule.endHour) return false;
-  return true;
+function todayKey(d = new Date()): string {
+  return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`;
 }
 
-function checkAndFire() {
-  const now = Date.now();
-  let nearestMs = Infinity;
+function nextFire(time: string): number {
+  const [h, m] = time.split(':').map(Number);
+  const next = new Date();
+  next.setHours(h, m, 0, 0);
+  if (next.getTime() <= Date.now()) next.setDate(next.getDate() + 1);
+  return next.getTime();
+}
 
-  const breakPrompts = [
-    'Your body will thank you!',
-    'A small pause goes a long way.',
-    'Time to stretch and reset.',
-    'Step away for a moment - you have earned it.',
-    'Quick break? Your plant is thirsty too!',
-  ];
-
-  for (const [id, reminder] of scheduledReminders) {
-    if (now >= reminder.nextFireTime) {
-      if (isWithinSchedule(reminder.schedule)) {
-        const body = breakPrompts[Math.floor(Math.random() * breakPrompts.length)];
-        self.registration.showNotification(`${reminder.icon} Time for a ${reminder.title.toLowerCase()} break`, {
-          body,
-          tag: `breather_${id}`,
-          requireInteraction: true,
-          icon: '/pwa-192x192.png',
-          badge: '/pwa-192x192.png',
-          data: { reminderId: id, title: reminder.title },
-          actions: [
-            { action: 'complete', title: '🧘 Take Break' },
-          ],
-        } as unknown as NotificationOptions);
-        notifyClients(id, 'alert');
-      }
-      while (reminder.nextFireTime <= now) {
-        reminder.nextFireTime += reminder.intervalMs;
-      }
+function arm() {
+  if (timer) clearTimeout(timer);
+  timer = null;
+  if (!reminder) return;
+  const current = reminder;
+  timer = setTimeout(() => {
+    if (current.lastDay !== todayKey()) {
+      self.registration.showNotification(current.title, {
+        body: current.body,
+        tag: 'breather_daily',
+        icon: '/pwa-192x192.png',
+        badge: '/pwa-192x192.png',
+      });
     }
-    const timeUntil = reminder.nextFireTime - now;
-    if (timeUntil < nearestMs) nearestMs = timeUntil;
-  }
-
-  scheduleNextCheck(nearestMs);
-}
-
-function scheduleNextCheck(nearestMs: number = 30000) {
-  if (checkTimer) clearTimeout(checkTimer);
-  if (scheduledReminders.size === 0) { checkTimer = null; return; }
-  const delay = Math.min(nearestMs, 30000);
-  checkTimer = setTimeout(() => checkAndFire(), delay);
-}
-
-function notifyClients(reminderId: string, action: string) {
-  self.clients.matchAll({ type: 'window' }).then((clients) => {
-    clients.forEach((client) => {
-      client.postMessage({ type: 'NOTIFICATION_ACTION', reminderId, action });
-    });
-  });
+    arm();
+  }, nextFire(current.time) - Date.now());
 }
 
 self.addEventListener('message', (event) => {
   const { type, payload } = event.data || {};
-
-  if (type === 'SCHEDULE_REMINDER') {
-    const { id, title, icon, intervalMs, nextFireTime, schedule } = payload;
-    scheduledReminders.set(id, {
-      id,
-      title,
-      icon,
-      intervalMs,
-      nextFireTime: nextFireTime || (Date.now() + intervalMs),
-      schedule,
-    });
-    checkAndFire();
+  if (type === 'SET_DAILY_REMINDER') {
+    reminder = payload;
+    arm();
   }
-
-  if (type === 'CANCEL_REMINDER') {
-    scheduledReminders.delete(payload.id);
-  }
-
-  if (type === 'CANCEL_ALL') {
-    scheduledReminders.clear();
-  }
-
-  if (type === 'SYNC_REMINDERS') {
-    scheduledReminders.clear();
-    for (const r of payload.reminders) {
-      // Calculate next clock-aligned fire time
-      const now = Date.now();
-      const todayStart = new Date();
-      todayStart.setHours(0, 0, 0, 0);
-      const msSinceMidnight = now - todayStart.getTime();
-      const cyclesPassed = Math.floor(msSinceMidnight / r.intervalMs);
-      const nextFireTime = todayStart.getTime() + (cyclesPassed + 1) * r.intervalMs;
-
-      scheduledReminders.set(r.id, {
-        id: r.id,
-        title: r.title,
-        icon: r.icon,
-        intervalMs: r.intervalMs,
-        nextFireTime,
-        schedule: r.schedule,
-      });
-    }
-    if (scheduledReminders.size > 0) checkAndFire();
-  }
-});
-
-self.addEventListener('push', (event) => {
-  if (!event.data) return;
-
-  const payload = event.data.json();
-  const title = payload.title || '🌱 Time for a break';
-  const options = {
-    body: payload.body || 'Your body will thank you!',
-    icon: payload.icon || '/pwa-192x192.png',
-    badge: '/pwa-192x192.png',
-    requireInteraction: true,
-    data: payload.data || {},
-    actions: [
-      { action: 'complete', title: '🌱 Done! Water plant' },
-      { action: 'snooze', title: '💤 Snooze' },
-    ],
-  } as unknown as NotificationOptions;
-
-  event.waitUntil(self.registration.showNotification(title, options));
 });
 
 self.addEventListener('notificationclick', (event) => {
-  const data = event.notification.data || {};
   event.notification.close();
-
-  notifyClients(data.reminderId || '', 'complete');
-
   event.waitUntil(
     self.clients.matchAll({ type: 'window', includeUncontrolled: true }).then((clients) => {
-      if (clients.length > 0) {
-        clients[0].focus();
-      } else {
-        const params = new URLSearchParams({
-          action: 'break',
-          reminderId: data.reminderId || '',
-          title: data.title || '',
-        });
-        self.clients.openWindow(`/?${params.toString()}`);
+      const client = clients[0];
+      if (client) {
+        client.postMessage({ type: 'OPEN_BREATHE' });
+        return client.focus().then(() => undefined);
       }
+      return self.clients.openWindow('/breathe').then(() => undefined);
     })
   );
 });

@@ -1,219 +1,162 @@
-* {
-  margin: 0;
-  padding: 0;
-  box-sizing: border-box;
-}
-
-:root {
-  --primary: #D4503C;
-  --accent: #0E8A7D;
-  --accent-light: #E0F7F5;
-  --bg: #FFF9F5;
-  --surface: #FFFFFF;
-  --text: #1A1A2E;
-  --text-secondary: #5C6370;
-  --border: #F0E6E0;
-  --disabled: #9CA3AF;
-}
+* { box-sizing: border-box; }
 
 body {
-  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
-  background: var(--bg);
-  color: var(--text);
+  margin: 0;
   width: 300px;
+  background: #FDF8F3;
+  color: #1F2A44;
+  font-family: 'Archivo', system-ui, -apple-system, 'Segoe UI', sans-serif;
+  -webkit-font-smoothing: antialiased;
 }
 
-.popup {
-  padding: 16px;
+button {
+  font: inherit;
+  border: none;
+  background: none;
+  padding: 0;
+  cursor: pointer;
 }
 
-.popup-header {
+.popup { min-height: 120px; }
+
+.stage {
+  position: relative;
+  height: 190px;
+  display: flex;
+  justify-content: center;
+  align-items: flex-end;
+  overflow: hidden;
+  background: linear-gradient(to top, #A9D19E 0 40px, transparent 40px);
+}
+
+.halo {
+  position: absolute;
+  top: 12px;
+  left: 50%;
+  width: 160px;
+  height: 160px;
+  margin-left: -80px;
+  border-radius: 50%;
+  background: #F6E9DC;
+}
+
+.stage .sprout {
+  position: relative;
+  margin-bottom: -40px;
+}
+
+.body {
+  position: relative;
+  margin-top: -16px;
+  padding: 20px 20px 18px;
+  background: #FDF8F3;
+  border-radius: 22px 22px 0 0;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+h1 {
+  margin: 0;
+  font-size: 24px;
+  line-height: 1.15;
+  font-weight: 600;
+  letter-spacing: -0.02em;
+}
+
+p {
+  margin: 0;
+  font-size: 14px;
+  line-height: 1.45;
+  color: #6B7288;
+}
+
+.cta {
+  margin-top: 10px;
+  width: 100%;
+  height: 48px;
+  padding: 0 18px;
+  border-radius: 16px;
+  background: #E8593D;
+  color: #FFFFFF;
+  font-size: 15px;
+  font-weight: 600;
   display: flex;
   align-items: center;
   justify-content: space-between;
-  margin-bottom: 14px;
+  box-shadow: 0 8px 20px rgba(232, 89, 61, 0.28);
+  transition: background 0.15s ease;
 }
 
-.popup-logo {
-  font-size: 15px;
-  font-weight: 700;
+.cta:hover { background: #DB4E33; }
+.cta:active { background: #C9442B; }
+
+.meta {
+  font-size: 13px;
+  font-weight: 500;
 }
 
-.popup-open-btn {
-  padding: 6px 12px;
-  border-radius: 16px;
-  border: none;
-  background: var(--accent);
-  color: white;
-  font-size: 11px;
-  font-weight: 600;
-  cursor: pointer;
-  transition: opacity 0.2s;
-}
-
-.popup-open-btn:hover {
-  opacity: 0.85;
-}
-
-.popup-countdown {
-  background: linear-gradient(135deg, var(--accent-light), #d4f5f0);
-  border-radius: 10px;
-  padding: 12px 14px;
-  margin-bottom: 12px;
-  text-align: center;
-}
-
-.popup-countdown-label {
-  font-size: 11px;
-  color: var(--text-secondary);
-  margin-bottom: 2px;
-}
-
-.popup-countdown-time {
-  font-size: 22px;
-  font-weight: 700;
-  color: var(--accent);
-}
-
-.popup-status-row {
+.foot {
+  margin-top: 8px;
   display: flex;
-  gap: 10px;
-  margin-bottom: 12px;
-}
-
-.popup-status-item {
-  flex: 1;
-  background: var(--surface);
-  border: 1px solid var(--border);
-  border-radius: 10px;
-  padding: 10px;
-  text-align: center;
-}
-
-.popup-status-value {
-  display: block;
-  font-size: 14px;
-  font-weight: 700;
-  margin-bottom: 2px;
-}
-
-.popup-status-label {
-  font-size: 11px;
-  color: var(--text-secondary);
-}
-
-.popup-reminders {
-  margin-bottom: 12px;
-}
-
-.popup-reminder-row {
-  display: flex;
+  justify-content: space-between;
   align-items: center;
   gap: 8px;
-  padding: 7px 0;
-  border-bottom: 1px solid var(--border);
-}
-
-.popup-reminder-row:last-child {
-  border-bottom: none;
-}
-
-.popup-reminder-icon {
-  font-size: 14px;
-}
-
-.popup-reminder-title {
-  flex: 1;
   font-size: 12px;
+  color: #9AA0B2;
+}
+
+.link {
+  font-size: 13px;
   font-weight: 500;
-  overflow: hidden;
-  text-overflow: ellipsis;
-  white-space: nowrap;
+  color: #E8593D;
 }
 
-.popup-reminder-interval {
-  font-size: 11px;
-  color: var(--text-secondary);
-  margin-right: 6px;
-}
+.link:hover { color: #C9442B; }
 
-.popup-toggle {
-  position: relative;
-  width: 28px;
-  height: 15px;
-  border-radius: 8px;
-  background: var(--disabled);
-  cursor: pointer;
-  transition: background 0.2s;
-  border: none;
-}
+/* Sprout (shared with the web app) */
 
-.popup-toggle.active {
-  background: var(--accent);
-}
-
-.popup-toggle::after {
-  content: '';
-  position: absolute;
-  top: 2px;
-  left: 2px;
-  width: 11px;
-  height: 11px;
-  border-radius: 50%;
-  background: white;
-  transition: transform 0.2s;
-}
-
-.popup-toggle.active::after {
-  transform: translateX(13px);
-}
-
-.popup-more {
-  padding: 6px 0;
-  font-size: 11px;
-  color: var(--accent);
-  cursor: pointer;
-  text-align: center;
-}
-
-.popup-more:hover {
-  text-decoration: underline;
-}
-
-.popup-empty {
-  padding: 14px;
-  text-align: center;
-  border: 1px dashed var(--border);
-  border-radius: 10px;
-  font-size: 12px;
-  color: var(--accent);
-  cursor: pointer;
-}
-
-.popup-empty:hover {
-  border-color: var(--accent);
-}
-
-.popup-footer {
+.sprout {
   display: flex;
-  gap: 8px;
-  border-top: 1px solid var(--border);
-  padding-top: 10px;
+  flex-direction: column;
+  align-items: center;
 }
 
-.popup-footer-link {
-  flex: 1;
-  padding: 6px;
-  border-radius: 8px;
-  border: none;
-  background: transparent;
-  font-size: 11px;
-  color: var(--text-secondary);
-  cursor: pointer;
-  transition: all 0.2s;
+.sprout-plant {
+  position: relative;
+  z-index: 1;
+  display: block;
+  overflow: visible;
 }
 
-.popup-footer-link:hover {
-  background: var(--accent-light);
-  color: var(--accent);
+.sprout-pot {
+  position: relative;
+  z-index: 0;
+  display: block;
+  object-fit: contain;
+}
+
+.sprout-sway {
+  animation: plantSway 4.5s ease-in-out infinite;
+  transform-origin: 60px 118px;
+}
+
+@keyframes plantSway {
+  0%, 100% { transform: rotate(0deg); }
+  25% { transform: rotate(-1.5deg); }
+  75% { transform: rotate(1.5deg); }
+}
+
+.sprout-leaf {
+  animation: leafWiggle 3s ease-in-out calc(var(--leaf-i, 1) * 0.4s) infinite;
+}
+
+@keyframes leafWiggle {
+  0%, 85%, 100% { transform: rotate(0deg); }
+  90% { transform: rotate(calc(var(--leaf-side, 1) * 2.5deg)); }
+  95% { transform: rotate(calc(var(--leaf-side, 1) * -1.5deg)); }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .sprout-sway, .sprout-leaf { animation: none; }
 }

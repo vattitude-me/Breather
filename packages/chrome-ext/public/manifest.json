@@ -1,8 +1,8 @@
 {
   "manifest_version": 3,
-  "name": "Breather - Break Reminders",
-  "version": "1.1.0",
-  "description": "Grow your virtual plant by taking healthy breaks. Syncs with the Breather web app for full experience.",
+  "name": "Breather",
+  "version": "2.0.0",
+  "description": "A tiny desk garden that grows each time you stop to breathe. One gentle daily reminder, synced with the Breather web app.",
   "permissions": [
     "alarms",
     "notifications",
@@ -26,8 +26,12 @@
   },
   "content_scripts": [
     {
-      "matches": ["https://breather-break.vercel.app/*"],
-      "js": ["content-sync.js"],
+      "matches": [
+        "https://breather-break.vercel.app/*"
+      ],
+      "js": [
+        "content-sync.js"
+      ],
       "run_at": "document_idle"
     }
   ],

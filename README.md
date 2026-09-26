@@ -1,65 +1,27 @@
 # Breather
 
-**A workplace wellness PWA and Chrome extension that keeps you healthy, focused, and productive - with a virtual plant that grows a new leaf every time you complete a break.**
+**Breathe and grow. A calm little breathing app with a sprout that grows one leaf every time you stop to breathe.**
 
 ---
 
-## The Problem
+## The idea
 
-Sedentary work kills productivity. People who sit for hours without movement suffer from back pain, eye strain, fatigue, and reduced concentration. Studies show that prolonged sitting increases absenteeism and healthcare costs while reducing cognitive performance.
+Most wellness apps ask too much. Breather asks for one thing: a few slow breaths a day.
 
-Most people *know* they should take breaks - they just forget.
-
-## The Solution
-
-Breather is a lightweight Progressive Web App (+ Chrome extension) that delivers timely, non-intrusive nudges to move, stretch, hydrate, and rest your eyes throughout the workday.
-
-It's not another wellness platform that gets ignored. It's a simple tool that does one thing brilliantly: reminds people to take care of themselves - and rewards them with a growing virtual plant.
+Each finished session grows a new leaf on your sprout. Twelve leaves and it blooms. There are no streak penalties, no collections to manage and no settings to wrestle with.
 
 ---
 
-## Key Features
+## What's in the app
 
-### Break Reminders
-- **Personalised reminders** - Stretch, drink water, walk, rest eyes, posture check, deep breath, or create custom activities
-- **Smart scheduling** - Only active during configured days and hours (defaults to Mon–Fri, 8am–5pm)
-- **Non-disruptive notifications** - Gentle nudges with rotating motivational prompts and one-tap actions
-- **Flexible intervals** - 1, 5, 15, 30, 45, 60, 90, or 120 minutes between breaks
-- **Countdown timer** - See exactly when your next break is coming, with paused-state awareness
+- **Guided breathing** - 1, 3 or 5 minute sessions with a breathing halo, phase countdown, optional soft chime and haptic cues. Three patterns: Calm (4·4·6), Box (4·4·4·4) and Even (5·5).
+- **A sprout that grows** - One leaf per completed session, a flower at full bloom. Close a session early and it simply doesn't count.
+- **Gentle daily reminder** - One nudge a day (morning, midday or evening), skipped if you've already breathed.
+- **Progress** - This week at a glance, day streak, total calm time and recent sessions.
+- **Chrome extension** - A minimal popup showing your sprout with a one-tap "Begin breathing", plus the daily reminder when the app isn't open.
+- **Private and offline** - Everything is stored on your device. No accounts.
 
-### Plant Gamification
-- **Daily leaf growth** - Each completed break grows a new leaf on your plant
-- **Realistic pot images** - Photorealistic collectible pots (terracotta, rattan, copper, galvanized, stone, marble, matte black)
-- **Progressive unlocks** - Pots unlock over days to months of consistent use (15, 50, 120, 250, 500, 1000 breaks)
-- **Watering animation** - Watering can overlay plays on the home screen when a break timer completes
-- **Daily decay** - Miss a day and your plant loses progress, encouraging consistency
-- **Daily colour rotation** - Your plant changes colour palette each day
-- **Leaf wiggle** - Subtle idle animation makes the plant feel alive
-- **End-of-day leaf drop** - Leaves fall with autumn colour transition at day reset
-- **Motivational messages** - Random encouragement every time you complete a break
-
-### Progress Tracking
-- **Daily, weekly, and monthly views** - See your break history over time
-- **Pots collection drawer** - Browse unlocked and upcoming pots, equip your favourite
-- **Wellness tips** - Rotating evidence-based health tips throughout the day
-
-### Multi-Platform
-- **PWA** - Installable on desktop (Windows, macOS, Linux) and mobile (iOS, Android)
-- **Chrome Extension** - Quick access from the browser toolbar with popup showing plant status, countdown, and water button
-- **Offline-first** - Works without internet; no server dependency
-- **Private** - All data stays on-device; no accounts, no tracking, no data collection
-
----
-
-## How It Works
-
-1. **Choose an activity** - Pick from presets (Stretch, Drink Water, Walk, Eye Break, Posture Check, Deep Breath) or create your own
-2. **Set the interval** - Choose how often you want to be reminded
-3. **Configure your schedule** - Select active days and working hours
-4. **Get reminded** - Receive a notification when it's time for a break
-5. **Grow your plant** - Complete the break timer and watch a new leaf sprout on your plant
-
-No onboarding flow, no account creation, no subscription.
+Existing users keep their leaves: older Breather data is migrated automatically on first launch.
 
 ---
 
@@ -69,7 +31,7 @@ No onboarding flow, no account creation, no subscription.
 |-------|-----------|
 | UI | React 18 + TypeScript |
 | Build | Vite |
-| Service Worker | Workbox (injectManifest) - offline support + background notifications |
+| Service Worker | Workbox (injectManifest) - offline support + daily reminder |
 | Hosting | Vercel |
 | Extension | Chrome MV3 (alarms, storage, notifications) |
 | Architecture | npm workspaces monorepo |
@@ -78,9 +40,9 @@ No onboarding flow, no account creation, no subscription.
 
 ```
 packages/
-├── shared/        # Types, constants, plant logic, storage utilities
+├── shared/        # Garden model, breathing patterns, reminder and streak logic
 ├── pwa/           # Progressive Web App (main product)
-└── chrome-ext/    # Chrome Extension (MV3)
+└── chrome-ext/    # Chrome Extension (MV3) - popup + daily reminder
 ```
 
 ---
@@ -113,15 +75,11 @@ npm run dev:ext
 
 ---
 
-## Notification Reliability
+## Daily reminder
 
-Breather uses a multi-layered approach to ensure notifications fire reliably:
-
-- **Drift-correcting setTimeout chains** - Wall-clock aligned, self-rescheduling timers
-- **Service worker scheduling** - Independent timer loop in the SW with 30s max check interval
-- **Visibility/focus resync** - Re-checks all timers when the app returns to foreground
-- **Stable tag deduplication** - Prevents duplicate notifications from parallel timer paths
-- **Chrome extension alarms API** - Reliable `chrome.alarms` for the extension (not affected by browser throttling)
+- The PWA schedules the reminder both in the page and in the service worker, using the same notification tag so only one appears.
+- The extension uses a single `chrome.alarms` alarm and stays quiet while the PWA is open.
+- Every path skips the reminder if you've already breathed that day.
 
 ---
 

@@ -1,80 +1,48 @@
-export type DayOfWeek = 'Mon' | 'Tue' | 'Wed' | 'Thu' | 'Fri' | 'Sat' | 'Sun';
+export type ReminderSlotId = 'morning' | 'midday' | 'evening';
 
-export interface Schedule {
-  activeDays: DayOfWeek[];
-  startHour: number; // 0-23
-  endHour: number;   // 0-23
+export interface DailyReminder {
+  enabled: boolean;
+  slot: ReminderSlotId;
+  time: string; // 'HH:MM', local time
 }
 
-export interface Reminder {
-  id: string;
-  title: string;
-  intervalMinutes: number;
-  isActive: boolean;
-  notificationId?: string;
-  createdAt: string;
-  snoozeDurationMinutes: number;
-  icon: string;
-  schedule: Schedule;
-  breakDurationSeconds: number;
+export interface Session {
+  at: string; // ISO timestamp
+  seconds: number;
 }
 
-export interface AppSettings {
-  defaultSnoozeDurationMinutes: number;
-  defaultIntervalMinutes: number;
-  notificationsEnabled: boolean;
-  defaultSchedule: Schedule;
+export interface Garden {
+  version: 2;
+  onboarded: boolean;
+  sproutName: string;
+  sessionMinutes: number;
+  patternId: string;
+  reminder: DailyReminder;
+  chime: boolean;
+  haptics: boolean;
+  leaves: number;
+  totalSeconds: number;
+  days: string[]; // local 'YYYY-MM-DD' keys with at least one session, ascending
+  sessions: Session[]; // newest first, trimmed to SESSION_HISTORY_DAYS
 }
 
-export interface ProgressEntry {
-  date: string;
-  completedCount: number;
-  totalMinutes: number;
-  sessions: number;
+export interface BreathPhase {
+  label: string;
+  seconds: number;
+  expanded: boolean;
 }
 
-export interface ProgressData {
-  entries: ProgressEntry[];
-  currentStreak: number;
-  longestStreak: number;
-  totalSessions: number;
-  totalMinutes: number;
-}
-
-export type PlantStage = 'seed' | 'sprout' | 'sapling' | 'tree' | 'flowering';
-
-export interface PlantState {
-  waterPoints: number;
-  stage: PlantStage;
-  lastWateredDate: string;
-  lastDecayCheckDate: string;
-  dailyLeavesGrown: number;
-  dailyDate: string;
-}
-
-export interface Pot {
+export interface BreathPattern {
   id: string;
   name: string;
-  unlockThreshold: number;
-  image: string;
-  colors: {
-    body: string;
-    accent: string;
-    rim: string;
-  };
-  pattern?: 'solid' | 'marble' | 'porcelain' | 'stone' | 'mystery';
+  short: string;
+  phases: BreathPhase[];
 }
 
-export interface PotCollectionState {
-  totalBreaksCompleted: number;
-  activePotId: string;
-  unlockedPotIds: string[];
-  lastUnlockCelebrated: string;
+export interface WeekDay {
+  key: string;
+  letter: string;
+  done: boolean;
+  isToday: boolean;
+  isFuture: boolean;
 }
-
-export type ReminderAction =
-  | { type: 'LOAD'; payload: Reminder[] }
-  | { type: 'ADD'; payload: Reminder }
-  | { type: 'UPDATE'; payload: Reminder }
-  | { type: 'DELETE'; payload: string }
-  | { type: 'TOGGLE'; payload: string };

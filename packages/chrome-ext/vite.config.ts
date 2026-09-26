@@ -7,7 +7,7 @@ export default defineConfig({
   base: './',
   build: {
     outDir: 'dist',
-    emptyDirFirst: true,
+    emptyOutDir: true,
     rollupOptions: {
       input: {
         popup: resolve(__dirname, 'popup.html'),
@@ -23,7 +23,9 @@ export default defineConfig({
   },
   resolve: {
     alias: {
-      '@shared': resolve(__dirname, '../shared/src'),
+      '@breather/shared': resolve(__dirname, '../shared/src/index.ts'),
+      '@pwa': resolve(__dirname, '../pwa/src'),
     },
+    dedupe: ['react', 'react-dom'],
   },
 });

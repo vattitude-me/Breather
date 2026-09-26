@@ -1,44 +1,37 @@
-import { Reminder, DayOfWeek } from '@breather/shared/src/types';
-import { STORAGE_KEYS } from '@breather/shared/src/constants';
+import {
+  Garden,
+  PWA_URL,
+  STORAGE_KEYS,
+  didBreatheToday,
+  nextReminderAt,
+  normalizeGarden,
+} from '@breather/shared';
 
-const PWA_URL = 'https://breather-break.vercel.app';
-const PWA_HEARTBEAT_STALE_MS = 90_000; // 90 seconds - PWA writes every 30s
+const ALARM = 'breather_daily';
+const NOTIFICATION = 'breather_daily';
+const PWA_HEARTBEAT_STALE_MS = 90_000; // the PWA writes a heartbeat every 30s
+const LATE_ALARM_GRACE_MS = 2 * 60 * 60 * 1000; // skip reminders Chrome delivers hours late (e.g. after sleep)
+const SYNC_KEYS = [STORAGE_KEYS.GARDEN, STORAGE_KEYS.PWA_ACTIVE];
 
-const NOTIFICATION_PROMPTS = [
-  'Your body will thank you!',
-  'A small pause goes a long way.',
-  'Time to stretch and reset.',
-  'Step away for a moment - you have earned it.',
-  'Quick break? Your plant is thirsty too!',
-];
-
-function getRandomPrompt(): string {
-  return NOTIFICATION_PROMPTS[Math.floor(Math.random() * NOTIFICATION_PROMPTS.length)];
+async function readGarden(): Promise<Garden | null> {
+  const result = await chrome.storage.local.get(STORAGE_KEYS.GARDEN);
+  const raw = result[STORAGE_KEYS.GARDEN];
+  return raw ? normalizeGarden(raw) : null;
 }
 
-function getDayOfWeek(): DayOfWeek {
-  const days: DayOfWeek[] = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'];
-  return days[new Date().getDay()];
+async function syncAlarm(): Promise<void> {
+  await chrome.alarms.clear(ALARM);
+  const garden = await readGarden();
+  if (!garden?.onboarded) return;
+  const next = nextReminderAt(garden.reminder);
+  if (next) await chrome.alarms.create(ALARM, { when: next.getTime() });
 }
 
-function isWithinSchedule(reminder: Reminder): boolean {
-  const now = new Date();
-  const currentDay = getDayOfWeek();
-  const currentHour = now.getHours();
-
-  if (!reminder.schedule.activeDays.includes(currentDay)) return false;
-  if (currentHour < reminder.schedule.startHour || currentHour >= reminder.schedule.endHour) return false;
-  return true;
-}
-
-async function isPwaHandlingNotifications(): Promise<boolean> {
+async function isPwaOpen(): Promise<boolean> {
   try {
     const result = await chrome.storage.local.get(STORAGE_KEYS.PWA_ACTIVE);
-    const lastHeartbeat = Number(result[STORAGE_KEYS.PWA_ACTIVE]);
-    if (lastHeartbeat && (Date.now() - lastHeartbeat) < PWA_HEARTBEAT_STALE_MS) {
-      return true;
-    }
-    // Check if PWA is open as a tab or installed standalone window
+    const heartbeat = Number(result[STORAGE_KEYS.PWA_ACTIVE]);
+    if (heartbeat && Date.now() - heartbeat < PWA_HEARTBEAT_STALE_MS) return true;
     const tabs = await chrome.tabs.query({ url: `${PWA_URL}/*` });
     return tabs.length > 0;
   } catch {
@@ -46,147 +39,57 @@ async function isPwaHandlingNotifications(): Promise<boolean> {
   }
 }
 
-function getAlarmName(reminderId: string): string {
-  return `breather_reminder_${reminderId}`;
-}
-
-async function scheduleReminder(reminder: Reminder): Promise<void> {
-  const alarmName = getAlarmName(reminder.id);
-  await chrome.alarms.clear(alarmName);
-
-  if (!reminder.isActive) return;
-
-  await chrome.alarms.create(alarmName, {
-    periodInMinutes: reminder.intervalMinutes,
-    delayInMinutes: reminder.intervalMinutes,
-  });
-}
-
-async function cancelReminder(reminderId: string): Promise<void> {
-  await chrome.alarms.clear(getAlarmName(reminderId));
-}
-
-async function syncAllAlarms(): Promise<void> {
-  const result = await chrome.storage.local.get(STORAGE_KEYS.REMINDERS);
-  const reminders: Reminder[] = result[STORAGE_KEYS.REMINDERS] || [];
-
-  const existing = await chrome.alarms.getAll();
-  for (const alarm of existing) {
-    if (alarm.name.startsWith('breather_reminder_')) {
-      await chrome.alarms.clear(alarm.name);
-    }
-  }
-
-  for (const reminder of reminders) {
-    if (reminder.isActive) {
-      await scheduleReminder(reminder);
-    }
-  }
-}
-
 chrome.alarms.onAlarm.addListener(async (alarm) => {
-  if (!alarm.name.startsWith('breather_reminder_')) return;
+  if (alarm.name !== ALARM) return;
+  await syncAlarm();
 
-  // If the PWA is actively running, let it handle notifications to avoid duplicates
-  if (await isPwaHandlingNotifications()) return;
+  if (Date.now() - alarm.scheduledTime > LATE_ALARM_GRACE_MS) return;
+  // The PWA shows its own reminder while it is open.
+  if (await isPwaOpen()) return;
+  const garden = await readGarden();
+  if (!garden?.reminder.enabled || didBreatheToday(garden)) return;
 
-  const reminderId = alarm.name.replace('breather_reminder_', '');
-  const result = await chrome.storage.local.get(STORAGE_KEYS.REMINDERS);
-  const reminders: Reminder[] = result[STORAGE_KEYS.REMINDERS] || [];
-  const reminder = reminders.find((r) => r.id === reminderId);
-
-  if (!reminder || !reminder.isActive) return;
-  if (!isWithinSchedule(reminder)) return;
-
-  await chrome.notifications.create(`breather_notif_${reminderId}_${Date.now()}`, {
+  const name = garden.sproutName || 'Your sprout';
+  const minutes = garden.sessionMinutes;
+  await chrome.notifications.create(NOTIFICATION, {
     type: 'basic',
     iconUrl: 'icons/icon-128.png',
-    title: `${reminder.icon} Time for a ${reminder.title.toLowerCase()} break`,
-    message: getRandomPrompt(),
-    buttons: [{ title: `${reminder.icon} Take Break` }],
-    priority: 2,
-    requireInteraction: true,
+    title: 'Time for a slow breath',
+    message: `${name} is ready when you are. ${minutes} calm ${minutes === 1 ? 'minute' : 'minutes'}?`,
+    priority: 1,
   });
 });
 
-chrome.notifications.onButtonClicked.addListener(async (notificationId, _buttonIndex) => {
-  if (!notificationId.startsWith('breather_notif_')) return;
-
-  const parts = notificationId.split('_');
-  const reminderId = parts[2];
-
-  const result = await chrome.storage.local.get(STORAGE_KEYS.REMINDERS);
-  const reminders: Reminder[] = result[STORAGE_KEYS.REMINDERS] || [];
-  const reminder = reminders.find((r) => r.id === reminderId);
-
-  const breakDuration = reminder?.breakDurationSeconds || 60;
-
-  await chrome.tabs.create({
-    url: `${PWA_URL}/active-break?reminderId=${reminderId}&duration=${breakDuration}`,
-  });
-
-  chrome.notifications.clear(notificationId);
-});
-
-chrome.notifications.onClicked.addListener(async (notificationId) => {
-  if (!notificationId.startsWith('breather_notif_')) return;
-
-  const parts = notificationId.split('_');
-  const reminderId = parts[2];
-
-  const result = await chrome.storage.local.get(STORAGE_KEYS.REMINDERS);
-  const reminders: Reminder[] = result[STORAGE_KEYS.REMINDERS] || [];
-  const reminder = reminders.find((r) => r.id === reminderId);
-
-  const breakDuration = reminder?.breakDurationSeconds || 60;
-
-  await chrome.tabs.create({
-    url: `${PWA_URL}/active-break?reminderId=${reminderId}&duration=${breakDuration}`,
-  });
-
-  chrome.notifications.clear(notificationId);
+chrome.notifications.onClicked.addListener(async (id) => {
+  if (id !== NOTIFICATION) return;
+  chrome.notifications.clear(id);
+  await chrome.tabs.create({ url: `${PWA_URL}/breathe` });
 });
 
 chrome.runtime.onInstalled.addListener(async (details) => {
-  await syncAllAlarms();
+  // Drop alarms left over from the old per-reminder model.
+  for (const alarm of await chrome.alarms.getAll()) {
+    if (alarm.name.startsWith('breather_reminder_')) await chrome.alarms.clear(alarm.name);
+  }
+  await syncAlarm();
   if (details.reason === 'install') {
     await chrome.tabs.create({ url: `${PWA_URL}/home?source=extension` });
   }
 });
 
-chrome.runtime.onStartup.addListener(async () => {
-  await syncAllAlarms();
+chrome.runtime.onStartup.addListener(syncAlarm);
+
+chrome.storage.onChanged.addListener((changes, area) => {
+  if (area === 'local' && changes[STORAGE_KEYS.GARDEN]) syncAlarm();
 });
 
-chrome.storage.onChanged.addListener(async (changes, area) => {
-  if (area !== 'local') return;
-  if (changes[STORAGE_KEYS.REMINDERS]) {
-    await syncAllAlarms();
-  }
-});
-
-const SYNC_STORAGE_KEYS = [
-  '@breather_reminders',
-  '@breather_settings',
-  '@breather_progress',
-  '@breather_plant',
-  '@breather_pot_collection',
-  '@breather_pwa_active',
-];
-
-async function pullFromPWA(): Promise<boolean> {
+// Reads the garden straight from an open PWA tab so the popup is fresh.
+async function pullFromPwa(): Promise<boolean> {
   try {
-    const tabs = await chrome.tabs.query({ url: `${PWA_URL}/*` });
-    let tabId: number;
-
-    if (tabs.length > 0 && tabs[0].id) {
-      tabId = tabs[0].id;
-    } else {
-      return false;
-    }
-
-    const results = await chrome.scripting.executeScript({
-      target: { tabId },
+    const [tab] = await chrome.tabs.query({ url: `${PWA_URL}/*` });
+    if (!tab?.id) return false;
+    const [result] = await chrome.scripting.executeScript({
+      target: { tabId: tab.id },
       func: (keys: string[]) => {
         const data: Record<string, unknown> = {};
         for (const key of keys) {
@@ -197,17 +100,12 @@ async function pullFromPWA(): Promise<boolean> {
         }
         return data;
       },
-      args: [SYNC_STORAGE_KEYS],
+      args: [SYNC_KEYS],
     });
-
-    if (results && results[0] && results[0].result) {
-      const data = results[0].result as Record<string, unknown>;
-      if (Object.keys(data).length > 0) {
-        await chrome.storage.local.set(data);
-        return true;
-      }
-    }
-    return false;
+    const data = result?.result as Record<string, unknown> | undefined;
+    if (!data || Object.keys(data).length === 0) return false;
+    await chrome.storage.local.set(data);
+    return true;
   } catch {
     return false;
   }
@@ -218,12 +116,8 @@ chrome.runtime.onMessage.addListener((message, _sender, sendResponse) => {
     chrome.tabs.create({ url: `${PWA_URL}${message.path || '/'}` });
     sendResponse({ ok: true });
   }
-  if (message.type === 'SYNC_ALARMS') {
-    syncAllAlarms().then(() => sendResponse({ ok: true }));
-    return true;
-  }
   if (message.type === 'PULL_FROM_PWA') {
-    pullFromPWA().then((ok) => sendResponse({ ok }));
+    pullFromPwa().then((ok) => sendResponse({ ok }));
     return true;
   }
 });
