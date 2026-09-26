@@ -1,0 +1,111 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<link rel="stylesheet" href="_ds/modernist-9e8ffe0a-b265-4dd1-9467-3c864cacf5e7/styles.css">
+<script src="_ds/modernist-9e8ffe0a-b265-4dd1-9467-3c864cacf5e7/_ds_bundle.js"></script>
+<style>body{margin:0;background:#EFE7DD;} a{color:#E8593D;} a:hover{color:#C9442B;}</style>
+</helmet>
+<div style="min-height:100vh;display:flex;align-items:center;justify-content:center;padding:32px 16px;box-sizing:border-box;font-family:var(--font-body);">
+  <div data-screen-label="Home" style="width:390px;height:844px;background:#FDF8F3;border-radius:44px;box-shadow:0 24px 60px rgba(60,40,20,0.14),0 4px 12px rgba(60,40,20,0.06);overflow:hidden;display:flex;flex-direction:column;position:relative;">
+    <div style="height:48px;display:flex;align-items:center;justify-content:space-between;padding:0 30px;font-size:15px;font-weight:600;color:#1F2A44;">
+      <span>9:41</span>
+      <span style="display:flex;gap:6px;align-items:center;">
+        <svg width="17" height="11" viewBox="0 0 17 11" fill="#1F2A44"><rect x="0" y="7" width="3" height="4" rx="1"></rect><rect x="4.5" y="5" width="3" height="6" rx="1"></rect><rect x="9" y="2.5" width="3" height="8.5" rx="1"></rect><rect x="13.5" y="0" width="3" height="11" rx="1"></rect></svg>
+        <svg width="25" height="12" viewBox="0 0 25 12" fill="none"><rect x="0.5" y="0.5" width="21" height="11" rx="3.5" stroke="#1F2A44" opacity="0.4"></rect><rect x="2" y="2" width="16" height="8" rx="2" fill="#1F2A44"></rect><rect x="23" y="4" width="1.5" height="4" rx="0.75" fill="#1F2A44" opacity="0.4"></rect></svg>
+      </span>
+    </div>
+
+    <div style="padding:28px 28px 0;display:flex;flex-direction:column;gap:10px;">
+      <div style="display:flex;justify-content:space-between;align-items:center;">
+        <span style="font-size:14px;color:#7A8196;letter-spacing:0.01em;">Saturday, September 26</span>
+        <span style="display:flex;align-items:center;gap:6px;padding:6px 12px;border-radius:999px;background:#FFFFFF;box-shadow:0 2px 8px rgba(60,40,20,0.06);font-size:13px;font-weight:600;color:#1F2A44;">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#E8593D" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 22a7 7 0 0 0 7-7c0-2-1-3.9-3-5.5s-3.5-4-4-6.5c-.5 2.5-2 4.9-4 6.5C6 11.1 5 13 5 15a7 7 0 0 0 7 7z"></path></svg>
+          {{ streakLabel }}
+        </span>
+      </div>
+      <h1 style="margin:14px 0 0;font-family:var(--font-heading);font-size:34px;line-height:1.12;font-weight:600;letter-spacing:-0.02em;color:#1F2A44;text-wrap:pretty;">{{ headline }}</h1>
+      <p style="margin:0;font-size:16px;line-height:1.5;color:#6B7288;max-width:300px;text-wrap:pretty;">{{ subline }}</p>
+      <div style="margin-top:18px;"><button onClick="{{ toggleBreath }}" style="width:100%;height:56px;border:none;border-radius:20px;background:#E8593D;color:#FFFFFF;font-family:var(--font-body);font-size:17px;font-weight:600;display:flex;align-items:center;justify-content:space-between;padding:0 22px;cursor:pointer;box-shadow:0 8px 20px rgba(232,89,61,0.28);" style-hover="background:#DB4E33;" style-active="background:#C9442B;transform:scale(0.98);">
+          <span>{{ ctaLabel }}</span>
+          <span style="font-size:14px;font-weight:500;opacity:0.9;">{{ ctaMeta }}</span>
+        </button></div>
+    </div>
+
+    <div style="flex:1;position:relative;display:flex;flex-direction:column;justify-content:flex-end;align-items:center;">
+      <div style="position:absolute;top:50%;left:50%;width:{{ haloSize }}px;height:{{ haloSize }}px;margin-left:-110px;margin-top:-90px;border-radius:50%;background:#F6E9DC;transform:scale({{ haloScale }});transition:transform 4s ease-in-out;"></div>
+      <div style="position:relative;display:flex;flex-direction:column;align-items:center;margin-bottom:-60px;z-index:1;">
+        <div style="transform-origin:50% 100%;transform:scale({{ sproutScale }});transition:transform 4s ease-in-out;">
+          <svg width="120" height="110" viewBox="0 0 120 110" fill="none">
+            <path d="M60 110 C60 86 58 68 60 44" stroke="#5E9E62" stroke-width="5" stroke-linecap="round"></path>
+            <path d="M59 62 C44 62 30 52 26 36 C42 34 56 44 59 62 Z" fill="#7DBB78"></path>
+            <path d="M61 48 C64 30 80 18 98 20 C96 38 80 50 61 48 Z" fill="#6AAE6A"></path>
+            <path d="M59 62 C48 57 38 49 32 40" stroke="#5E9E62" stroke-width="1.6" stroke-linecap="round" opacity="0.6"></path>
+            <path d="M62 47 C72 40 82 32 92 25" stroke="#4E8C55" stroke-width="1.6" stroke-linecap="round" opacity="0.6"></path>
+          </svg>
+        </div>
+        <svg width="150" height="120" viewBox="0 0 150 120" fill="none" style="margin-top:-4px;">
+          <ellipse cx="75" cy="116" rx="58" ry="5" fill="#000" opacity="0.08"></ellipse>
+          <path d="M22 26 H128 L114 112 Q113 116 108 116 H42 Q37 116 36 112 Z" fill="#D9744E"></path>
+          <path d="M26 26 H70 L60 116 H42 Q37 116 36 112 Z" fill="#E08661" opacity="0.55"></path>
+          <rect x="12" y="6" width="126" height="26" rx="10" fill="#C7613D"></rect>
+          <rect x="12" y="6" width="126" height="10" rx="5" fill="#D06A45"></rect>
+          <ellipse cx="75" cy="9" rx="54" ry="4" fill="#6B4632"></ellipse>
+        </svg>
+      </div>
+      <div style="width:100%;height:118px;background:#A9D19E;border-radius:48px 48px 0 0;"></div>
+    </div>
+
+    <div style="height:84px;background:#FFFFFF;border-radius:28px 28px 0 0;box-shadow:0 -6px 24px rgba(60,40,20,0.06);display:grid;grid-template-columns:repeat(3,1fr);padding:10px 12px 22px;box-sizing:border-box;margin-top:-20px;position:relative;">
+      <sc-for list="{{ tabs }}" as="t" hint-placeholder-count="3">
+        <button onClick="{{ t.select }}" style="background:none;border:none;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:4px;cursor:pointer;font-family:var(--font-body);font-size:12px;font-weight:500;color:{{ t.color }};border-radius:16px;" style-hover="background:#FBF3EC;">
+          <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="{{ t.d1 }}"></path><path d="{{ t.d2 }}"></path></svg>
+          <span>{{ t.label }}</span>
+        </button>
+      </sc-for>
+    </div>
+  </div>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props="{&quot;$preview&quot;:{&quot;width&quot;:440,&quot;height&quot;:920},&quot;name&quot;:{&quot;editor&quot;:&quot;text&quot;,&quot;default&quot;:&quot;Maya&quot;,&quot;tsType&quot;:&quot;string&quot;},&quot;days&quot;:{&quot;editor&quot;:&quot;int&quot;,&quot;default&quot;:12,&quot;min&quot;:0,&quot;max&quot;:365,&quot;tsType&quot;:&quot;number&quot;},&quot;pace&quot;:{&quot;editor&quot;:&quot;range&quot;,&quot;default&quot;:4,&quot;min&quot;:3,&quot;max&quot;:8,&quot;step&quot;:1,&quot;unit&quot;:&quot;s&quot;,&quot;tsType&quot;:&quot;number&quot;}}">
+class Component extends DCLogic {
+  state = { tab: 0, breathing: false, phase: 0 };
+  componentWillUnmount() { clearInterval(this.timer); }
+  toggle = () => {
+    if (this.state.breathing) { clearInterval(this.timer); this.setState({ breathing: false, phase: 0 }); return; }
+    const pace = (this.props.pace ?? 4) * 1000;
+    this.setState({ breathing: true, phase: 1 });
+    this.timer = setInterval(() => this.setState(s => ({ phase: s.phase === 1 ? 2 : 1 })), pace);
+  };
+  renderVals() {
+    const { tab, breathing, phase } = this.state;
+    const name = this.props.name ?? 'Maya';
+    const icons = [
+      ['Home', 'M3 10.5 12 3l9 7.5V20a1 1 0 0 1-1 1h-5v-6h-6v6H4a1 1 0 0 1-1-1z', ''],
+      ['Progress', 'M3 3v18h18', 'm7 15 4-4 3 3 5-6'],
+      ['Settings', 'M12 15a3 3 0 1 0 0-6 3 3 0 0 0 0 6z', 'M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 1 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 1 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 1 1-2.83-2.83l.06-.06A1.65 1.65 0 0 0 4.68 15a1.65 1.65 0 0 0-1.51-1H3a2 2 0 1 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 1 1 2.83-2.83l.06.06A1.65 1.65 0 0 0 9 4.68a1.65 1.65 0 0 0 1-1.51V3a2 2 0 1 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 1 1 2.83 2.83l-.06.06A1.65 1.65 0 0 0 19.4 9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 1 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z']
+    ];
+    const inhale = breathing && phase === 1;
+    return {
+      streakLabel: (this.props.days ?? 12) + ' days',
+      headline: breathing ? (inhale ? 'Breathe in…' : 'Breathe out…') : `Good morning, ${name}. Take a slow breath.`,
+      subline: breathing ? 'Follow your sprout. Let it rise, let it rest.' : 'Your sprout grows a little each time you pause.',
+      ctaLabel: breathing ? 'End session' : 'Begin breathing',
+      ctaMeta: breathing ? '' : '3 min',
+      toggleBreath: this.toggle,
+      haloSize: 220,
+      haloScale: inhale ? 1.12 : 0.92,
+      sproutScale: inhale ? 1.1 : 1,
+      tabs: icons.map(([label, d1, d2], i) => ({ label, d1, d2, color: i === tab ? '#E8593D' : '#9AA0B2', select: () => this.setState({ tab: i }) }))
+    };
+  }
+}
+</script>
+</body>
+</html>
