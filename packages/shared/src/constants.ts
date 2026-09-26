@@ -2,7 +2,7 @@ import { BreathPattern, ReminderSlotId } from './types';
 
 export const APP_NAME = 'Breather';
 export const APP_VERSION = '4.0.0';
-export const PWA_URL = 'https://breather-break.vercel.app';
+export const PWA_URL = 'https://breather.vattitude.ca';
 
 export const STORAGE_KEYS = {
   GARDEN: '@breather_garden',

@@ -10,7 +10,7 @@
     "scripting"
   ],
   "host_permissions": [
-    "https://breather-break.vercel.app/*"
+    "https://breather.vattitude.ca/*"
   ],
   "action": {
     "default_popup": "popup.html",
@@ -27,7 +27,7 @@
   "content_scripts": [
     {
       "matches": [
-        "https://breather-break.vercel.app/*"
+        "https://breather.vattitude.ca/*"
       ],
       "js": [
         "content-sync.js"
